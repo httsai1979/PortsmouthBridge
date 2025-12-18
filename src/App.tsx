@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 
 // ==========================================
 // 1. CONFIGURATION & ICONS (TOP LEVEL)
@@ -7,40 +7,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 const MAP_BOUNDS = { minLat: 50.770, maxLat: 50.870, minLng: -1.120, maxLng: -1.040 };
 const AREAS = ['All', 'PO1', 'PO2', 'PO3', 'PO4', 'PO5', 'PO6'];
 
-// Fixed: Wrapped multi-element SVGs in Fragments <></>
-const ICONS = {
-    food: <><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2M7 2v20M21 15V2v0a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7" /></>,
-    bed: <path d="M2 4v16M2 8h18a2 2 0 0 1 2 2v10M2 17h20M6 8v9" />,
-    warm: <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-2.246-3.64-3.418-5.418A9 9 0 0 1 21 12a9 9 0 0 1-9 9 9 9 0 0 1-6-5.3L6 14z" />,
-    support: <><circle cx="12" cy="12" r="10" /><path d="M12 2a4.5 4.5 0 0 0 0 9 4.5 4.5 0 0 1 0 9" /><path d="M12 12v.01" /></>,
-    family: <><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M22 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></>,
-    mapPin: <><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" /><circle cx="12" cy="10" r="3" /></>,
-    clock: <><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></>,
-    phone: <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />,
-    alert: <><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" /><line x1="12" x2="12" y1="9" y2="13" /><line x1="12" x2="12.01" y1="17" y2="17" /></>,
-    check: <polyline points="20 6 9 17 4 12" />,
-    x: <><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></>,
-    calendar: <><rect x="3" y="4" width="18" height="18" rx="2" ry="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" /></>,
-    filter: <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />,
-    nav: <polygon points="3 11 22 2 13 21 11 13 3 11" />,
-    search: <circle cx="11" cy="11" r="8" />,
-    home: <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />,
-    utensils: <><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2M7 2v20M21 15V2v0a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7" /></>,
-    lifebuoy: <><circle cx="12" cy="12" r="10" /><circle cx="12" cy="12" r="4" /><line x1="4.93" x2="9.17" y1="4.93" y2="9.17" /><line x1="14.83" x2="19.07" y1="14.83" y2="19.07" /><line x1="14.83" x2="19.07" y1="9.17" y2="4.93" /><line x1="14.83" x2="9.17" y1="9.17" y2="14.83" /><line x1="4.93" x2="9.17" y1="19.07" y2="14.83" /></>,
-    moon: <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />,
-    walk: <><path d="M13 4v6" /><path d="M8 12v3" /><path d="M10 17v4" /><path d="M14 17v4" /><path d="M13 10a2 2 0 0 1-2 2H8" /><circle cx="13" cy="4" r="2" /></>,
-    printer: <><polyline points="6 9 6 2 18 2 18 9" /><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" /><rect width="12" height="8" x="6" y="14" /></>,
-    smartphone: <><rect width="14" height="20" x="5" y="2" rx="2" ry="2" /><line x1="12" x2="12.01" y1="18" y2="18" /></>,
-    monitor: <><rect width="20" height="14" x="2" y="3" rx="2" /><line x1="8" x2="16" y1="21" y2="21" /><line x1="12" x2="12" y1="17" y2="21" /></>,
-    paw: <><path d="M11 17a2.99 2.99 0 0 1-2.913.263L8 17H5c-1.105 0-2 .9-2 2v2a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-2c0-1.1-.895-2-2-2h-3l-.087.263A2.99 2.99 0 0 1 13 17h-2Z" /><path d="M8 4a3 3 0 0 0-3 3v2a3 3 0 0 0 3 3h8a3 3 0 0 0 3-3V7a3 3 0 0 0-3-3H8Z" /></>,
-    zap: <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />,
-    award: <><circle cx="12" cy="8" r="7" /><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88" /></>,
-    fileText: <><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" /><polyline points="14 2 14 8 20 8" /><line x1="16" x2="8" y1="13" y2="13" /><line x1="16" x2="8" y1="17" y2="17" /><polyline points="10 9 9 9 8 9" /></>,
-    check_circle: <><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><polyline points="22 4 12 14.01 9 11.01" /></>,
-    x_circle: <><circle cx="12" cy="12" r="10" /><line x1="15" x2="9" y1="9" y2="15" /><line x1="9" x2="15" y1="9" y2="15" /></>,
-    sun: <><circle cx="12" cy="12" r="4" /><path d="M12 2v2" /><path d="M12 20v2" /><path d="m4.93 4.93 1.41 1.41" /><path d="m17.66 17.66 1.41 1.41" /><path d="M2 12h2" /><path d="M20 12h2" /><path d="m6.34 17.66-1.41 1.41" /><path d="m19.07 4.93-1.41 1.41" /></>,
-    soup: <><path d="M12 21a9 9 0 0 0 9-9H3a9 9 0 0 0 9 9Z" /><path d="M7 21h10" /><path d="M12 2v6" /><path d="m19 5-2.5 3" /><path d="m5 5 2.5 3" /></>
-};
+
 
 // Configuration linking categories to icons/colors
 const TAG_ICONS = {
@@ -66,6 +33,8 @@ const TAG_ICONS = {
     "24_7": { icon: 'clock', label: '24/7', color: 'text-purple-900', bg: 'bg-purple-200' },
     default: { icon: 'info', label: 'Info', color: 'text-gray-600', bg: 'bg-gray-100' }
 };
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const getTagConfig = (tag: string): any => (TAG_ICONS as any)[tag] || TAG_ICONS.default;
 
 const SUPERMARKET_TIPS = [
     { store: "Co-op", time: "After 18:00", note: "Look for 75% off red stickers." },
@@ -232,11 +201,11 @@ const generateMockData = () => {
     for (let i = 0; i < 150; i++) {
         const catKeys = Object.keys(types);
         const category = catKeys[Math.floor(random() * catKeys.length)];
-        const type = types[category][Math.floor(random() * types[category].length)];
+        const type = types[category as keyof typeof types][Math.floor(random() * types[category as keyof typeof types].length)];
         const area = areas[Math.floor(random() * areas.length)];
 
         // Random Schedule
-        const schedule = {};
+        const schedule: Record<number, string> = {};
         for (let d = 0; d < 7; d++) {
             if (random() > 0.3) {
                 const start = 8 + Math.floor(random() * 4);
@@ -276,7 +245,8 @@ const ALL_DATA = [...REAL_DATA, ...generateMockData()];
 // 3. UTILS & ICONS
 // ==========================================
 
-const Icon = ({ name, size = 18, className }) => {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const Icon = ({ name, size = 18, className = "" }: { name: string; size?: number; className?: string }) => {
     // Standard icon set
     const icons = {
         search: <><circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /></>,
@@ -313,14 +283,15 @@ const Icon = ({ name, size = 18, className }) => {
         smartphone: <><rect width="14" height="20" x="5" y="2" rx="2" ry="2" /><line x1="12" x2="12.01" y1="18" y2="18" /></>,
         monitor: <><rect width="20" height="14" x="2" y="3" rx="2" /><line x1="8" x2="16" y1="21" y2="21" /><line x1="12" x2="12" y1="17" y2="21" /></>
     };
-    return <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">{icons[name] || icons.info}</svg>;
+    return <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">{(icons as any)[name] || icons.info}</svg>;
 };
 
 // ==========================================
 // 4. NEW FEATURES (BOOKING & CALENDAR)
 // ==========================================
 
-const BookingBar = ({ onSearch, currentFilters }) => {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const BookingBar = ({ onSearch, currentFilters }: { onSearch: any; currentFilters: any }) => {
     const [active, setActive] = useState(false);
     const [localFilters, setLocalFilters] = useState(currentFilters);
 
@@ -386,7 +357,7 @@ const BookingBar = ({ onSearch, currentFilters }) => {
                                         onClick={() => setLocalFilters({ ...localFilters, category: localFilters.category === c ? 'all' : c })}
                                         className={`py-3 rounded-lg text-xs font-bold capitalize transition flex items-center justify-center gap-2 ${localFilters.category === c ? 'bg-indigo-500 text-white' : 'bg-white/10 text-slate-300 hover:bg-white/20'}`}
                                     >
-                                        <Icon name={TAG_ICONS[c]?.icon || 'info'} size={14} /> {c}
+                                        <Icon name={getTagConfig(c).icon} size={14} /> {c}
                                     </button>
                                 ))}
                             </div>
@@ -417,7 +388,8 @@ const BookingBar = ({ onSearch, currentFilters }) => {
     );
 };
 
-const AreaScheduleView = ({ data, area }) => {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const AreaScheduleView = ({ data, area }: { data: any[]; area: string }) => {
     const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
     const todayIdx = new Date().getDay();
     const [selectedDay, setSelectedDay] = useState(todayIdx);
@@ -457,7 +429,7 @@ const AreaScheduleView = ({ data, area }) => {
             <div className="space-y-6 relative border-l-2 border-slate-200 ml-3 pl-6">
                 {timeSlots.map(hour => {
                     const hourStr = hour.toString().padStart(2, '0');
-                    const itemsStarting = filtered.filter(item => item.schedule[selectedDay].startsWith(hourStr));
+                    const itemsStarting = filtered.filter(item => (item.schedule as any)[selectedDay].startsWith(hourStr));
 
                     if (itemsStarting.length === 0) return null;
 
@@ -471,12 +443,12 @@ const AreaScheduleView = ({ data, area }) => {
                                     <div key={item.id} className="bg-white p-4 rounded-xl shadow-sm border border-slate-100 hover:border-slate-300 transition-all group">
                                         <div className="flex justify-between items-start">
                                             <div>
-                                                <div className={`text-[10px] font-bold uppercase tracking-wider mb-1 px-2 py-0.5 rounded w-fit ${TAG_ICONS[item.category]?.bg || 'bg-slate-100'} ${TAG_ICONS[item.category]?.color || 'text-slate-600'}`}>{item.category}</div>
+                                                <div className={`text-[10px] font-bold uppercase tracking-wider mb-1 px-2 py-0.5 rounded w-fit ${getTagConfig(item.category).bg} ${getTagConfig(item.category).color}`}>{item.category}</div>
                                                 <h4 className="font-bold text-slate-800 text-sm group-hover:text-emerald-700 transition">{item.name}</h4>
                                                 <p className="text-xs text-slate-400 mt-0.5">{item.address}</p>
                                             </div>
                                             <div className="text-right">
-                                                <div className="text-xs font-black text-slate-800">{item.schedule[selectedDay]}</div>
+                                                <div className="text-xs font-black text-slate-800">{(item.schedule as any)[selectedDay]}</div>
                                                 <div className="text-[10px] text-slate-400 font-medium">{item.type}</div>
                                             </div>
                                         </div>
@@ -492,7 +464,8 @@ const AreaScheduleView = ({ data, area }) => {
     );
 };
 
-const CategoryButton = ({ label, icon, active, onClick, color }) => (
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const CategoryButton = ({ label, icon, active, onClick, color }: { label: string; icon: string; active: boolean; onClick: () => void; color: string }) => (
     <button
         onClick={onClick}
         className={`flex flex-col items-center justify-center p-2 rounded-2xl transition-all duration-200 w-full h-20 shadow-sm border
@@ -505,24 +478,10 @@ const CategoryButton = ({ label, icon, active, onClick, color }) => (
     </button>
 );
 
-const AreaFilter = ({ selectedArea, onSelectArea }) => (
-    <div className="flex gap-2 overflow-x-auto pb-4 mb-2 no-scrollbar -mx-5 px-5">
-        {AREAS.map((area) => (
-            <button
-                key={area}
-                onClick={() => onSelectArea(area)}
-                className={`whitespace-nowrap px-4 py-2 rounded-full text-xs font-bold transition border shadow-sm ${selectedArea === area
-                    ? 'bg-slate-800 text-white border-slate-800 shadow-md'
-                    : 'bg-white text-slate-500 border-slate-200 hover:bg-slate-50'
-                    }`}
-            >
-                {area}
-            </button>
-        ))}
-    </div>
-);
 
-const checkStatus = (schedule) => {
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const checkStatus = (schedule: any) => {
     if (!schedule) return { status: 'Unknown', color: 'bg-slate-100 text-slate-500', label: 'Check Time' };
     const now = new Date();
     const day = now.getDay();
@@ -546,7 +505,8 @@ const checkStatus = (schedule) => {
     return { status: 'Closed', color: 'bg-slate-100 text-slate-500', label: 'Closed Now' };
 };
 
-const ResourceCard = ({ item }) => {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const ResourceCard = ({ item }: { item: any }) => {
     const [expanded, setExpanded] = useState(false);
     const status = checkStatus(item.schedule);
 
@@ -577,8 +537,8 @@ const ResourceCard = ({ item }) => {
 
                 <div className="flex flex-wrap gap-2 mb-4">
                     <span className="px-2 py-1 rounded text-[10px] font-bold border bg-slate-100 text-slate-600 border-slate-200">Area: {item.area}</span>
-                    {item.tags.map(tag => {
-                        const conf = TAG_ICONS[tag] || TAG_ICONS.default;
+                    {item.tags.map((tag: string) => {
+                        const conf = getTagConfig(tag);
                         return (
                             <span key={tag} className={`inline-flex items-center gap-1 px-2 py-1 rounded text-[10px] font-bold border ${conf.bg} ${conf.color} border-transparent`}>
                                 <Icon name={conf.icon} size={10} /> {conf.label}
@@ -615,7 +575,8 @@ const ResourceCard = ({ item }) => {
     );
 };
 
-const Dashboard = ({ data, onNavigate }) => {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const Dashboard = ({ data, onNavigate }: { data: any[]; onNavigate: (cat: string) => void }) => {
     const [now, setNow] = useState(new Date());
 
     useEffect(() => {
@@ -632,7 +593,8 @@ const Dashboard = ({ data, onNavigate }) => {
     if (currentHour >= 12) { greeting = "Good Afternoon"; subtext = "Lunch clubs & libraries open."; }
     if (currentHour >= 17) { greeting = "Good Evening"; subtext = "Shelters & late food support."; }
 
-    const isOpen = (schedule) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const isOpen = (schedule: any) => {
         if (!schedule) return false;
         const hours = schedule[day];
         if (!hours || hours === 'Closed') return false;
@@ -682,8 +644,9 @@ const Dashboard = ({ data, onNavigate }) => {
     );
 };
 
-const SimpleMap = ({ data, category, statusFilter }) => {
-    const [selectedItem, setSelectedItem] = useState(null);
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const SimpleMap = ({ data, category, statusFilter }: { data: any[]; category: string; statusFilter: string }) => {
+    const [selectedItem, setSelectedItem] = useState<any>(null);
 
     const mapPoints = useMemo(() => {
         return data.filter(item => {
@@ -694,13 +657,14 @@ const SimpleMap = ({ data, category, statusFilter }) => {
         });
     }, [data, category, statusFilter]);
 
-    const project = (lat, lng) => {
+    const project = (lat: number, lng: number) => {
         const y = 100 - ((lat - MAP_BOUNDS.minLat) / (MAP_BOUNDS.maxLat - MAP_BOUNDS.minLat)) * 100;
         const x = ((lng - MAP_BOUNDS.minLng) / (MAP_BOUNDS.maxLng - MAP_BOUNDS.minLng)) * 100;
         return { x, y };
     };
 
-    const getPinColor = (item) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const getPinColor = (item: any) => {
         const status = checkStatus(item.schedule).status;
         if (status === 'open') return 'bg-emerald-500 border-emerald-200 shadow-emerald-200';
         if (status === 'closed') return 'bg-slate-400 border-slate-200 opacity-60';
@@ -749,7 +713,7 @@ const SimpleMap = ({ data, category, statusFilter }) => {
     );
 };
 
-const TipsModal = ({ isOpen, onClose }) => {
+const TipsModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => {
     if (!isOpen) return null;
     return (
         <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4">
@@ -776,7 +740,7 @@ const TipsModal = ({ isOpen, onClose }) => {
     );
 };
 
-const CrisisModal = ({ isOpen, onClose }) => {
+const CrisisModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => {
     if (!isOpen) return null;
     return (
         <div className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4">
@@ -805,12 +769,13 @@ const CrisisModal = ({ isOpen, onClose }) => {
     );
 };
 
-const PrintView = ({ data, onClose }) => {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const PrintView = ({ data, onClose }: { data: any[]; onClose: () => void }) => {
     const today = new Date().getDay();
-    const tomorrow = (today + 1) % 7;
     const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
-    const getOpenItems = (dayIdx) => data.filter(i => i.schedule[dayIdx] !== "Closed" && (i.category === 'food' || i.category === 'shelter' || i.category === 'support'));
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const getOpenItems = (dayIdx: number) => data.filter((i: any) => i.schedule[dayIdx] !== "Closed" && (i.category === 'food' || i.category === 'shelter' || i.category === 'support'));
 
     return (
         <div className="fixed inset-0 bg-white z-[100] overflow-y-auto p-8 text-black font-mono">
@@ -875,10 +840,10 @@ const App = () => {
         // 3. Date Filter (Simple check if open today/tomorrow)
         if (filters.date === 'today') {
             const day = new Date().getDay();
-            items = items.filter(i => i.schedule[day] !== 'Closed');
+            items = items.filter(i => (i.schedule as any)[day] !== 'Closed');
         } else if (filters.date === 'tomorrow') {
             const day = (new Date().getDay() + 1) % 7;
-            items = items.filter(i => i.schedule[day] !== 'Closed');
+            items = items.filter(i => (i.schedule as any)[day] !== 'Closed');
         }
 
         return items.sort((a, b) => {
@@ -890,7 +855,8 @@ const App = () => {
         });
     }, [filters]);
 
-    const handleSearch = (newFilters) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const handleSearch = (newFilters: any) => {
         setFilters(newFilters);
         setView('list');
     };
