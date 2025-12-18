@@ -315,8 +315,6 @@ const Icon = ({ name, size = 18, className }) => {
     };
     return <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">{icons[name] || icons.info}</svg>;
 };
-return <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">{icons[name] || icons.info}</svg>;
-};
 
 // ==========================================
 // 4. NEW FEATURES (BOOKING & CALENDAR)
