@@ -11,27 +11,27 @@ const AREAS = ['All', 'PO1', 'PO2', 'PO3', 'PO4', 'PO5', 'PO6'];
 
 // Configuration linking categories to icons/colors
 const TAG_ICONS = {
-    food: { icon: 'utensils', label: 'Food', color: 'text-emerald-700', bg: 'bg-emerald-100' },
-    shelter: { icon: 'bed', label: 'Shelter', color: 'text-indigo-700', bg: 'bg-indigo-100' },
-    warm: { icon: 'flame', label: 'Warmth', color: 'text-orange-700', bg: 'bg-orange-100' },
-    support: { icon: 'lifebuoy', label: 'Support', color: 'text-blue-700', bg: 'bg-blue-100' },
-    family: { icon: 'family', label: 'Family', color: 'text-pink-700', bg: 'bg-pink-100' },
-    wifi: { icon: 'wifi', label: 'WiFi', color: 'text-indigo-600', bg: 'bg-indigo-50' },
+    food: { icon: 'utensils', label: 'Food', color: 'text-emerald-600', bg: 'bg-emerald-50' },
+    shelter: { icon: 'bed', label: 'Shelter', color: 'text-blue-600', bg: 'bg-blue-50' },
+    warm: { icon: 'flame', label: 'Warmth', color: 'text-orange-600', bg: 'bg-orange-50' },
+    support: { icon: 'lifebuoy', label: 'Support', color: 'text-indigo-600', bg: 'bg-indigo-50' },
+    family: { icon: 'family', label: 'Family', color: 'text-pink-600', bg: 'bg-pink-50' },
+    wifi: { icon: 'wifi', label: 'WiFi', color: 'text-sky-600', bg: 'bg-sky-50' },
     charging: { icon: 'zap', label: 'Charge', color: 'text-yellow-600', bg: 'bg-yellow-50' },
     shower: { icon: 'droplets', label: 'Shower', color: 'text-cyan-600', bg: 'bg-cyan-50' },
     laundry: { icon: 'laundry', label: 'Laundry', color: 'text-blue-600', bg: 'bg-blue-50' },
     toilet: { icon: 'toilet', label: 'Toilet', color: 'text-slate-600', bg: 'bg-slate-100' },
-    no_referral: { icon: 'check_circle', label: 'Open Access', color: 'text-teal-800', bg: 'bg-teal-100', border: true },
-    free: { icon: 'tag', label: 'FREE', color: 'text-emerald-800', bg: 'bg-emerald-200', border: true },
-    membership: { icon: 'id_card', label: 'Member Only', color: 'text-slate-600', bg: 'bg-slate-200' },
-    referral: { icon: 'file_text', label: 'Referral', color: 'text-amber-700', bg: 'bg-amber-100' },
-    hot_meal: { icon: 'soup', label: 'Hot Meal', color: 'text-orange-800', bg: 'bg-orange-100' },
-    fresh_food: { icon: 'food', label: 'Fresh Veg', color: 'text-green-700', bg: 'bg-green-100' },
-    medical: { icon: 'lifebuoy', label: 'Medical', color: 'text-red-700', bg: 'bg-red-100' },
-    women: { icon: 'heart', label: 'Women', color: 'text-rose-700', bg: 'bg-rose-100' },
-    pets: { icon: 'paw', label: 'Dogs OK', color: 'text-amber-900', bg: 'bg-amber-200' },
-    "24_7": { icon: 'clock', label: '24/7', color: 'text-purple-900', bg: 'bg-purple-200' },
-    default: { icon: 'info', label: 'Info', color: 'text-gray-600', bg: 'bg-gray-100' }
+    no_referral: { icon: 'check_circle', label: 'Open Access', color: 'text-teal-700', bg: 'bg-teal-50', border: true },
+    free: { icon: 'tag', label: 'Free', color: 'text-emerald-700', bg: 'bg-emerald-100', border: true },
+    membership: { icon: 'id_card', label: 'Member Only', color: 'text-slate-500', bg: 'bg-slate-100' },
+    referral: { icon: 'file_text', label: 'Referral', color: 'text-amber-600', bg: 'bg-amber-50' },
+    hot_meal: { icon: 'soup', label: 'Hot Meal', color: 'text-orange-600', bg: 'bg-orange-50' },
+    fresh_food: { icon: 'food', label: 'Fresh Veg', color: 'text-green-600', bg: 'bg-green-50' },
+    medical: { icon: 'lifebuoy', label: 'Medical', color: 'text-red-600', bg: 'bg-red-50' },
+    women: { icon: 'heart', label: 'Women', color: 'text-rose-600', bg: 'bg-rose-50' },
+    pets: { icon: 'paw', label: 'Dogs OK', color: 'text-stone-600', bg: 'bg-stone-100' },
+    "24_7": { icon: 'clock', label: '24/7', color: 'text-purple-600', bg: 'bg-purple-50' },
+    default: { icon: 'info', label: 'Info', color: 'text-gray-500', bg: 'bg-gray-50' }
 };
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const getTagConfig = (tag: string): any => (TAG_ICONS as any)[tag] || TAG_ICONS.default;
@@ -241,6 +241,18 @@ const generateMockData = () => {
 
 const ALL_DATA = [...REAL_DATA, ...generateMockData()];
 
+const getDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
+    const R = 6371; // Radius of the earth in km
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a =
+        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+        Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c; // Distance in km
+};
+
 // ==========================================
 // 3. UTILS & ICONS
 // ==========================================
@@ -295,7 +307,6 @@ const BookingBar = ({ onSearch, currentFilters }: { onSearch: any; currentFilter
     const [active, setActive] = useState(false);
     const [localFilters, setLocalFilters] = useState(currentFilters);
 
-    // Sync when filters change externally
     useEffect(() => {
         setLocalFilters(currentFilters);
     }, [currentFilters]);
@@ -306,85 +317,113 @@ const BookingBar = ({ onSearch, currentFilters }: { onSearch: any; currentFilter
     };
 
     return (
-        <div className={`sticky top-0 z-50 px-4 pt-2 pb-2 transition-all duration-300 ${active ? 'bg-slate-900/95 backdrop-blur-xl h-screen top-0 left-0 right-0 fixed' : ''}`}>
-            {!active ? (
+        <>
+            <div className={`sticky top-0 z-50 px-4 py-3 transition-all duration-300 ${active ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
                 <button
                     onClick={() => setActive(true)}
-                    className="w-full bg-white rounded-full shadow-lg border border-slate-200 p-3 flex items-center gap-4 hover:scale-[1.02] transition-transform"
+                    className="w-full bg-white/90 backdrop-blur-md rounded-full shadow-sm border border-slate-200 p-3 flex items-center gap-3 active:scale-[0.98] transition-all"
                 >
-                    <div className="bg-emerald-500 text-white p-2 rounded-full">
+                    <div className="bg-slate-100 text-slate-600 p-2 rounded-full">
                         <Icon name="search" size={18} />
                     </div>
                     <div className="flex-1 text-left">
-                        <div className="text-xs font-bold text-slate-800">
-                            {localFilters.area === 'All' ? 'Anywhere' : localFilters.area} • {localFilters.date === 'today' ? 'Today' : 'Anytime'}
+                        <div className="text-sm font-semibold text-slate-900">
+                            {localFilters.area === 'All' ? 'Where to?' : localFilters.area}
                         </div>
-                        <div className="text-[10px] text-slate-400 font-medium">Click to search food, shelter...</div>
+                        <div className="text-xs text-slate-500">
+                            {localFilters.category === 'all' ? 'Any Category' : localFilters.category} • {localFilters.date === 'today' ? 'Today' : 'Anytime'}
+                        </div>
                     </div>
-                    <div className="border border-slate-200 rounded-full w-8 h-8 flex items-center justify-center">
-                        <Icon name="filter" size={12} />
+                    <div className="w-8 h-8 rounded-full border border-slate-200 flex items-center justify-center">
+                        <Icon name="filter" size={14} className="text-slate-400" />
                     </div>
                 </button>
-            ) : (
-                <div className="animate-fade-in-up md:max-w-md mx-auto mt-10">
-                    <div className="flex justify-between items-center mb-6 text-white">
-                        <h2 className="text-2xl font-black">Find Help</h2>
-                        <button onClick={() => setActive(false)} className="bg-white/10 p-2 rounded-full hover:bg-white/20"><Icon name="x" size={20} /></button>
-                    </div>
+            </div>
 
-                    <div className="space-y-4">
-                        <div className="bg-white/10 p-4 rounded-2xl border border-white/10">
-                            <label className="block text-emerald-400 text-xs font-bold uppercase tracking-wider mb-2">Where?</label>
-                            <div className="grid grid-cols-4 gap-2">
-                                {AREAS.map(a => (
-                                    <button
-                                        key={a}
-                                        onClick={() => setLocalFilters({ ...localFilters, area: a })}
-                                        className={`py-2 rounded-lg text-xs font-bold transition ${localFilters.area === a ? 'bg-emerald-500 text-white' : 'bg-white/10 text-slate-300 hover:bg-white/20'}`}
-                                    >
-                                        {a}
-                                    </button>
-                                ))}
-                            </div>
+            {/* Full Screen Overlay for Filters */}
+            {active && (
+                <div className="fixed inset-0 z-[60] bg-slate-50/95 backdrop-blur-xl overflow-y-auto animate-fade-in-up">
+                    <div className="p-6 max-w-lg mx-auto min-h-screen flex flex-col">
+                        <div className="flex justify-between items-center mb-8">
+                            <h2 className="text-3xl font-bold tracking-tight text-slate-900">Search</h2>
+                            <button
+                                onClick={() => setActive(false)}
+                                className="bg-slate-200 p-2 rounded-full hover:bg-slate-300 transition"
+                            >
+                                <Icon name="x" size={20} className="text-slate-600" />
+                            </button>
                         </div>
 
-                        <div className="bg-white/10 p-4 rounded-2xl border border-white/10">
-                            <label className="block text-indigo-400 text-xs font-bold uppercase tracking-wider mb-2">What?</label>
-                            <div className="grid grid-cols-2 gap-2">
-                                {['food', 'shelter', 'warmth', 'support', 'family'].map(c => (
-                                    <button
-                                        key={c}
-                                        onClick={() => setLocalFilters({ ...localFilters, category: localFilters.category === c ? 'all' : c })}
-                                        className={`py-3 rounded-lg text-xs font-bold capitalize transition flex items-center justify-center gap-2 ${localFilters.category === c ? 'bg-indigo-500 text-white' : 'bg-white/10 text-slate-300 hover:bg-white/20'}`}
-                                    >
-                                        <Icon name={getTagConfig(c).icon} size={14} /> {c}
-                                    </button>
-                                ))}
-                            </div>
+                        <div className="flex-1 space-y-8">
+                            <section>
+                                <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Area</label>
+                                <div className="flex flex-wrap gap-2">
+                                    {AREAS.map(a => (
+                                        <button
+                                            key={a}
+                                            onClick={() => setLocalFilters({ ...localFilters, area: a })}
+                                            className={`px-4 py-2.5 rounded-full text-sm font-semibold transition-all border ${localFilters.area === a
+                                                ? 'bg-slate-900 text-white border-slate-900 shadow-lg shadow-slate-900/20'
+                                                : 'bg-white text-slate-600 border-slate-200 hover:border-slate-300'}`}
+                                        >
+                                            {a}
+                                        </button>
+                                    ))}
+                                </div>
+                            </section>
+
+                            <section>
+                                <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Category</label>
+                                <div className="grid grid-cols-2 gap-3">
+                                    {['food', 'shelter', 'warmth', 'support', 'family'].map(c => {
+                                        const conf = getTagConfig(c);
+                                        const isSelected = localFilters.category === c;
+                                        return (
+                                            <button
+                                                key={c}
+                                                onClick={() => setLocalFilters({ ...localFilters, category: isSelected ? 'all' : c })}
+                                                className={`p-4 rounded-2xl border transition-all flex items-center gap-3 ${isSelected
+                                                    ? 'bg-slate-900 border-slate-900 shadow-lg shadow-slate-900/20'
+                                                    : 'bg-white border-slate-200 hover:border-slate-300'}`}
+                                            >
+                                                <div className={`p-2 rounded-full ${isSelected ? 'bg-white/20 text-white' : `${conf.bg} ${conf.color}`}`}>
+                                                    <Icon name={conf.icon} size={18} />
+                                                </div>
+                                                <span className={`text-sm font-bold capitalize ${isSelected ? 'text-white' : 'text-slate-700'}`}>{c}</span>
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                            </section>
+
+                            <section>
+                                <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Time</label>
+                                <div className="bg-white p-1 rounded-2xl border border-slate-200 flex">
+                                    {['today', 'tomorrow', 'any'].map(d => (
+                                        <button
+                                            key={d}
+                                            onClick={() => setLocalFilters({ ...localFilters, date: d })}
+                                            className={`flex-1 py-3 rounded-xl text-sm font-bold capitalize transition-all ${localFilters.date === d ? 'bg-slate-100 text-slate-900 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+                                        >
+                                            {d}
+                                        </button>
+                                    ))}
+                                </div>
+                            </section>
                         </div>
 
-                        <div className="bg-white/10 p-4 rounded-2xl border border-white/10">
-                            <label className="block text-orange-400 text-xs font-bold uppercase tracking-wider mb-2">When?</label>
-                            <div className="flex rounded-lg bg-black/20 p-1">
-                                {['today', 'tomorrow', 'any'].map(d => (
-                                    <button
-                                        key={d}
-                                        onClick={() => setLocalFilters({ ...localFilters, date: d })}
-                                        className={`flex-1 py-2 rounded-md text-xs font-bold capitalize transition ${localFilters.date === d ? 'bg-white text-slate-900' : 'text-slate-400'}`}
-                                    >
-                                        {d}
-                                    </button>
-                                ))}
-                            </div>
+                        <div className="pt-6 mt-6 border-t border-slate-200 sticky bottom-0 bg-slate-50 pb-6">
+                            <button
+                                onClick={handleApply}
+                                className="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-2xl font-bold text-lg shadow-xl shadow-blue-600/20 transition-all active:scale-[0.98]"
+                            >
+                                Show Results
+                            </button>
                         </div>
-
-                        <button onClick={handleApply} className="w-full bg-emerald-500 hover:bg-emerald-400 text-white py-4 rounded-2xl font-black text-lg shadow-xl shadow-emerald-500/20 mt-4 transition-all active:scale-95">
-                            Show Results
-                        </button>
                     </div>
                 </div>
             )}
-        </div>
+        </>
     );
 };
 
@@ -468,13 +507,13 @@ const AreaScheduleView = ({ data, area }: { data: any[]; area: string }) => {
 const CategoryButton = ({ label, icon, active, onClick, color }: { label: string; icon: string; active: boolean; onClick: () => void; color: string }) => (
     <button
         onClick={onClick}
-        className={`flex flex-col items-center justify-center p-2 rounded-2xl transition-all duration-200 w-full h-20 shadow-sm border
-        ${active ? 'bg-slate-800 text-white border-slate-800 scale-105 shadow-md' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'}`}
+        className={`flex flex-col items-center justify-center p-2 rounded-2xl transition-all duration-300 w-full h-24 relative overflow-hidden group
+        ${active ? 'bg-slate-900 text-white shadow-lg shadow-slate-900/20' : 'bg-white text-slate-600 border border-slate-100 hover:border-slate-200 hover:shadow-md'}`}
     >
-        <div className={`p-1.5 rounded-full mb-1 ${active ? 'bg-white/20' : color}`}>
+        <div className={`p-3 rounded-full mb-2 transition-transform duration-300 group-hover:scale-110 ${active ? 'bg-white/20' : 'bg-slate-50 text-slate-500'}`}>
             <Icon name={icon} size={20} className={active ? 'text-white' : ''} />
         </div>
-        <span className="text-[10px] font-bold leading-tight text-center">{label}</span>
+        <span className="text-[10px] font-bold tracking-wide leading-tight text-center uppercase">{label}</span>
     </button>
 );
 
@@ -511,65 +550,59 @@ const ResourceCard = ({ item }: { item: any }) => {
     const status = checkStatus(item.schedule);
 
     return (
-        <div className="bg-white p-5 rounded-2xl mb-4 shadow-sm border border-slate-100 relative group overflow-hidden">
-            <div className={`absolute top-0 left-0 w-1.5 h-full ${status.color.includes('green') ? 'bg-green-500' : status.color.includes('orange') ? 'bg-orange-500' : 'bg-slate-300'}`}></div>
-            <div className="pl-3">
-                <div className="flex justify-between items-start mb-1">
-                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{item.type}</span>
-                    <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide ${status.color.replace('text-', 'bg-').replace('600', '100')}`}>
+        <div className="bg-white p-5 rounded-[24px] mb-4 shadow-sm border border-slate-100 relative group overflow-hidden hover:shadow-md transition-all duration-300">
+            <div className="flex justify-between items-start mb-3">
+                <div className="flex flex-wrap gap-2">
+                    <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide border ${status.status === 'open' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : status.status === 'closing' ? 'bg-amber-50 text-amber-700 border-amber-100' : 'bg-slate-50 text-slate-500 border-slate-100'}`}>
                         {status.label}
                     </span>
+                    <span className="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide bg-slate-50 text-slate-500 border border-slate-100">
+                        {item.type}
+                    </span>
                 </div>
+            </div>
 
-                <h3 className="text-xl font-black text-slate-800 leading-tight mb-2">{item.name}</h3>
+            <h3 className="text-xl font-bold text-slate-900 leading-tight mb-2 tracking-tight">{item.name}</h3>
 
-                <div className="flex items-center gap-1.5 text-sm text-slate-500 mb-3 font-medium">
-                    <Icon name="mapPin" size={14} className="text-red-500" /> {item.address}
+            <div className="flex items-center gap-2 text-sm text-slate-500 mb-4 font-medium">
+                <Icon name="mapPin" size={14} className="text-slate-400" /> {item.address}
+            </div>
+
+            <p className="text-sm text-slate-600 mb-5 leading-relaxed">{item.description}</p>
+
+            <div className="flex flex-wrap gap-2 mb-5">
+                {item.tags.slice(0, 4).map((tag: string) => {
+                    const conf = getTagConfig(tag);
+                    return (
+                        <span key={tag} className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] font-bold ${conf.color} bg-slate-50 border border-slate-100`}>
+                            <Icon name={conf.icon} size={10} /> {conf.label}
+                        </span>
+                    );
+                })}
+            </div>
+
+            {expanded && (
+                <div className="bg-slate-50 p-4 rounded-xl mb-5 animate-fade-in text-xs border border-slate-100">
+                    {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((d, i) => (
+                        <div key={d} className={`flex justify-between py-1.5 border-b border-slate-200/50 last:border-0 ${i === new Date().getDay() ? 'font-bold text-slate-900' : 'text-slate-500'}`}>
+                            <span>{d}</span><span>{item.schedule[i] || 'Closed'}</span>
+                        </div>
+                    ))}
                 </div>
+            )}
 
-                {item.transport && (
-                    <div className="inline-flex items-center gap-1.5 bg-blue-50 text-blue-700 px-2 py-1 rounded-md text-xs font-bold mb-3">
-                        <Icon name="bus" size={12} /> {item.transport}
-                    </div>
-                )}
-
-                <p className="text-sm text-slate-600 mb-3 leading-relaxed">{item.description}</p>
-
-                <div className="flex flex-wrap gap-2 mb-4">
-                    <span className="px-2 py-1 rounded text-[10px] font-bold border bg-slate-100 text-slate-600 border-slate-200">Area: {item.area}</span>
-                    {item.tags.map((tag: string) => {
-                        const conf = getTagConfig(tag);
-                        return (
-                            <span key={tag} className={`inline-flex items-center gap-1 px-2 py-1 rounded text-[10px] font-bold border ${conf.bg} ${conf.color} border-transparent`}>
-                                <Icon name={conf.icon} size={10} /> {conf.label}
-                            </span>
-                        );
-                    })}
-                </div>
-
-                {expanded && (
-                    <div className="bg-slate-50 p-3 rounded-xl mb-4 border border-slate-100 animate-fade-in text-xs">
-                        {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((d, i) => (
-                            <div key={d} className={`flex justify-between py-1 border-b border-slate-200 last:border-0 ${i === new Date().getDay() ? 'font-bold text-blue-700' : 'text-slate-500'}`}>
-                                <span>{d}</span><span>{item.schedule[i] || 'Closed'}</span>
-                            </div>
-                        ))}
-                    </div>
-                )}
-
-                <div className="flex gap-2 pt-2 border-t border-slate-50">
-                    <button onClick={() => setExpanded(!expanded)} className="flex-1 py-2 bg-slate-100 rounded-lg text-xs font-bold text-slate-600 hover:bg-slate-200">
-                        {expanded ? 'Less' : 'Hours'}
-                    </button>
-                    <a href={`https://www.google.com/maps/dir/?api=1&destination=${item.lat},${item.lng}`} target="_blank" className="flex-1 py-2 bg-blue-50 text-blue-700 rounded-lg text-xs font-bold flex justify-center items-center gap-1 hover:bg-blue-100">
-                        <Icon name="navigation" size={14} /> Map
+            <div className="flex gap-2.5">
+                <button onClick={() => setExpanded(!expanded)} className="flex-1 py-3 bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-700 hover:bg-slate-50 hover:border-slate-300 transition-all">
+                    {expanded ? 'Hide Hours' : 'View Schedule'}
+                </button>
+                <a href={`https://www.google.com/maps/dir/?api=1&destination=${item.lat},${item.lng}`} target="_blank" className="flex-1 py-3 bg-slate-900 text-white rounded-xl text-xs font-bold flex justify-center items-center gap-2 hover:bg-slate-800 transition-all shadow-md shadow-slate-900/10">
+                    <Icon name="navigation" size={12} /> Directions
+                </a>
+                {item.phone && (
+                    <a href={`tel:${item.phone}`} className="w-12 py-3 bg-white border border-slate-200 rounded-xl flex justify-center items-center hover:bg-slate-50 hover:border-slate-300 transition-all text-slate-700">
+                        <Icon name="phone" size={16} />
                     </a>
-                    {item.phone && (
-                        <a href={`tel:${item.phone}`} className="w-10 py-2 bg-slate-800 text-white rounded-lg flex justify-center items-center hover:bg-black">
-                            <Icon name="phone" size={14} />
-                        </a>
-                    )}
-                </div>
+                )}
             </div>
         </div>
     );
@@ -587,11 +620,9 @@ const Dashboard = ({ data, onNavigate }: { data: any[]; onNavigate: (cat: string
     const day = now.getDay();
     const currentHour = now.getHours();
 
-    // Smart Logic
     let greeting = "Good Morning";
-    let subtext = "Find breakfast & warmth.";
-    if (currentHour >= 12) { greeting = "Good Afternoon"; subtext = "Lunch clubs & libraries open."; }
-    if (currentHour >= 17) { greeting = "Good Evening"; subtext = "Shelters & late food support."; }
+    if (currentHour >= 12) greeting = "Good Afternoon";
+    if (currentHour >= 17) greeting = "Good Evening";
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const isOpen = (schedule: any) => {
@@ -610,44 +641,44 @@ const Dashboard = ({ data, onNavigate }: { data: any[]; onNavigate: (cat: string
     const openShelter = data.filter(i => i.category === 'shelter' && isOpen(i.schedule)).length;
 
     return (
-        <div className="bg-slate-800 text-white rounded-3xl p-5 mb-6 shadow-xl border-b-4 border-slate-900 relative overflow-hidden">
-            <div className="absolute -right-10 -top-10 w-40 h-40 bg-emerald-500/10 rounded-full blur-3xl"></div>
-            <div className="relative z-10">
-                <div className="mb-6">
-                    <h2 className="text-2xl font-black tracking-tight text-white mb-1">{greeting}.</h2>
-                    <p className="text-slate-400 text-sm font-medium">{subtext}</p>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                    <button onClick={() => onNavigate('food')} className="bg-slate-700/50 p-4 rounded-2xl border border-slate-600 hover:bg-slate-700 transition text-left group">
-                        <div className="flex items-center gap-2 text-emerald-400 mb-2">
-                            <div className="p-1.5 bg-emerald-500/20 rounded-lg"><Icon name="utensils" size={14} /></div>
-                            <span className="text-xs font-bold uppercase tracking-wider">Food</span>
+        <div className="px-4 mb-6 pt-2">
+            <h1 className="text-3xl font-bold text-slate-900 tracking-tight">{greeting}</h1>
+            <p className="text-slate-500 text-sm font-medium mt-1">Here's what's available right now.</p>
+
+            <div className="grid grid-cols-2 gap-3 mt-6">
+                <button onClick={() => onNavigate('food')} className="bg-white p-4 rounded-3xl border border-slate-100 shadow-sm hover:shadow-md transition-all text-left group relative overflow-hidden">
+                    <div className="absolute right-[-10px] top-[-10px] bg-emerald-50 w-24 h-24 rounded-full group-hover:scale-150 transition-transform duration-500"></div>
+                    <div className="relative z-10">
+                        <div className="flex items-center gap-2 mb-3 text-emerald-600">
+                            <Icon name="utensils" size={18} />
+                            <span className="text-xs font-bold uppercase tracking-wide">Food</span>
                         </div>
-                        <div>
-                            <span className="text-3xl font-black text-white group-hover:text-emerald-300 transition">{openFood}</span>
-                            <span className="text-xs text-slate-400 ml-1">open now</span>
+                        <div className="text-3xl font-bold text-slate-900">{openFood}</div>
+                        <div className="text-xs text-slate-400">places open</div>
+                    </div>
+                </button>
+                <button onClick={() => onNavigate('shelter')} className="bg-white p-4 rounded-3xl border border-slate-100 shadow-sm hover:shadow-md transition-all text-left group relative overflow-hidden">
+                    <div className="absolute right-[-10px] top-[-10px] bg-indigo-50 w-24 h-24 rounded-full group-hover:scale-150 transition-transform duration-500"></div>
+                    <div className="relative z-10">
+                        <div className="flex items-center gap-2 mb-3 text-indigo-600">
+                            <Icon name="bed" size={18} />
+                            <span className="text-xs font-bold uppercase tracking-wide">Shelter</span>
                         </div>
-                    </button>
-                    <button onClick={() => onNavigate('shelter')} className="bg-slate-700/50 p-4 rounded-2xl border border-slate-600 hover:bg-slate-700 transition text-left group">
-                        <div className="flex items-center gap-2 text-indigo-400 mb-2">
-                            <div className="p-1.5 bg-indigo-500/20 rounded-lg"><Icon name="bed" size={14} /></div>
-                            <span className="text-xs font-bold uppercase tracking-wider">Shelter</span>
-                        </div>
-                        <div>
-                            <span className="text-3xl font-black text-white group-hover:text-indigo-300 transition">{openShelter}</span>
-                            <span className="text-xs text-slate-400 ml-1">available</span>
-                        </div>
-                    </button>
-                </div>
+                        <div className="text-3xl font-bold text-slate-900">{openShelter}</div>
+                        <div className="text-xs text-slate-400">places open</div>
+                    </div>
+                </button>
             </div>
         </div>
     );
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const SimpleMap = ({ data, category, statusFilter }: { data: any[]; category: string; statusFilter: string }) => {
+const SimpleMap = ({ data, category, statusFilter }: { data: any[], category: string, statusFilter: string }) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const [selectedItem, setSelectedItem] = useState<any>(null);
 
+    // Filter for map
     const mapPoints = useMemo(() => {
         return data.filter(item => {
             const matchCat = category === 'all' || item.category === category;
@@ -665,22 +696,17 @@ const SimpleMap = ({ data, category, statusFilter }: { data: any[]; category: st
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const getPinColor = (item: any) => {
-        const status = checkStatus(item.schedule).status;
-        if (status === 'open') return 'bg-emerald-500 border-emerald-200 shadow-emerald-200';
-        if (status === 'closed') return 'bg-slate-400 border-slate-200 opacity-60';
-        return 'bg-orange-500 border-orange-200';
+        if (selectedItem?.id === item.id) return 'bg-slate-900 border-white scale-125 z-50';
+        const config = getTagConfig(item.category);
+        return `${config.bg.replace('100', '500')} border-white`;
     };
 
     return (
-        <div className="relative w-full h-[65vh] bg-[#e2e8f0] rounded-3xl overflow-hidden shadow-inner border border-slate-300 mt-2">
-            <div className="absolute inset-0 pointer-events-none opacity-40">
-                <svg width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="none">
-                    <path d="M45,5 L60,5 L80,20 L85,40 L70,85 L40,95 L20,80 L15,50 L25,20 Z" fill="#ffffff" stroke="#94a3b8" strokeWidth="0.5" />
-                    <text x="50" y="10" fontSize="4" textAnchor="middle" fill="#94a3b8" fontWeight="bold">NORTH (Cosham)</text>
-                    <text x="50" y="50" fontSize="4" textAnchor="middle" fill="#94a3b8" fontWeight="bold">FRATTON</text>
-                    <text x="50" y="90" fontSize="4" textAnchor="middle" fill="#94a3b8" fontWeight="bold">SOUTH (Southsea)</text>
-                </svg>
-            </div>
+        <div className="w-full h-[60vh] bg-slate-100 rounded-3xl relative overflow-hidden shadow-inner border border-slate-200">
+            {/* Map Placeholder Graphic */}
+            <div className="absolute inset-0 opacity-10 pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle, #94a3b8 1px, transparent 1px)', backgroundSize: '20px 20px' }}></div>
+
+            {/* Map Pins */}
             {mapPoints.map(item => {
                 const pos = project(item.lat, item.lng);
                 if (pos.x < 0 || pos.x > 100 || pos.y < 0 || pos.y > 100) return null;
@@ -688,24 +714,30 @@ const SimpleMap = ({ data, category, statusFilter }: { data: any[]; category: st
                     <button
                         key={item.id}
                         onClick={() => setSelectedItem(item)}
-                        className={`absolute w-3 h-3 -ml-1.5 -mt-1.5 rounded-full border-2 shadow-sm transition-transform z-10 ${getPinColor(item)} ${selectedItem?.id === item.id ? 'scale-150 ring-4 ring-black/20 z-30' : 'hover:scale-125'}`}
+                        className={`absolute w-4 h-4 -ml-2 -mt-2 rounded-full border-2 shadow-sm transition-all duration-300 ${getPinColor(item)} ${selectedItem?.id === item.id ? 'ring-4 ring-black/10' : 'hover:scale-110'}`}
                         style={{ top: `${pos.y}%`, left: `${pos.x}%` }}
                     />
                 );
             })}
+
+            {/* Selected Item Card */}
             {selectedItem && (
-                <div className="absolute bottom-4 left-4 right-4 bg-white p-4 rounded-2xl shadow-2xl z-30 border border-slate-100 animate-fade-in-up">
+                <div className="absolute bottom-4 left-4 right-4 bg-white/90 backdrop-blur-md p-4 rounded-2xl shadow-lg border border-white/20 animate-fade-in-up z-40">
                     <div className="flex justify-between items-start mb-2">
-                        <div>
-                            <h4 className="font-bold text-slate-800 text-lg leading-none">{selectedItem.name}</h4>
-                            <p className="text-xs text-slate-500 mt-1">{selectedItem.address}</p>
+                        <div className="pr-8">
+                            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1 block">{selectedItem.category}</span>
+                            <h4 className="font-bold text-slate-900 text-lg leading-tight">{selectedItem.name}</h4>
+                            <p className="text-xs text-slate-500 mt-0.5">{selectedItem.address}</p>
                         </div>
-                        <button onClick={() => setSelectedItem(null)} className="bg-slate-100 p-1.5 rounded-full text-slate-500 hover:bg-slate-200"><Icon name="x" size={16} /></button>
+                        <button onClick={() => setSelectedItem(null)} className="absolute top-4 right-4 bg-slate-100 p-1 rounded-full text-slate-400 hover:bg-slate-200 transition"><Icon name="x" size={14} /></button>
                     </div>
-                    <div className="flex gap-2 mt-3">
-                        <a href={`https://www.google.com/maps/dir/?api=1&destination=${selectedItem.lat},${selectedItem.lng}`} target="_blank" className="flex-1 bg-slate-900 text-white py-2.5 rounded-xl text-xs font-bold flex justify-center items-center gap-2 hover:bg-black">
-                            <Icon name="navigation" size={14} /> Directions
+                    <div className="flex gap-2 mt-4">
+                        <a href={`https://www.google.com/maps/dir/?api=1&destination=${selectedItem.lat},${selectedItem.lng}`} target="_blank" className="flex-1 bg-slate-900 text-white py-3 rounded-xl text-xs font-bold flex justify-center items-center gap-2 hover:bg-black transition shadow-lg shadow-slate-900/20">
+                            <Icon name="navigation" size={12} /> Get Directions
                         </a>
+                        <button onClick={() => setSelectedItem(null)} className="px-4 py-3 bg-slate-100 text-slate-600 rounded-xl text-xs font-bold hover:bg-slate-200 transition">
+                            Close
+                        </button>
                     </div>
                 </div>
             )}
@@ -716,20 +748,24 @@ const SimpleMap = ({ data, category, statusFilter }: { data: any[]; category: st
 const TipsModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => {
     if (!isOpen) return null;
     return (
-        <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4">
-            <div className="bg-white rounded-3xl w-full max-w-sm overflow-hidden animate-bounce-in shadow-2xl">
-                <div className="bg-yellow-400 p-5 text-yellow-900 flex justify-between items-center">
-                    <h2 className="text-xl font-black flex items-center gap-2"><Icon name="tag" size={24} /> Yellow Labels</h2>
-                    <button onClick={onClose} className="bg-white/20 p-2 rounded-full hover:bg-white/40"><Icon name="x" size={20} /></button>
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 transition-all">
+            <div className="bg-white/95 backdrop-blur-xl rounded-[32px] w-full max-w-sm overflow-hidden animate-bounce-in shadow-2xl border border-white/20">
+                <div className="bg-yellow-400 p-6 flex justify-between items-center relative overflow-hidden">
+                    <div className="absolute -right-6 -top-6 w-24 h-24 bg-white/20 rounded-full blur-xl"></div>
+                    <h2 className="text-xl font-black text-yellow-950 flex items-center gap-3 relative z-10">
+                        <div className="bg-white/20 p-2 rounded-lg backdrop-blur-sm"><Icon name="tag" size={20} /></div>
+                        Yellow Labels
+                    </h2>
+                    <button onClick={onClose} className="bg-black/10 p-2 rounded-full hover:bg-black/20 text-yellow-950 transition relative z-10"><Icon name="x" size={20} /></button>
                 </div>
-                <div className="p-6 bg-yellow-50">
-                    <p className="text-sm text-yellow-800 mb-4 font-bold uppercase tracking-wide">Reduction Times Guide</p>
+                <div className="p-6 bg-yellow-50/50">
+                    <p className="text-xs font-bold text-yellow-700/60 uppercase tracking-widest mb-4">Supermarket Reduction Guide</p>
                     <div className="space-y-3">
                         {SUPERMARKET_TIPS.map((tip, idx) => (
-                            <div key={idx} className="bg-white p-3 rounded-xl border border-yellow-200 shadow-sm flex justify-between items-center">
+                            <div key={idx} className="bg-white p-4 rounded-2xl border border-yellow-100 shadow-sm flex justify-between items-center">
                                 <span className="font-bold text-slate-800 text-sm">{tip.store}</span>
                                 <div className="text-right">
-                                    <span className="block text-xs font-black text-yellow-600 bg-yellow-100 px-2 py-0.5 rounded">{tip.time}</span>
+                                    <span className="block text-[10px] font-black text-yellow-700 bg-yellow-100 px-2 py-1 rounded-md">{tip.time}</span>
                                 </div>
                             </div>
                         ))}
@@ -743,26 +779,30 @@ const TipsModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }
 const CrisisModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => {
     if (!isOpen) return null;
     return (
-        <div className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4">
-            <div className="bg-white rounded-3xl w-full max-w-sm overflow-hidden animate-bounce-in shadow-2xl">
-                <div className="bg-red-600 p-6 text-white">
-                    <h2 className="text-2xl font-black flex items-center gap-2 mb-1"><Icon name="alert" size={28} /> Emergency</h2>
-                    <p className="text-rose-100 text-sm">Immediate help contacts</p>
+        <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-md z-[70] flex items-center justify-center p-4">
+            <div className="bg-white rounded-[32px] w-full max-w-sm overflow-hidden animate-bounce-in shadow-2xl relative">
+                <div className="bg-rose-600 p-6 text-white relative overflow-hidden">
+                    <div className="absolute -right-6 -top-6 w-32 h-32 bg-white/10 rounded-full blur-2xl"></div>
+                    <h2 className="text-2xl font-black flex items-center gap-3 relative z-10">
+                        <div className="bg-white/20 p-2 rounded-xl backdrop-blur-sm"><Icon name="alert" size={24} /></div>
+                        Emergency
+                    </h2>
+                    <p className="text-rose-100 text-sm mt-1 ml-1 relative z-10 font-medium">Immediate help contacts</p>
                 </div>
-                <div className="p-6 space-y-3 bg-rose-50">
-                    <a href="tel:999" className="flex items-center w-full bg-white p-4 rounded-2xl border border-rose-100 shadow-sm hover:border-rose-300 transition">
-                        <div className="bg-rose-100 text-rose-600 p-3 rounded-full mr-4"><Icon name="phone" /></div>
-                        <div><div className="font-black text-slate-800 text-lg">999</div><div className="text-xs text-slate-500 font-bold uppercase">Police / Ambulance</div></div>
+                <div className="p-6 space-y-3 bg-rose-50/50">
+                    <a href="tel:999" className="flex items-center w-full bg-white p-4 rounded-2xl border border-rose-100 shadow-sm hover:shadow-md hover:scale-[1.02] transition-all group">
+                        <div className="bg-rose-100 text-rose-600 p-3 rounded-full mr-4 group-hover:bg-rose-600 group-hover:text-white transition-colors"><Icon name="phone" /></div>
+                        <div><div className="font-black text-slate-900 text-lg">999</div><div className="text-[10px] text-slate-400 font-bold uppercase tracking-wide">Police / Ambulance</div></div>
                     </a>
-                    <a href="tel:02392882689" className="flex items-center w-full bg-white p-4 rounded-2xl border border-rose-100 shadow-sm hover:border-rose-300 transition">
-                        <div className="bg-indigo-100 text-indigo-600 p-3 rounded-full mr-4"><Icon name="home" /></div>
-                        <div><div className="font-black text-slate-800 text-lg">023 9288 2689</div><div className="text-xs text-slate-500 font-bold uppercase">Rough Sleeping Hub</div></div>
+                    <a href="tel:02392882689" className="flex items-center w-full bg-white p-4 rounded-2xl border border-rose-100 shadow-sm hover:shadow-md hover:scale-[1.02] transition-all group">
+                        <div className="bg-indigo-100 text-indigo-600 p-3 rounded-full mr-4 group-hover:bg-indigo-600 group-hover:text-white transition-colors"><Icon name="home" /></div>
+                        <div><div className="font-black text-slate-900 text-lg">023 9288 2689</div><div className="text-[10px] text-slate-400 font-bold uppercase tracking-wide">Rough Sleeping Hub</div></div>
                     </a>
-                    <a href="tel:111" className="flex items-center w-full bg-white p-4 rounded-2xl border border-rose-100 shadow-sm hover:border-rose-300 transition">
-                        <div className="bg-emerald-100 text-emerald-600 p-3 rounded-full mr-4"><Icon name="medical" /></div>
-                        <div><div className="font-black text-slate-800 text-lg">111</div><div className="text-xs text-slate-500 font-bold uppercase">Medical Advice (NHS)</div></div>
+                    <a href="tel:111" className="flex items-center w-full bg-white p-4 rounded-2xl border border-rose-100 shadow-sm hover:shadow-md hover:scale-[1.02] transition-all group">
+                        <div className="bg-emerald-100 text-emerald-600 p-3 rounded-full mr-4 group-hover:bg-emerald-600 group-hover:text-white transition-colors"><Icon name="medical" /></div>
+                        <div><div className="font-black text-slate-900 text-lg">111</div><div className="text-[10px] text-slate-400 font-bold uppercase tracking-wide">Medical Advice (NHS)</div></div>
                     </a>
-                    <button onClick={onClose} className="w-full py-4 mt-2 text-slate-400 font-bold text-sm">Close</button>
+                    <button onClick={onClose} className="w-full py-4 mt-2 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold text-sm rounded-2xl transition-colors">Close</button>
                 </div>
             </div>
         </div>
@@ -823,6 +863,16 @@ const App = () => {
     const [mapFilter, setMapFilter] = useState('all');
     const [showTips, setShowTips] = useState(false);
     const [showCrisis, setShowCrisis] = useState(false);
+    const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
+
+    useEffect(() => {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                (pos) => setUserLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+                (err) => console.error("Location error:", err)
+            );
+        }
+    }, []);
 
     const filteredData = useMemo(() => {
         let items = ALL_DATA;
@@ -849,11 +899,23 @@ const App = () => {
         return items.sort((a, b) => {
             const statusA = checkStatus(a.schedule).status;
             const statusB = checkStatus(b.schedule).status;
+
+            // 1. Sort by Status (Open -> Closing -> Closed)
             if (statusA === 'open' && statusB !== 'open') return -1;
             if (statusA !== 'open' && statusB === 'open') return 1;
+            if (statusA === 'closing' && statusB === 'closed') return -1;
+            if (statusA === 'closed' && statusB === 'closing') return 1;
+
+            // 2. Sort by Distance if available
+            if (userLocation) {
+                const distA = getDistance(userLocation.lat, userLocation.lng, a.lat, a.lng);
+                const distB = getDistance(userLocation.lat, userLocation.lng, b.lat, b.lng);
+                return distA - distB;
+            }
+
             return 0;
         });
-    }, [filters]);
+    }, [filters, userLocation]);
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const handleSearch = (newFilters: any) => {
@@ -935,12 +997,37 @@ const App = () => {
                 )}
             </div>
 
-            <button onClick={() => setShowCrisis(true)} className="fixed bottom-24 right-5 w-14 h-14 bg-rose-600 text-white rounded-full shadow-2xl flex items-center justify-center hover:scale-110 transition border-4 border-white z-50"><Icon name="alert" size={24} /></button>
+            {/* Spacer for Bottom Navigation */}
+            <div className="h-28"></div>
 
-            <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-100 flex justify-around p-3 pb-6 z-40 shadow-[0_-10px_40px_rgba(0,0,0,0.05)]">
-                <button onClick={() => setView('home')} className={`flex flex-col items-center gap-1 transition ${view === 'home' || view === 'list' ? 'text-slate-900' : 'text-slate-400'}`}><Icon name="home" size={24} /><span className="text-[10px] font-bold">Home</span></button>
-                <button onClick={() => setView('map')} className={`flex flex-col items-center gap-1 transition ${view === 'map' ? 'text-slate-900' : 'text-slate-400'}`}><Icon name="mapPin" size={24} /><span className="text-[10px] font-bold">Map</span></button>
-                <button onClick={() => setView('planner')} className={`flex flex-col items-center gap-1 transition ${view === 'planner' ? 'text-slate-900' : 'text-slate-400'}`}><Icon name="calendar" size={24} /><span className="text-[10px] font-bold">Plan</span></button>
+            <button
+                onClick={() => setShowCrisis(true)}
+                className="fixed bottom-28 right-5 w-14 h-14 bg-rose-600 text-white rounded-full shadow-2xl shadow-rose-600/40 flex items-center justify-center hover:scale-110 active:scale-95 transition-all border-4 border-white z-40"
+            >
+                <Icon name="alert" size={24} />
+            </button>
+
+            <div className="fixed bottom-0 left-0 right-0 bg-white/80 backdrop-blur-xl border-t border-slate-200/50 flex justify-around p-2 pb-6 z-50 shadow-[0_-10px_40px_rgba(0,0,0,0.05)]">
+                <button onClick={() => setView('home')} className={`relative flex-1 group py-2 flex flex-col items-center gap-1 transition-all rounded-2xl ${view === 'home' || view === 'list' ? 'text-slate-900' : 'text-slate-400 hover:bg-slate-50'}`}>
+                    <div className={`p-1 rounded-xl transition-all ${view === 'home' || view === 'list' ? 'bg-slate-100' : ''}`}>
+                        <Icon name="home" size={24} className={view === 'home' || view === 'list' ? 'text-slate-900' : 'text-slate-400 group-hover:text-slate-600'} />
+                    </div>
+                    <span className="text-[10px] font-bold">Home</span>
+                </button>
+
+                <button onClick={() => setView('map')} className={`relative flex-1 group py-2 flex flex-col items-center gap-1 transition-all rounded-2xl ${view === 'map' ? 'text-slate-900' : 'text-slate-400 hover:bg-slate-50'}`}>
+                    <div className={`p-1 rounded-xl transition-all ${view === 'map' ? 'bg-slate-100' : ''}`}>
+                        <Icon name="mapPin" size={24} className={view === 'map' ? 'text-slate-900' : 'text-slate-400 group-hover:text-slate-600'} />
+                    </div>
+                    <span className="text-[10px] font-bold">Map</span>
+                </button>
+
+                <button onClick={() => setView('planner')} className={`relative flex-1 group py-2 flex flex-col items-center gap-1 transition-all rounded-2xl ${view === 'planner' ? 'text-slate-900' : 'text-slate-400 hover:bg-slate-50'}`}>
+                    <div className={`p-1 rounded-xl transition-all ${view === 'planner' ? 'bg-slate-100' : ''}`}>
+                        <Icon name="calendar" size={24} className={view === 'planner' ? 'text-slate-900' : 'text-slate-400 group-hover:text-slate-600'} />
+                    </div>
+                    <span className="text-[10px] font-bold">Plan</span>
+                </button>
             </div>
         </div>
     );
