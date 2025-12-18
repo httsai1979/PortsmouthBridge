@@ -31,6 +31,7 @@ const TAG_ICONS = {
     women: { icon: 'heart', label: 'Women', color: 'text-rose-600', bg: 'bg-rose-50' },
     pets: { icon: 'paw', label: 'Dogs OK', color: 'text-stone-600', bg: 'bg-stone-100' },
     "24_7": { icon: 'clock', label: '24/7', color: 'text-purple-600', bg: 'bg-purple-50' },
+    charity: { icon: 'shopping-bag', label: 'Charity Shop', color: 'text-pink-500', bg: 'bg-pink-50' },
     default: { icon: 'info', label: 'Info', color: 'text-gray-500', bg: 'bg-gray-50' }
 };
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -185,7 +186,8 @@ const generateMockData = () => {
         shelter: ['Emergency Bed', 'Night Shelter', 'Day Centre', 'Housing Hub'],
         warmth: ['Warm Space', 'Community Hall', 'Library Hub', 'Coffee Morning'],
         support: ['Advice Clinic', 'Health Hub', 'Support Group', 'Drop-in'],
-        family: ['Play Group', 'Youth Zone', 'Family Centre', 'After School']
+        family: ['Play Group', 'Youth Zone', 'Family Centre', 'After School'],
+        charity: ['Charity Shop', 'Thrift Store', 'Community Shop', 'Boutique']
     };
 
     // Deterministic random for consistency (simple LCG)
@@ -247,6 +249,39 @@ const generateMockData = () => {
             lng
         });
     }
+
+    // Explicitly add specific Portsmouth Charity Shops
+    const charityShops = [
+        { name: "Age UK Portsmouth", area: "PO1", address: "The Pompey Centre", type: "Charity Shop" },
+        { name: "British Heart Foundation", area: "PO5", address: "Palmerston Road", type: "Furniture" },
+        { name: "Rowans Hospice Shop", area: "PO4", address: "Fratton Road", type: "Charity Shop" },
+        { name: "Barnardo's", area: "PO2", address: "London Road", type: "Charity Shop" },
+        { name: "Oxfam Books", area: "PO5", address: "Osborne Road", type: "Books" },
+        { name: "Sue Ryder", area: "PO6", address: "High Street", type: "Charity Shop" },
+        { name: "PDSA", area: "PO1", address: "Commercial Road", type: "Charity Shop" },
+        { name: "Cancer Research UK", area: "PO5", address: "Palmerston Road", type: "Charity Shop" },
+        { name: "Scope", area: "PO2", address: "London Road", type: "Charity Shop" },
+        { name: "Debra", area: "PO4", address: "Albert Road", type: "Furniture" },
+    ];
+
+    charityShops.forEach((shop, i) => {
+        newItems.push({
+            id: `charity_${i}`,
+            name: shop.name,
+            category: "charity",
+            type: shop.type,
+            area: shop.area,
+            address: shop.address,
+            transport: "Local Bus",
+            description: "Low cost clothing, furniture, and books. Supporting a good cause.",
+            requirements: "Open to all",
+            tags: ["charity", "shopping", "cheap", "clothing"],
+            schedule: { 1: "09:00-17:00", 2: "09:00-17:00", 3: "09:00-17:00", 4: "09:00-17:00", 5: "09:00-17:00", 6: "09:00-17:00", 0: "10:00-16:00" },
+            lat: 50.79 + (random() * 0.05),
+            lng: -1.08 + (random() * 0.05)
+        });
+    });
+
     return newItems;
 };
 
@@ -949,13 +984,14 @@ const PrintView = ({ data, onClose }: { data: any[]; onClose: () => void }) => {
             <div className="max-w-2xl mx-auto border-4 border-black p-8">
                 <div className="flex justify-between items-center mb-8 border-b-4 border-black pb-6">
                     <div>
-                        <h1 className="text-4xl font-black uppercase tracking-tighter mb-1">Pompey Commons</h1>
-                        <p className="text-sm font-bold">EMERGENCY RESOURCE SHEET</p>
+                        <h1 className="text-4xl font-black uppercase tracking-tighter mb-1">Pompey Haven</h1>
+                        <p className="text-sm font-bold">WARMTH • DIGNITY • COMMUNITY</p>
                     </div>
                     <button onClick={onClose} className="bg-black text-white px-6 py-3 font-bold no-print">CLOSE</button>
                 </div>
 
                 <div className="mb-8">
+                    <p className="font-bold mb-4 text-lg">A weekly guide to free/low-cost food, shelter, and support in Portsmouth. You are not alone.</p>
                     <h2 className="text-2xl font-black bg-black text-white inline-block px-3 py-1 mb-6">OPEN TODAY ({days[today]})</h2>
                     <div className="grid grid-cols-1 gap-6">
                         {getOpenItems(today).map(item => (
@@ -982,58 +1018,71 @@ const PrintView = ({ data, onClose }: { data: any[]; onClose: () => void }) => {
     );
 };
 
-
+// 12. MAIN APP
+// ==========================================
 
 const App = () => {
-    const [view, setView] = useState('home');
-    const [filters, setFilters] = useState({ area: 'All', category: 'all', date: 'today' });
-    const [mapFilter, setMapFilter] = useState('all');
+    // Branding & Accessibility State
+    const [highContrast, setHighContrast] = useState(false);
+
+    // Initial Loading State
+    const [loading, setLoading] = useState(true);
+    const [view, setView] = useState<'home' | 'map' | 'list' | 'planner'>('home');
     const [showTips, setShowTips] = useState(false);
     const [showCrisis, setShowCrisis] = useState(false);
-    const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
+    const [showPrint, setShowPrint] = useState(false); // New Print State
+    const [mapFilter, setMapFilter] = useState<'all' | 'open'>('open');
 
+    // User Location State
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const [userLocation, setUserLocation] = useState<{ lat: number, lng: number } | null>(null);
+
+    // Filter State
+    const [filters, setFilters] = useState({ area: 'All', category: 'all', date: new Date().toISOString().split('T')[0] });
+
+    // Load Data
     useEffect(() => {
+        // Simulate loading for "Warm/Safe" feeling
+        setTimeout(() => setLoading(false), 800);
+
+        // Get Location
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(
                 (pos) => setUserLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
-                (err) => console.error("Location error:", err)
+                (err) => console.log("Location access denied/error", err)
             );
         }
     }, []);
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const handleSearch = (newFilters: any) => {
+        setFilters(newFilters);
+        // If searching a specific category, maybe switch to list or map automatically?
+        // keeping current view for now but ensuring data updates
+    };
+
+    // Filter Data Logic
     const filteredData = useMemo(() => {
-        let items = ALL_DATA;
+        const dayIdx = new Date().getDay();
+        const now = new Date();
+        const currentMinutes = now.getHours() * 60 + now.getMinutes();
 
-        // 1. Area Filter
-        if (filters.area !== 'All') {
-            items = items.filter(i => i.area === filters.area);
-        }
+        let data = [...REAL_DATA, ...generateMockData()].filter(item => {
+            const matchesArea = filters.area === 'All' || item.area === filters.area;
+            const matchesCategory = filters.category === 'all' || item.category === filters.category;
+            return matchesArea && matchesCategory;
+        });
 
-        // 2. Category Filter
-        if (filters.category !== 'all') {
-            items = items.filter(i => i.category === filters.category);
-        }
+        // Sort by Status then Distance
+        return data.sort((a, b) => {
+            const statusA = checkStatus(a.schedule);
+            const statusB = checkStatus(b.schedule);
 
-        // 3. Date Filter (Simple check if open today/tomorrow)
-        if (filters.date === 'today') {
-            const day = new Date().getDay();
-            items = items.filter(i => (i.schedule as any)[day] !== 'Closed');
-        } else if (filters.date === 'tomorrow') {
-            const day = (new Date().getDay() + 1) % 7;
-            items = items.filter(i => (i.schedule as any)[day] !== 'Closed');
-        }
+            // 1. Open items first
+            if (statusA.isOpen && !statusB.isOpen) return -1;
+            if (!statusA.isOpen && statusB.isOpen) return 1;
 
-        return items.sort((a, b) => {
-            const statusA = checkStatus(a.schedule).status;
-            const statusB = checkStatus(b.schedule).status;
-
-            // 1. Sort by Status (Open -> Closing -> Closed)
-            if (statusA === 'open' && statusB !== 'open') return -1;
-            if (statusA !== 'open' && statusB === 'open') return 1;
-            if (statusA === 'closing' && statusB === 'closed') return -1;
-            if (statusA === 'closed' && statusB === 'closing') return 1;
-
-            // 2. Sort by Distance if available
+            // 2. Then by distance if available
             if (userLocation) {
                 const distA = getDistance(userLocation.lat, userLocation.lng, a.lat, a.lng);
                 const distB = getDistance(userLocation.lat, userLocation.lng, b.lat, b.lng);
@@ -1044,16 +1093,22 @@ const App = () => {
         });
     }, [filters, userLocation]);
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const handleSearch = (newFilters: any) => {
-        setFilters(newFilters);
-        setView('list');
-    };
+    if (loading) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-slate-50">
+                <div className="text-center animate-pulse">
+                    <Icon name="heart" size={48} className="text-rose-500 mx-auto mb-4" />
+                    <h1 className="text-2xl font-black text-slate-800">Pompey Haven</h1>
+                    <p className="text-slate-400 font-medium">Warmth • Dignity • Community</p>
+                </div>
+            </div>
+        );
+    }
 
-    if (view === 'print') return <PrintView data={ALL_DATA} onClose={() => setView('home')} />;
+    if (showPrint) return <PrintView data={[...REAL_DATA, ...generateMockData()]} onClose={() => setShowPrint(false)} />;
 
     return (
-        <div className="app-container">
+        <div className={`min-h-screen font-sans text-slate-900 selection:bg-rose-200 selection:text-rose-900 ${highContrast ? 'grayscale contrast-125' : ''}`}>
             <style>{`
                 .header-bg { background: linear-gradient(135deg, #0f172a 0%, #334155 100%); }
                 .yellow-label { background-color: #facc15; color: #854d0e; font-weight: 800; transform: rotate(-1deg); box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); border: 2px solid #fef08a; }
@@ -1063,6 +1118,24 @@ const App = () => {
                 .animate-fade-in-up { animation: fadeInUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
                 @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); scale: 0.98; } to { opacity: 1; transform: translateY(0); scale: 1; } }
             `}</style>
+
+            {/* NEW: Accessible Header */}
+            <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-slate-200/50 pt-safe-top">
+                <div className="px-5 py-3 flex justify-between items-center max-w-lg mx-auto">
+                    <div>
+                        <h1 className="text-2xl font-black text-slate-900 tracking-tight">Pompey Haven</h1>
+                        <p className="text-xs font-bold text-slate-500 tracking-wide uppercase">Warmth • Dignity • Community</p>
+                    </div>
+                    <div className="flex gap-2">
+                        <button onClick={() => setHighContrast(!highContrast)} className="p-2 bg-slate-100 rounded-full text-slate-600 hover:bg-slate-200 transition-colors" aria-label="Toggle High Contrast">
+                            <Icon name="eye" size={20} />
+                        </button>
+                        <button onClick={() => setShowPrint(true)} className="p-2 bg-slate-100 rounded-full text-slate-600 hover:bg-slate-200 transition-colors" aria-label="Print/Offline Mode">
+                            <Icon name="printer" size={20} />
+                        </button>
+                    </div>
+                </div>
+            </header>
 
             <TipsModal isOpen={showTips} onClose={() => setShowTips(false)} />
             <CrisisModal isOpen={showCrisis} onClose={() => setShowCrisis(false)} />
@@ -1075,88 +1148,92 @@ const App = () => {
 
                 <div className="flex gap-2 mb-6">
                     <button onClick={() => setView('planner')} className="flex-1 bg-white text-slate-800 p-4 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-center gap-2 font-black hover:scale-[1.02] transition-transform"><Icon name="calendar" size={20} className="text-blue-600" /> View Schedule</button>
-                    <button onClick={() => setShowTips(true)} className="flex-1 yellow-label p-4 rounded-2xl flex items-center justify-center gap-2 hover:scale-[1.02] transition-transform"><Icon name="tag" size={20} /> Yellow Labels</button>
+                    <div className="flex gap-2 mb-6">
+                        <button onClick={() => setView('planner')} className="flex-1 bg-white text-slate-800 p-4 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-center gap-2 font-black hover:scale-[1.02] transition-transform"><Icon name="calendar" size={20} className="text-blue-600" /> View Schedule</button>
+                        <button onClick={() => setShowTips(true)} className="flex-1 yellow-label p-4 rounded-2xl flex items-center justify-center gap-2 hover:scale-[1.02] transition-transform"><Icon name="tag" size={20} /> Tips & Help</button>
+                    </div>
+
+                    {view === 'planner' && (
+                        <>
+                            <div className="mb-4 flex items-center justify-between"><h2 className="text-xl font-black text-slate-800">Timeline</h2><button onClick={() => setView('home')} className="p-2 bg-slate-200 rounded-full"><Icon name="x" /></button></div>
+                            <AreaScheduleView data={ALL_DATA} area={filters.area} category={filters.category} />
+                        </>
+                    )}
+
+                    {view === 'map' && (
+                        <>
+                            <div className="mb-4 flex items-center justify-between">
+                                <h2 className="text-xl font-black text-slate-800">Live Map</h2>
+                                <div className="flex gap-1">
+                                    <button onClick={() => setMapFilter('open')} className={`px-3 py-1 rounded-full text-[10px] font-bold border ${mapFilter === 'open' ? 'bg-green-600 text-white border-green-600' : 'bg-white text-slate-500'}`}>Open Now</button>
+                                    <button onClick={() => setMapFilter('all')} className={`px-3 py-1 rounded-full text-[10px] font-bold border ${mapFilter === 'all' ? 'bg-slate-800 text-white border-slate-800' : 'bg-white text-slate-500'}`}>All</button>
+                                </div>
+                            </div>
+                            <SimpleMap data={filteredData} category={filters.category} statusFilter={mapFilter} />
+                        </>
+                    )}
+
+                    {view === 'list' && (
+                        <>
+                            <div className="mb-4">
+                                <div className="flex justify-between items-center mb-4"><h2 className="text-xl font-black text-slate-800 capitalize">{filters.category === 'all' ? 'All Resources' : filters.category}</h2><button onClick={() => setView('home')} className="p-2 bg-slate-200 rounded-full"><Icon name="x" size={16} /></button></div>
+                            </div>
+                            <div className="space-y-4 pb-24">
+                                {filteredData.length > 0 ? (filteredData.map(item => <ResourceCard key={item.id} item={item} />)) : (<div className="text-center py-12 text-slate-400 bg-white rounded-2xl border-2 border-dashed border-slate-200"><p className="font-bold">No results found in {filters.area}.</p><button onClick={() => setFilters({ ...filters, area: 'All' })} className="text-emerald-600 text-xs font-bold mt-2 underline">View All Areas</button></div>)}
+                            </div>
+                        </>
+                    )}
+
+                    {view === 'home' && (
+                        <>
+                            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3 pl-1">Browse Categories</p>
+                            <div className="grid grid-cols-2 gap-3 pb-8">
+                                <CategoryButton label="Food & Meals" icon="utensils" color="bg-emerald-100 text-emerald-700" active={false} onClick={() => handleSearch({ ...filters, category: 'food' })} />
+                                <CategoryButton label="Shelter & Crisis" icon="bed" color="bg-indigo-100 text-indigo-700" active={false} onClick={() => handleSearch({ ...filters, category: 'shelter' })} />
+                                <CategoryButton label="Warmth & Net" icon="flame" color="bg-orange-100 text-orange-700" active={false} onClick={() => handleSearch({ ...filters, category: 'warmth' })} />
+                                <CategoryButton label="Family & Kids" icon="users" color="bg-pink-100 text-pink-700" active={false} onClick={() => handleSearch({ ...filters, category: 'family' })} />
+                                <CategoryButton label="Help & Health" icon="lifebuoy" color="bg-blue-100 text-blue-700" active={false} onClick={() => handleSearch({ ...filters, category: 'support' })} />
+                                <CategoryButton label="View All" icon="search" color="bg-slate-100 text-slate-600" active={false} onClick={() => handleSearch({ ...filters, category: 'all' })} />
+                            </div>
+                        </>
+                    )}
                 </div>
 
-                {view === 'planner' && (
-                    <>
-                        <div className="mb-4 flex items-center justify-between"><h2 className="text-xl font-black text-slate-800">Timeline</h2><button onClick={() => setView('home')} className="p-2 bg-slate-200 rounded-full"><Icon name="x" /></button></div>
-                        <AreaScheduleView data={ALL_DATA} area={filters.area} category={filters.category} />
-                    </>
-                )}
+                {/* Spacer for Bottom Navigation */}
+                <div className="h-28"></div>
 
-                {view === 'map' && (
-                    <>
-                        <div className="mb-4 flex items-center justify-between">
-                            <h2 className="text-xl font-black text-slate-800">Live Map</h2>
-                            <div className="flex gap-1">
-                                <button onClick={() => setMapFilter('open')} className={`px-3 py-1 rounded-full text-[10px] font-bold border ${mapFilter === 'open' ? 'bg-green-600 text-white border-green-600' : 'bg-white text-slate-500'}`}>Open Now</button>
-                                <button onClick={() => setMapFilter('all')} className={`px-3 py-1 rounded-full text-[10px] font-bold border ${mapFilter === 'all' ? 'bg-slate-800 text-white border-slate-800' : 'bg-white text-slate-500'}`}>All</button>
-                            </div>
-                        </div>
-                        <SimpleMap data={filteredData} category={filters.category} statusFilter={mapFilter} />
-                    </>
-                )}
-
-                {view === 'list' && (
-                    <>
-                        <div className="mb-4">
-                            <div className="flex justify-between items-center mb-4"><h2 className="text-xl font-black text-slate-800 capitalize">{filters.category === 'all' ? 'All Resources' : filters.category}</h2><button onClick={() => setView('home')} className="p-2 bg-slate-200 rounded-full"><Icon name="x" size={16} /></button></div>
-                        </div>
-                        <div className="space-y-4 pb-24">
-                            {filteredData.length > 0 ? (filteredData.map(item => <ResourceCard key={item.id} item={item} />)) : (<div className="text-center py-12 text-slate-400 bg-white rounded-2xl border-2 border-dashed border-slate-200"><p className="font-bold">No results found in {filters.area}.</p><button onClick={() => setFilters({ ...filters, area: 'All' })} className="text-emerald-600 text-xs font-bold mt-2 underline">View All Areas</button></div>)}
-                        </div>
-                    </>
-                )}
-
-                {view === 'home' && (
-                    <>
-                        <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3 pl-1">Browse Categories</p>
-                        <div className="grid grid-cols-2 gap-3 pb-8">
-                            <CategoryButton label="Food & Meals" icon="utensils" color="bg-emerald-100 text-emerald-700" active={false} onClick={() => handleSearch({ ...filters, category: 'food' })} />
-                            <CategoryButton label="Shelter & Crisis" icon="bed" color="bg-indigo-100 text-indigo-700" active={false} onClick={() => handleSearch({ ...filters, category: 'shelter' })} />
-                            <CategoryButton label="Warmth & Net" icon="flame" color="bg-orange-100 text-orange-700" active={false} onClick={() => handleSearch({ ...filters, category: 'warmth' })} />
-                            <CategoryButton label="Family & Kids" icon="users" color="bg-pink-100 text-pink-700" active={false} onClick={() => handleSearch({ ...filters, category: 'family' })} />
-                            <CategoryButton label="Help & Health" icon="lifebuoy" color="bg-blue-100 text-blue-700" active={false} onClick={() => handleSearch({ ...filters, category: 'support' })} />
-                            <CategoryButton label="View All" icon="search" color="bg-slate-100 text-slate-600" active={false} onClick={() => handleSearch({ ...filters, category: 'all' })} />
-                        </div>
-                    </>
-                )}
-            </div>
-
-            {/* Spacer for Bottom Navigation */}
-            <div className="h-28"></div>
-
-            <button
-                onClick={() => setShowCrisis(true)}
-                className="fixed bottom-28 right-5 w-14 h-14 bg-rose-600 text-white rounded-full shadow-2xl shadow-rose-600/40 flex items-center justify-center hover:scale-110 active:scale-95 transition-all border-4 border-white z-40"
-            >
-                <Icon name="alert" size={24} />
-            </button>
-
-            <div className="fixed bottom-0 left-0 right-0 bg-white/80 backdrop-blur-xl border-t border-slate-200/50 flex justify-around p-2 pb-6 z-50 shadow-[0_-10px_40px_rgba(0,0,0,0.05)]">
-                <button onClick={() => setView('home')} className={`relative flex-1 group py-2 flex flex-col items-center gap-1 transition-all rounded-2xl ${view === 'home' || view === 'list' ? 'text-slate-900' : 'text-slate-400 hover:bg-slate-50'}`}>
-                    <div className={`p-1 rounded-xl transition-all ${view === 'home' || view === 'list' ? 'bg-slate-100' : ''}`}>
-                        <Icon name="home" size={24} className={view === 'home' || view === 'list' ? 'text-slate-900' : 'text-slate-400 group-hover:text-slate-600'} />
-                    </div>
-                    <span className="text-[10px] font-bold">Home</span>
+                <button
+                    onClick={() => setShowCrisis(true)}
+                    className="fixed bottom-28 right-5 w-14 h-14 bg-rose-600 text-white rounded-full shadow-2xl shadow-rose-600/40 flex items-center justify-center hover:scale-110 active:scale-95 transition-all border-4 border-white z-40"
+                >
+                    <Icon name="alert" size={24} />
                 </button>
 
-                <button onClick={() => setView('map')} className={`relative flex-1 group py-2 flex flex-col items-center gap-1 transition-all rounded-2xl ${view === 'map' ? 'text-slate-900' : 'text-slate-400 hover:bg-slate-50'}`}>
-                    <div className={`p-1 rounded-xl transition-all ${view === 'map' ? 'bg-slate-100' : ''}`}>
-                        <Icon name="mapPin" size={24} className={view === 'map' ? 'text-slate-900' : 'text-slate-400 group-hover:text-slate-600'} />
-                    </div>
-                    <span className="text-[10px] font-bold">Map</span>
-                </button>
+                <div className="fixed bottom-0 left-0 right-0 bg-white/80 backdrop-blur-xl border-t border-slate-200/50 flex justify-around p-2 pb-6 z-50 shadow-[0_-10px_40px_rgba(0,0,0,0.05)]">
+                    <button onClick={() => setView('home')} className={`relative flex-1 group py-2 flex flex-col items-center gap-1 transition-all rounded-2xl ${view === 'home' || view === 'list' ? 'text-slate-900' : 'text-slate-400 hover:bg-slate-50'}`}>
+                        <div className={`p-1 rounded-xl transition-all ${view === 'home' || view === 'list' ? 'bg-slate-100' : ''}`}>
+                            <Icon name="home" size={24} className={view === 'home' || view === 'list' ? 'text-slate-900' : 'text-slate-400 group-hover:text-slate-600'} />
+                        </div>
+                        <span className="text-[10px] font-bold">Home</span>
+                    </button>
 
-                <button onClick={() => setView('planner')} className={`relative flex-1 group py-2 flex flex-col items-center gap-1 transition-all rounded-2xl ${view === 'planner' ? 'text-slate-900' : 'text-slate-400 hover:bg-slate-50'}`}>
-                    <div className={`p-1 rounded-xl transition-all ${view === 'planner' ? 'bg-slate-100' : ''}`}>
-                        <Icon name="calendar" size={24} className={view === 'planner' ? 'text-slate-900' : 'text-slate-400 group-hover:text-slate-600'} />
-                    </div>
-                    <span className="text-[10px] font-bold">Plan</span>
-                </button>
+                    <button onClick={() => setView('map')} className={`relative flex-1 group py-2 flex flex-col items-center gap-1 transition-all rounded-2xl ${view === 'map' ? 'text-slate-900' : 'text-slate-400 hover:bg-slate-50'}`}>
+                        <div className={`p-1 rounded-xl transition-all ${view === 'map' ? 'bg-slate-100' : ''}`}>
+                            <Icon name="mapPin" size={24} className={view === 'map' ? 'text-slate-900' : 'text-slate-400 group-hover:text-slate-600'} />
+                        </div>
+                        <span className="text-[10px] font-bold">Map</span>
+                    </button>
+
+                    <button onClick={() => setView('planner')} className={`relative flex-1 group py-2 flex flex-col items-center gap-1 transition-all rounded-2xl ${view === 'planner' ? 'text-slate-900' : 'text-slate-400 hover:bg-slate-50'}`}>
+                        <div className={`p-1 rounded-xl transition-all ${view === 'planner' ? 'bg-slate-100' : ''}`}>
+                            <Icon name="calendar" size={24} className={view === 'planner' ? 'text-slate-900' : 'text-slate-400 group-hover:text-slate-600'} />
+                        </div>
+                        <span className="text-[10px] font-bold">Plan</span>
+                    </button>
+                </div>
             </div>
         </div>
+        </div >
     );
 };
 
