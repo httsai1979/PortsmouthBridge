@@ -370,7 +370,7 @@ const BookingBar = ({ onSearch, currentFilters }: { onSearch: any; currentFilter
                     className="w-full bg-white/90 backdrop-blur-md rounded-full shadow-sm border border-slate-200 p-3 flex items-center gap-3 active:scale-[0.98] transition-all"
                 >
                     <div className="bg-slate-100 text-slate-600 p-2 rounded-full">
-                        <Icon name="search" size={18} />
+                        <Icon name="search" size={18} className="" />
                     </div>
                     <div className="flex-1 text-left">
                         <div className="text-sm font-semibold text-slate-900">
@@ -580,7 +580,7 @@ const AreaScheduleView = ({ data, area, category }: { data: any[]; area: string;
                                                 <p className="text-slate-600 italic">"{item.description}"</p>
                                                 {item.phone && (
                                                     <div className="flex items-center gap-2 font-bold text-slate-700">
-                                                        <Icon name="phone" size={12} /> {item.phone}
+                                                        <Icon name="phone" size={12} className="text-slate-400" /> {item.phone}
                                                     </div>
                                                 )}
                                                 <div className="border-t border-slate-200/50 pt-2 mt-2">
@@ -619,7 +619,7 @@ const CategoryButton = ({ label, icon, active, onClick, color }: { label: string
         className={`flex flex-col items-center justify-center p-2 rounded-2xl transition-all duration-300 w-full h-24 relative overflow-hidden group
         ${active ? 'bg-slate-900 text-white shadow-lg shadow-slate-900/20' : 'bg-white text-slate-600 border border-slate-100 hover:border-slate-200 hover:shadow-md'}`}
     >
-        <div className={`p-3 rounded-full mb-2 transition-transform duration-300 group-hover:scale-110 ${active ? 'bg-white/20' : 'bg-slate-50 text-slate-500'}`}>
+        <div className={`p-3 rounded-full mb-2 transition-transform duration-300 group-hover:scale-110 ${active ? 'bg-white/20' : `${color.split(' ')[0]} ${color.split(' ')[1]}`}`}>
             <Icon name={icon} size={20} className={active ? 'text-white' : ''} />
         </div>
         <span className="text-[10px] font-bold tracking-wide leading-tight text-center uppercase">{label}</span>
@@ -630,14 +630,14 @@ const CategoryButton = ({ label, icon, active, onClick, color }: { label: string
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const checkStatus = (schedule: any) => {
-    if (!schedule) return { status: 'Unknown', color: 'bg-slate-100 text-slate-500', label: 'Check Time' };
+    if (!schedule) return { isOpen: false, status: 'unknown', color: 'bg-slate-100 text-slate-500', label: 'Check Time' };
     const now = new Date();
     const day = now.getDay();
     const hoursStr = schedule[day];
-    if (!hoursStr || hoursStr === 'Closed') return { status: 'closed', color: 'bg-slate-100 text-slate-500', label: 'Closed Today' };
+    if (!hoursStr || hoursStr === 'Closed') return { isOpen: false, status: 'closed', color: 'bg-slate-100 text-slate-500', label: 'Closed Today' };
 
     // Handle 24/7 or full day
-    if (hoursStr === "00:00-23:59") return { status: 'open', color: 'bg-green-100 text-green-800', label: 'Open 24/7' };
+    if (hoursStr === "00:00-23:59") return { isOpen: true, status: 'open', color: 'bg-green-100 text-green-800', label: 'Open 24/7' };
 
     const [start, end] = hoursStr.split('-');
     const [startH, startM] = start.split(':').map(Number);
@@ -647,10 +647,10 @@ const checkStatus = (schedule: any) => {
     const endTotal = endH * 60 + endM;
 
     if (currentTotal >= startTotal && currentTotal < endTotal) {
-        if (endTotal - currentTotal < 60) return { status: 'Closing', color: 'bg-orange-100 text-orange-800', label: `Closes ${end}` };
-        return { status: 'Open', color: 'bg-green-100 text-green-800', label: `Open Now (${end})` };
+        if (endTotal - currentTotal < 60) return { isOpen: true, status: 'closing', color: 'bg-orange-100 text-orange-800', label: `Closes ${end}` };
+        return { isOpen: true, status: 'open', color: 'bg-green-100 text-green-800', label: `Open Now (${end})` };
     }
-    return { status: 'Closed', color: 'bg-slate-100 text-slate-500', label: 'Closed Now' };
+    return { isOpen: false, status: 'closed', color: 'bg-slate-100 text-slate-500', label: 'Closed Now' };
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -998,11 +998,10 @@ const PrintView = ({ data, onClose }: { data: any[]; onClose: () => void }) => {
                             <div key={item.id} className="border-b-2 border-black pb-3">
                                 <div className="flex justify-between items-baseline mb-1">
                                     <span className="font-black text-lg">{item.name}</span>
-                                    <span className="font-bold">{item.schedule[today]}</span>
+                                    <span className="bg-black text-white px-2 py-0.5 text-[10px] font-bold uppercase">{item.schedule[today]}</span>
                                 </div>
-                                <div className="text-sm font-bold mb-1">{item.address} ({item.area})</div>
-                                <div className="text-sm">{item.description}</div>
-                                {item.phone && <div className="text-sm mt-1">Tel: {item.phone}</div>}
+                                <p className="text-sm font-bold">{item.address}</p>
+                                <p className="text-xs mt-1 italic">"{item.description}"</p>
                             </div>
                         ))}
                     </div>
@@ -1012,8 +1011,8 @@ const PrintView = ({ data, onClose }: { data: any[]; onClose: () => void }) => {
                     <p className="font-black text-lg">EMERGENCY: 999</p>
                     <p className="font-bold">Rough Sleeping Hub: 023 9288 2689</p>
                 </div>
+                <style>{`@media print { .no-print { display: none; } body { background: white; } }`}</style>
             </div>
-            <style>{`@media print { .no-print { display: none; } body { background: white; } }`}</style>
         </div>
     );
 };
@@ -1030,11 +1029,10 @@ const App = () => {
     const [view, setView] = useState<'home' | 'map' | 'list' | 'planner'>('home');
     const [showTips, setShowTips] = useState(false);
     const [showCrisis, setShowCrisis] = useState(false);
-    const [showPrint, setShowPrint] = useState(false); // New Print State
+    const [showPrint, setShowPrint] = useState(false);
     const [mapFilter, setMapFilter] = useState<'all' | 'open'>('open');
 
     // User Location State
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const [userLocation, setUserLocation] = useState<{ lat: number, lng: number } | null>(null);
 
     // Filter State
@@ -1042,10 +1040,8 @@ const App = () => {
 
     // Load Data
     useEffect(() => {
-        // Simulate loading for "Warm/Safe" feeling
         setTimeout(() => setLoading(false), 800);
 
-        // Get Location
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(
                 (pos) => setUserLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
@@ -1054,7 +1050,6 @@ const App = () => {
         }
     }, []);
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const handleSearch = (newFilters: any) => {
         setFilters(newFilters);
         // If searching a specific category, maybe switch to list or map automatically?
@@ -1063,10 +1058,6 @@ const App = () => {
 
     // Filter Data Logic
     const filteredData = useMemo(() => {
-        const dayIdx = new Date().getDay();
-        const now = new Date();
-        const currentMinutes = now.getHours() * 60 + now.getMinutes();
-
         let data = [...REAL_DATA, ...generateMockData()].filter(item => {
             const matchesArea = filters.area === 'All' || item.area === filters.area;
             const matchesCategory = filters.category === 'all' || item.category === filters.category;
@@ -1148,92 +1139,89 @@ const App = () => {
 
                 <div className="flex gap-2 mb-6">
                     <button onClick={() => setView('planner')} className="flex-1 bg-white text-slate-800 p-4 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-center gap-2 font-black hover:scale-[1.02] transition-transform"><Icon name="calendar" size={20} className="text-blue-600" /> View Schedule</button>
-                    <div className="flex gap-2 mb-6">
-                        <button onClick={() => setView('planner')} className="flex-1 bg-white text-slate-800 p-4 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-center gap-2 font-black hover:scale-[1.02] transition-transform"><Icon name="calendar" size={20} className="text-blue-600" /> View Schedule</button>
-                        <button onClick={() => setShowTips(true)} className="flex-1 yellow-label p-4 rounded-2xl flex items-center justify-center gap-2 hover:scale-[1.02] transition-transform"><Icon name="tag" size={20} /> Tips & Help</button>
-                    </div>
-
-                    {view === 'planner' && (
-                        <>
-                            <div className="mb-4 flex items-center justify-between"><h2 className="text-xl font-black text-slate-800">Timeline</h2><button onClick={() => setView('home')} className="p-2 bg-slate-200 rounded-full"><Icon name="x" /></button></div>
-                            <AreaScheduleView data={ALL_DATA} area={filters.area} category={filters.category} />
-                        </>
-                    )}
-
-                    {view === 'map' && (
-                        <>
-                            <div className="mb-4 flex items-center justify-between">
-                                <h2 className="text-xl font-black text-slate-800">Live Map</h2>
-                                <div className="flex gap-1">
-                                    <button onClick={() => setMapFilter('open')} className={`px-3 py-1 rounded-full text-[10px] font-bold border ${mapFilter === 'open' ? 'bg-green-600 text-white border-green-600' : 'bg-white text-slate-500'}`}>Open Now</button>
-                                    <button onClick={() => setMapFilter('all')} className={`px-3 py-1 rounded-full text-[10px] font-bold border ${mapFilter === 'all' ? 'bg-slate-800 text-white border-slate-800' : 'bg-white text-slate-500'}`}>All</button>
-                                </div>
-                            </div>
-                            <SimpleMap data={filteredData} category={filters.category} statusFilter={mapFilter} />
-                        </>
-                    )}
-
-                    {view === 'list' && (
-                        <>
-                            <div className="mb-4">
-                                <div className="flex justify-between items-center mb-4"><h2 className="text-xl font-black text-slate-800 capitalize">{filters.category === 'all' ? 'All Resources' : filters.category}</h2><button onClick={() => setView('home')} className="p-2 bg-slate-200 rounded-full"><Icon name="x" size={16} /></button></div>
-                            </div>
-                            <div className="space-y-4 pb-24">
-                                {filteredData.length > 0 ? (filteredData.map(item => <ResourceCard key={item.id} item={item} />)) : (<div className="text-center py-12 text-slate-400 bg-white rounded-2xl border-2 border-dashed border-slate-200"><p className="font-bold">No results found in {filters.area}.</p><button onClick={() => setFilters({ ...filters, area: 'All' })} className="text-emerald-600 text-xs font-bold mt-2 underline">View All Areas</button></div>)}
-                            </div>
-                        </>
-                    )}
-
-                    {view === 'home' && (
-                        <>
-                            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3 pl-1">Browse Categories</p>
-                            <div className="grid grid-cols-2 gap-3 pb-8">
-                                <CategoryButton label="Food & Meals" icon="utensils" color="bg-emerald-100 text-emerald-700" active={false} onClick={() => handleSearch({ ...filters, category: 'food' })} />
-                                <CategoryButton label="Shelter & Crisis" icon="bed" color="bg-indigo-100 text-indigo-700" active={false} onClick={() => handleSearch({ ...filters, category: 'shelter' })} />
-                                <CategoryButton label="Warmth & Net" icon="flame" color="bg-orange-100 text-orange-700" active={false} onClick={() => handleSearch({ ...filters, category: 'warmth' })} />
-                                <CategoryButton label="Family & Kids" icon="users" color="bg-pink-100 text-pink-700" active={false} onClick={() => handleSearch({ ...filters, category: 'family' })} />
-                                <CategoryButton label="Help & Health" icon="lifebuoy" color="bg-blue-100 text-blue-700" active={false} onClick={() => handleSearch({ ...filters, category: 'support' })} />
-                                <CategoryButton label="View All" icon="search" color="bg-slate-100 text-slate-600" active={false} onClick={() => handleSearch({ ...filters, category: 'all' })} />
-                            </div>
-                        </>
-                    )}
+                    <button onClick={() => setShowTips(true)} className="flex-1 yellow-label p-4 rounded-2xl flex items-center justify-center gap-2 hover:scale-[1.02] transition-transform"><Icon name="tag" size={20} /> Tips & Help</button>
                 </div>
 
-                {/* Spacer for Bottom Navigation */}
-                <div className="h-28"></div>
+                {view === 'planner' && (
+                    <>
+                        <div className="mb-4 flex items-center justify-between"><h2 className="text-xl font-black text-slate-800">Timeline</h2><button onClick={() => setView('home')} className="p-2 bg-slate-200 rounded-full"><Icon name="x" /></button></div>
+                        <AreaScheduleView data={ALL_DATA} area={filters.area} category={filters.category} />
+                    </>
+                )}
 
-                <button
-                    onClick={() => setShowCrisis(true)}
-                    className="fixed bottom-28 right-5 w-14 h-14 bg-rose-600 text-white rounded-full shadow-2xl shadow-rose-600/40 flex items-center justify-center hover:scale-110 active:scale-95 transition-all border-4 border-white z-40"
-                >
-                    <Icon name="alert" size={24} />
+                {view === 'map' && (
+                    <>
+                        <div className="mb-4 flex items-center justify-between">
+                            <h2 className="text-xl font-black text-slate-800">Live Map</h2>
+                            <div className="flex gap-1">
+                                <button onClick={() => setMapFilter('open')} className={`px-3 py-1 rounded-full text-[10px] font-bold border ${mapFilter === 'open' ? 'bg-green-600 text-white border-green-600' : 'bg-white text-slate-500'}`}>Open Now</button>
+                                <button onClick={() => setMapFilter('all')} className={`px-3 py-1 rounded-full text-[10px] font-bold border ${mapFilter === 'all' ? 'bg-slate-800 text-white border-slate-800' : 'bg-white text-slate-500'}`}>All</button>
+                            </div>
+                        </div>
+                        <SimpleMap data={filteredData} category={filters.category} statusFilter={mapFilter} />
+                    </>
+                )}
+
+                {view === 'list' && (
+                    <>
+                        <div className="mb-4">
+                            <div className="flex justify-between items-center mb-4"><h2 className="text-xl font-black text-slate-800 capitalize">{filters.category === 'all' ? 'All Resources' : filters.category}</h2><button onClick={() => setView('home')} className="p-2 bg-slate-200 rounded-full"><Icon name="x" size={16} /></button></div>
+                        </div>
+                        <div className="space-y-4 pb-24">
+                            {filteredData.length > 0 ? (filteredData.map(item => <ResourceCard key={item.id} item={item} />)) : (<div className="text-center py-12 text-slate-400 bg-white rounded-2xl border-2 border-dashed border-slate-200"><p className="font-bold">No results found in {filters.area}.</p><button onClick={() => setFilters({ ...filters, area: 'All' })} className="text-emerald-600 text-xs font-bold mt-2 underline">View All Areas</button></div>)}
+                        </div>
+                    </>
+                )}
+
+                {view === 'home' && (
+                    <>
+                        <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3 pl-1">Browse Categories</p>
+                        <div className="grid grid-cols-2 gap-3 pb-8">
+                            <CategoryButton label="Food & Meals" icon="utensils" color="bg-emerald-100 text-emerald-700" active={false} onClick={() => handleSearch({ ...filters, category: 'food' })} />
+                            <CategoryButton label="Shelter & Crisis" icon="bed" color="bg-indigo-100 text-indigo-700" active={false} onClick={() => handleSearch({ ...filters, category: 'shelter' })} />
+                            <CategoryButton label="Warmth & Net" icon="flame" color="bg-orange-100 text-orange-700" active={false} onClick={() => handleSearch({ ...filters, category: 'warmth' })} />
+                            <CategoryButton label="Family & Kids" icon="users" color="bg-pink-100 text-pink-700" active={false} onClick={() => handleSearch({ ...filters, category: 'family' })} />
+                            <CategoryButton label="Help & Health" icon="lifebuoy" color="bg-blue-100 text-blue-700" active={false} onClick={() => handleSearch({ ...filters, category: 'support' })} />
+                            <CategoryButton label="Charity Shops" icon="shopping-bag" color="text-pink-600 bg-pink-100" active={false} onClick={() => handleSearch({ ...filters, category: 'charity' })} />
+                            <CategoryButton label="View All" icon="search" color="text-slate-600 bg-slate-100" active={false} onClick={() => handleSearch({ ...filters, category: 'all' })} />
+                        </div>
+                    </>
+                )}
+            </div>
+
+            {/* Spacer for Bottom Navigation */}
+            <div className="h-28"></div>
+
+            <button
+                onClick={() => setShowCrisis(true)}
+                className="fixed bottom-28 right-5 w-14 h-14 bg-rose-600 text-white rounded-full shadow-2xl shadow-rose-600/40 flex items-center justify-center hover:scale-110 active:scale-95 transition-all border-4 border-white z-40"
+            >
+                <Icon name="alert" size={24} />
+            </button>
+
+            <div className="fixed bottom-0 left-0 right-0 bg-white/80 backdrop-blur-xl border-t border-slate-200/50 flex justify-around p-2 pb-6 z-50 shadow-[0_-10px_40px_rgba(0,0,0,0.05)]">
+                <button onClick={() => setView('home')} className={`relative flex-1 group py-2 flex flex-col items-center gap-1 transition-all rounded-2xl ${view === 'home' || view === 'list' ? 'text-slate-900' : 'text-slate-400 hover:bg-slate-50'}`}>
+                    <div className={`p-1 rounded-xl transition-all ${view === 'home' || view === 'list' ? 'bg-slate-100' : ''}`}>
+                        <Icon name="home" size={24} className={view === 'home' || view === 'list' ? 'text-slate-900' : 'text-slate-400 group-hover:text-slate-600'} />
+                    </div>
+                    <span className="text-[10px] font-bold">Home</span>
                 </button>
 
-                <div className="fixed bottom-0 left-0 right-0 bg-white/80 backdrop-blur-xl border-t border-slate-200/50 flex justify-around p-2 pb-6 z-50 shadow-[0_-10px_40px_rgba(0,0,0,0.05)]">
-                    <button onClick={() => setView('home')} className={`relative flex-1 group py-2 flex flex-col items-center gap-1 transition-all rounded-2xl ${view === 'home' || view === 'list' ? 'text-slate-900' : 'text-slate-400 hover:bg-slate-50'}`}>
-                        <div className={`p-1 rounded-xl transition-all ${view === 'home' || view === 'list' ? 'bg-slate-100' : ''}`}>
-                            <Icon name="home" size={24} className={view === 'home' || view === 'list' ? 'text-slate-900' : 'text-slate-400 group-hover:text-slate-600'} />
-                        </div>
-                        <span className="text-[10px] font-bold">Home</span>
-                    </button>
+                <button onClick={() => setView('map')} className={`relative flex-1 group py-2 flex flex-col items-center gap-1 transition-all rounded-2xl ${view === 'map' ? 'text-slate-900' : 'text-slate-400 hover:bg-slate-50'}`}>
+                    <div className={`p-1 rounded-xl transition-all ${view === 'map' ? 'bg-slate-100' : ''}`}>
+                        <Icon name="mapPin" size={24} className={view === 'map' ? 'text-slate-900' : 'text-slate-400 group-hover:text-slate-600'} />
+                    </div>
+                    <span className="text-[10px] font-bold">Map</span>
+                </button>
 
-                    <button onClick={() => setView('map')} className={`relative flex-1 group py-2 flex flex-col items-center gap-1 transition-all rounded-2xl ${view === 'map' ? 'text-slate-900' : 'text-slate-400 hover:bg-slate-50'}`}>
-                        <div className={`p-1 rounded-xl transition-all ${view === 'map' ? 'bg-slate-100' : ''}`}>
-                            <Icon name="mapPin" size={24} className={view === 'map' ? 'text-slate-900' : 'text-slate-400 group-hover:text-slate-600'} />
-                        </div>
-                        <span className="text-[10px] font-bold">Map</span>
-                    </button>
-
-                    <button onClick={() => setView('planner')} className={`relative flex-1 group py-2 flex flex-col items-center gap-1 transition-all rounded-2xl ${view === 'planner' ? 'text-slate-900' : 'text-slate-400 hover:bg-slate-50'}`}>
-                        <div className={`p-1 rounded-xl transition-all ${view === 'planner' ? 'bg-slate-100' : ''}`}>
-                            <Icon name="calendar" size={24} className={view === 'planner' ? 'text-slate-900' : 'text-slate-400 group-hover:text-slate-600'} />
-                        </div>
-                        <span className="text-[10px] font-bold">Plan</span>
-                    </button>
-                </div>
+                <button onClick={() => setView('planner')} className={`relative flex-1 group py-2 flex flex-col items-center gap-1 transition-all rounded-2xl ${view === 'planner' ? 'text-slate-900' : 'text-slate-400 hover:bg-slate-50'}`}>
+                    <div className={`p-1 rounded-xl transition-all ${view === 'planner' ? 'bg-slate-100' : ''}`}>
+                        <Icon name="calendar" size={24} className={view === 'planner' ? 'text-slate-900' : 'text-slate-400 group-hover:text-slate-600'} />
+                    </div>
+                    <span className="text-[10px] font-bold">Plan</span>
+                </button>
             </div>
         </div>
-        </div >
     );
 };
 
