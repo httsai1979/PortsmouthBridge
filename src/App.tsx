@@ -25,6 +25,7 @@ const App = () => {
     const [showCrisis, setShowCrisis] = useState(false);
     const [showPrint, setShowPrint] = useState(false);
     const [mapFilter, setMapFilter] = useState<'all' | 'open'>('open');
+    const [mapFocus, setMapFocus] = useState<{ lat: number; lng: number; label?: string } | null>(null);
 
     // Personalization (Phase 8: My Bridge Cart)
     const [savedIds, setSavedIds] = useState<string[]>(() => {
@@ -91,6 +92,13 @@ const App = () => {
             window.removeEventListener('offline', handleStatus);
         };
     }, []);
+
+    // Clear map focus when leaving map view
+    useEffect(() => {
+        if (view !== 'map') {
+            setMapFocus(null);
+        }
+    }, [view]);
 
     const handleSearch = (newFilters: any) => {
         setFilters(newFilters);
@@ -226,7 +234,13 @@ const App = () => {
                                 <p className="text-indigo-100 text-xs font-black uppercase tracking-[0.2em] mb-8 opacity-80">{greeting.sub}</p>
 
                                 <div className="grid grid-cols-2 gap-4 border-t border-white/10 pt-6">
-                                    <div className="flex flex-col">
+                                    <button
+                                        onClick={() => {
+                                            setSmartFilters({ ...smartFilters, verified: true });
+                                            setView('list');
+                                        }}
+                                        className="flex flex-col text-left hover:bg-white/5 p-2 rounded-xl transition-all active:scale-95"
+                                    >
                                         <div className="text-[8px] font-black text-indigo-300 uppercase tracking-widest mb-1 flex items-center gap-1.5">
                                             <div className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse shadow-[0_0_8px_rgba(52,211,153,0.8)]"></div>
                                             City Pulse
@@ -240,8 +254,14 @@ const App = () => {
                                             </span>
                                             <span className="text-[10px] font-bold text-indigo-200 leading-none">High-Confidence<br />Verified Network</span>
                                         </div>
-                                    </div>
-                                    <div className="flex flex-col">
+                                    </button>
+                                    <button
+                                        onClick={() => {
+                                            setMapFilter('open');
+                                            setView('map');
+                                        }}
+                                        className="flex flex-col text-left hover:bg-white/5 p-2 rounded-xl transition-all active:scale-95"
+                                    >
                                         <div className="text-[8px] font-black text-indigo-300 uppercase tracking-widest mb-1">Active Lifelines</div>
                                         <div className="flex items-center gap-2">
                                             <span className="text-xl font-black text-white">
@@ -249,7 +269,7 @@ const App = () => {
                                             </span>
                                             <span className="text-[10px] font-bold text-indigo-200 leading-none">Hubs Open In<br />{filters.area === 'All' ? 'Portsmouth' : filters.area}</span>
                                         </div>
-                                    </div>
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -322,12 +342,19 @@ const App = () => {
                                     <Icon name="tag" size={14} /> Portsmouth Market Deals
                                 </h3>
                                 <div className="space-y-4 relative z-10">
-                                    {COMMUNITY_DEALS.map((deal, idx) => (
-                                        <div key={idx} className="border-l-4 border-emerald-500 pl-4 py-1">
+                                    {COMMUNITY_DEALS.map((deal) => (
+                                        <button
+                                            key={deal.id}
+                                            onClick={() => {
+                                                setMapFocus({ lat: deal.lat, lng: deal.lng, label: deal.store });
+                                                setView('map');
+                                            }}
+                                            className="border-l-4 border-emerald-500 pl-4 py-1 hover:bg-emerald-50 w-full text-left rounded-r-lg transition-all active:scale-[0.98]"
+                                        >
                                             <p className="text-xs font-black text-slate-900">{deal.store}</p>
                                             <p className="text-[10px] font-bold text-emerald-600 uppercase tracking-wide">{deal.deal} • {deal.time}</p>
                                             <p className="text-[10px] text-slate-400 font-medium">{deal.info}</p>
-                                        </div>
+                                        </button>
                                     ))}
                                 </div>
                             </div>
@@ -338,12 +365,19 @@ const App = () => {
                                     <Icon name="heart" size={14} /> City Gift Exchange
                                 </h3>
                                 <div className="space-y-4 relative z-10">
-                                    {GIFT_EXCHANGE.map((gift, idx) => (
-                                        <div key={idx} className="border-l-4 border-rose-500 pl-4 py-1">
+                                    {GIFT_EXCHANGE.map((gift) => (
+                                        <button
+                                            key={gift.id}
+                                            onClick={() => {
+                                                setMapFocus({ lat: gift.lat, lng: gift.lng, label: gift.location });
+                                                setView('map');
+                                            }}
+                                            className="border-l-4 border-rose-500 pl-4 py-1 hover:bg-rose-50 w-full text-left rounded-r-lg transition-all active:scale-[0.98]"
+                                        >
                                             <p className="text-xs font-black text-slate-900">{gift.item}</p>
                                             <p className="text-[10px] font-bold text-rose-600 uppercase tracking-wide">{gift.location} • {gift.date}</p>
                                             <p className="text-[10px] text-slate-400 font-medium">{gift.info}</p>
-                                        </div>
+                                        </button>
                                     ))}
                                 </div>
                             </div>
@@ -454,6 +488,7 @@ const App = () => {
                             savedIds={savedIds}
                             onToggleSave={toggleSaved}
                             stealthMode={stealthMode}
+                            externalFocus={mapFocus}
                         />
                     </div>
                 )}

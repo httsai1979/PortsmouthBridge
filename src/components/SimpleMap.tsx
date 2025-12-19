@@ -166,8 +166,35 @@ const SimpleMap = ({ data, category, statusFilter, savedIds, onToggleSave, steal
                     />
                 ))}
 
+                {/* External Focus Marker for Synergy Items */}
+                {externalFocus && (
+                    <Marker
+                        position={[externalFocus.lat, externalFocus.lng]}
+                        icon={L.divIcon({
+                            className: 'custom-div-icon',
+                            html: `
+                                <div class="relative group">
+                                    <div class="absolute inset-0 bg-rose-500/20 blur-md rounded-full translate-y-1 animate-pulse"></div>
+                                    <div class="w-12 h-12 rounded-full border-[3px] border-white shadow-2xl flex items-center justify-center scale-125 z-50 ring-4 ring-rose-500/40" style="background-color: #f43f5e">
+                                        <div class="text-white drop-shadow-[0_1px_1px_rgba(0,0,0,0.5)]">
+                                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                                                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                                            </svg>
+                                        </div>
+                                    </div>
+                                    <div class="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-4 h-4 bg-white rotate-45 border-r border-b border-slate-100 z-[-1] rounded-sm"></div>
+                                    <div class="absolute -bottom-1 left-1/2 -translate-x-1/2 w-3.5 h-3.5 rotate-45 z-[0]" style="background-color: #f43f5e"></div>
+                                </div>
+                            `,
+                            iconSize: [48, 56],
+                            iconAnchor: [24, 56],
+                        })}
+                    />
+                )}
+
                 <MapController
                     selectedPos={selectedItem ? [selectedItem.lat, selectedItem.lng] : null}
+                    externalPos={externalFocus ? [externalFocus.lat, externalFocus.lng] : null}
                     locateTrigger={locateTrigger}
                 />
             </MapContainer>
