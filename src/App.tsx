@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { ALL_DATA, AREAS } from './data';
-import { checkStatus, getDistance } from './utils';
+import { checkStatus, getDistance, playSuccessSound } from './utils';
 
 // Components
 import Icon from './components/Icon';
@@ -36,6 +36,7 @@ const App = () => {
         setSavedIds(prev => {
             const next = prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id];
             localStorage.setItem('bridge_saved_resources', JSON.stringify(next));
+            if (!prev.includes(id)) playSuccessSound(); // Play sound on Pin
             return next;
         });
     };
@@ -140,11 +141,13 @@ const App = () => {
     const greeting = getGreeting();
 
     return (
-        <div className={`app-container min-h-screen font-sans text-slate-900 selection:bg-indigo-200 selection:text-indigo-900 ${highContrast ? 'grayscale contrast-125' : ''}`}>
+        <div className={`app-container min-h-screen font-sans text-slate-900 selection:bg-indigo-200 selection:text-indigo-900 ${highContrast ? 'high-contrast' : ''}`}>
             <style>{`
                 .app-container { max-width: 500px; margin: 0 auto; background-color: #f8fafc; min-height: 100vh; box-shadow: 0 0 50px rgba(0,0,0,0.08); position: relative; padding-bottom: 110px; }
                 .animate-fade-in-up { animation: fadeInUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
                 @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); scale: 0.98; } to { opacity: 1; transform: translateY(0); scale: 1; } }
+                .high-contrast { filter: contrast(1.2) saturate(0) !important; }
+                .high-contrast button { border: 1px solid currentcolor !important; box-shadow: none !important; }
             `}</style>
 
             <header className={`sticky top-0 z-50 ${stealthMode ? 'bg-slate-100 border-none' : 'bg-white/95 backdrop-blur-md border-b border-slate-200/50'} pt-4 pb-3 transition-all`}>
@@ -308,15 +311,50 @@ const App = () => {
                                 <button onClick={() => setMapFilter('all')} className={`px-4 py-2 rounded-full text-[10px] font-black uppercase border-2 transition-all ${mapFilter === 'all' ? 'bg-slate-900 text-white border-slate-900' : 'bg-white text-slate-400 border-slate-100'}`}>All</button>
                             </div>
                         </div>
-                        <SimpleMap data={filteredData} category={filters.category} statusFilter={mapFilter} />
+                        <SimpleMap
+                            data={filteredData}
+                            category={filters.category}
+                            statusFilter={mapFilter}
+                            savedIds={savedIds}
+                            onToggleSave={toggleSaved}
+                        />
                     </div>
                 )}
 
                 {view === 'list' && (
                     <div className="animate-fade-in-up">
                         <div className="flex justify-between items-center mb-6">
-                            <h2 className="text-xl font-black text-slate-800 capitalize">{filters.category === 'all' ? 'Directory' : filters.category}</h2>
-                            <button onClick={() => setView('home')} className="p-2 bg-slate-200 rounded-full hover:bg-slate-300 transition-colors"><Icon name="x" size={16} /></button>
+                            <div>
+                                <h2 className="text-2xl font-black text-slate-900 tracking-tight capitalize">{filters.category === 'all' ? 'Directory' : filters.category}</h2>
+                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Finding the right support</p>
+                            </div>
+                            <button onClick={() => setView('home')} className="p-3 bg-slate-100 text-slate-400 rounded-2xl hover:bg-slate-200 transition-all"><Icon name="home" size={20} /></button>
+                        </div>
+
+                        {/* Directory Tactical Filters (New) */}
+                        <div className="space-y-4 mb-8">
+                            <div className="flex gap-2 overflow-x-auto no-scrollbar pb-2">
+                                {AREAS.map(area => (
+                                    <button
+                                        key={area}
+                                        onClick={() => setFilters({ ...filters, area })}
+                                        className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest border-2 transition-all whitespace-nowrap ${filters.area === area ? 'bg-indigo-600 border-indigo-600 text-white shadow-lg' : 'bg-white border-slate-100 text-slate-400'}`}
+                                    >
+                                        {area}
+                                    </button>
+                                ))}
+                            </div>
+                            <div className="flex gap-2 overflow-x-auto no-scrollbar pb-2">
+                                {['all', 'food', 'shelter', 'warmth', 'support', 'family', 'charity'].map(cat => (
+                                    <button
+                                        key={cat}
+                                        onClick={() => setFilters({ ...filters, category: cat })}
+                                        className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest border-2 transition-all whitespace-nowrap ${filters.category === cat ? 'bg-slate-900 border-slate-900 text-white shadow-lg' : 'bg-white border-slate-100 text-slate-400'}`}
+                                    >
+                                        {cat === 'all' ? 'All Needs' : cat}
+                                    </button>
+                                ))}
+                            </div>
                         </div>
                         <div className="space-y-4 pb-24">
                             {filteredData.map(item => (

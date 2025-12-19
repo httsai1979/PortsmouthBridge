@@ -13,6 +13,8 @@ interface SimpleMapProps {
     data: Resource[];
     category: string;
     statusFilter: string;
+    savedIds: string[];
+    onToggleSave: (id: string) => void;
 }
 
 // Utility to create a custom marker icon
@@ -78,10 +80,11 @@ const MapController = ({ selectedPos, locateTrigger }: { selectedPos: [number, n
     return null;
 };
 
-const SimpleMap = ({ data, category, statusFilter }: SimpleMapProps) => {
+const SimpleMap = ({ data, category, statusFilter, savedIds, onToggleSave }: SimpleMapProps) => {
     const [selectedItem, setSelectedItem] = useState<Resource | null>(null);
     const [localCategory, setLocalCategory] = useState<string>(category);
     const [locateTrigger, setLocateTrigger] = useState(0);
+    const [showHours, setShowHours] = useState(false);
 
     const filteredPoints = useMemo(() => {
         return data.filter(item => {
@@ -135,7 +138,10 @@ const SimpleMap = ({ data, category, statusFilter }: SimpleMapProps) => {
                         position={[item.lat, item.lng]}
                         icon={createCustomIcon(item, selectedItem?.id === item.id)}
                         eventHandlers={{
-                            click: () => setSelectedItem(item),
+                            click: () => {
+                                setSelectedItem(item);
+                                setShowHours(false);
+                            },
                         }}
                     />
                 ))}
@@ -180,11 +186,46 @@ const SimpleMap = ({ data, category, statusFilter }: SimpleMapProps) => {
                                 )}
                             </div>
                             <h3 className="text-xl font-black text-slate-900 leading-tight mb-1">{selectedItem.name}</h3>
-                            <p className="text-sm font-medium text-slate-500 line-clamp-1">{selectedItem.address}</p>
+                            <div className="flex items-center gap-1.5 text-xs font-bold text-slate-400">
+                                <Icon name="mapPin" size={12} /> {selectedItem.address}
+                            </div>
                         </div>
                     </div>
 
-                    <div className="mt-5 flex gap-3">
+                    {showHours && (
+                        <div className="mt-4 p-4 bg-slate-50 rounded-2xl border border-slate-100 animate-fade-in-up">
+                            <h4 className="text-[10px] font-black text-slate-900 uppercase tracking-widest mb-3 flex items-center gap-2">
+                                <Icon name="clock" size={14} className="text-indigo-600" /> Opening Schedule
+                            </h4>
+                            <div className="grid grid-cols-2 gap-2">
+                                {Object.entries(selectedItem.schedule).map(([day, hours]) => (
+                                    <div key={day} className="flex justify-between items-center text-[10px] font-bold">
+                                        <span className="text-slate-400 capitalize">{['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][Number(day)]}</span>
+                                        <span className={hours === 'Closed' ? 'text-rose-500' : 'text-slate-700'}>{hours}</span>
+                                    </div>
+                                ))}
+                            </div>
+                            <p className="mt-3 text-[10px] text-slate-400 italic font-medium leading-relaxed">
+                                {selectedItem.description}
+                            </p>
+                        </div>
+                    )}
+
+                    <div className="mt-5 flex gap-2">
+                        <button
+                            onClick={() => onToggleSave(selectedItem.id)}
+                            className={`p-4 rounded-2xl transition-all shadow-lg active:scale-90 ${savedIds.includes(selectedItem.id) ? 'bg-amber-500 text-white shadow-amber-200' : 'bg-slate-100 text-slate-400'}`}
+                            title={savedIds.includes(selectedItem.id) ? "Unpin from Journey" : "Pin to Journey"}
+                        >
+                            <Icon name="star" size={20} />
+                        </button>
+                        <button
+                            onClick={() => setShowHours(!showHours)}
+                            className={`p-4 rounded-2xl transition-all shadow-lg active:scale-95 ${showHours ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-600'}`}
+                            title="View Hours & Details"
+                        >
+                            <Icon name="info" size={20} />
+                        </button>
                         {selectedItem.phone && (
                             <a
                                 href={`tel:${selectedItem.phone}`}
@@ -197,16 +238,11 @@ const SimpleMap = ({ data, category, statusFilter }: SimpleMapProps) => {
                             href={`https://www.google.com/maps/dir/?api=1&destination=${selectedItem.lat},${selectedItem.lng}`}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="flex-2 bg-slate-900 text-white py-4 rounded-2xl font-black text-xs uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-black transition-all shadow-lg active:scale-95"
+                            className="p-4 bg-slate-900 text-white rounded-2xl font-black text-xs uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-black transition-all shadow-lg active:scale-95"
+                            title="Navigation"
                         >
-                            <Icon name="navigation" size={14} /> Get Directions
+                            <Icon name="navigation" size={18} />
                         </a>
-                        <button
-                            onClick={() => setSelectedItem(null)}
-                            className="p-4 bg-slate-100 text-slate-600 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-slate-200"
-                        >
-                            <Icon name="x" size={16} />
-                        </button>
                     </div>
                 </div>
             )}

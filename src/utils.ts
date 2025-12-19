@@ -34,3 +34,27 @@ export const getDistance = (lat1: number, lon1: number, lat2: number, lon2: numb
 };
 
 export const getTagConfig = (tag: string, tagIcons: Record<string, { icon: string; label: string; color: string; bg: string; border?: boolean }>) => tagIcons[tag] || tagIcons.default;
+
+// Phase 13: Sensory Revolution Helper
+export const playSuccessSound = () => {
+    try {
+        const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+        const oscillator = audioCtx.createOscillator();
+        const gainNode = audioCtx.createGain();
+
+        oscillator.type = 'sine';
+        oscillator.frequency.setValueAtTime(880, audioCtx.currentTime); // A5
+        oscillator.frequency.exponentialRampToValueAtTime(440, audioCtx.currentTime + 0.1);
+
+        gainNode.gain.setValueAtTime(0.05, audioCtx.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+
+        oscillator.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+
+        oscillator.start();
+        oscillator.stop(audioCtx.currentTime + 0.1);
+    } catch (e) {
+        console.log("Audio feedback not supported or blocked");
+    }
+};
