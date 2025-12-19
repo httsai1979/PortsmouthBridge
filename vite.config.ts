@@ -12,10 +12,10 @@ export default defineConfig({
       registerType: 'autoUpdate',
       injectRegister: 'auto',
       manifest: {
-        name: 'Pompey Haven',
-        short_name: 'Haven',
+        name: 'Portsmouth Bridge',
+        short_name: 'Bridge',
         description: 'Warmth, Dignity, and Community in Portsmouth',
-        theme_color: '#0f172a',
+        theme_color: '#4f46e5',
         icons: [
           {
             src: 'icon.png',
