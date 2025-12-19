@@ -86,7 +86,7 @@ export const PROGRESS_TIPS = [
     { title: "Healthy Eating", note: "Cookery classes at the Somerstown Hub - learn to cook on a budget." }
 ];
 
-export const REAL_DATA: Resource[] = [
+export const ALL_DATA: Resource[] = [
     // --- 🟢 FOOD (EAT) ---
     { id: 'f1', name: "Pompey Community Fridge", category: "food", type: "Surplus", area: "PO4", address: "Fratton Park, PO4 8SX", description: "Free surplus food. Bring a bag.", requirements: "Open to all.", tags: ["free", "fresh_food", "no_referral"], schedule: { 1: "13:00-15:00", 2: "13:00-15:00", 3: "13:00-15:00", 4: "13:00-15:00", 5: "13:00-15:00", 6: "Closed", 0: "Closed" }, lat: 50.796, lng: -1.064, transport: "Bus 1, 2, 18", phone: "023 9273 1141", trustScore: 98 },
     { id: 'f2', name: "FoodCycle Portsmouth", category: "food", type: "Hot Meal", area: "PO1", address: "John Pounds Centre, PO1 3HN", description: "Hot 3-course vegetarian meal. Community dining.", requirements: "Just turn up.", tags: ["free", "hot_meal", "no_referral", "vegetarian"], schedule: { 1: "Closed", 2: "Closed", 3: "18:00-19:30", 4: "Closed", 5: "Closed", 6: "Closed", 0: "Closed" }, lat: 50.798, lng: -1.096, transport: "Bus 3, 23", phone: "023 9289 2010", trustScore: 100 },
@@ -218,10 +218,8 @@ export const REAL_DATA: Resource[] = [
 ];
 
 export const generateMockData = () => {
-    // Only keeping a very small number of generic markers to fill gaps if absolutely needed,
-    // but the vast majority is now real data.
+    // Phase 25: All data is now real. No mock data needed.
     const newItems: Resource[] = [];
-    // We can even return empty array now as we have ~80 real items.
     return newItems;
 };
 
