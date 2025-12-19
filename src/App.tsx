@@ -12,10 +12,14 @@ import { TipsModal, CrisisModal } from './components/Modals';
 import PrintView from './components/PrintView';
 import { AreaScheduleView, CategoryButton } from './components/Schedule';
 import AIAssistant from './components/AIAssistant';
+import PrivacyShield from './components/PrivacyShield';
+import DailySpark from './components/DailySpark';
+import PulseMap from './components/PulseMap';
 
 const App = () => {
     // Branding & Accessibility State
     const [highContrast, setHighContrast] = useState(false);
+    const [stealthMode, setStealthMode] = useState(false);
     const [isOffline, setIsOffline] = useState(!navigator.onLine);
 
     // Initial Loading State
@@ -122,18 +126,36 @@ const App = () => {
                 @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); scale: 0.98; } to { opacity: 1; transform: translateY(0); scale: 1; } }
             `}</style>
 
-            <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-slate-200/50 pt-safe-top">
+            <header className={`sticky top-0 z-50 ${stealthMode ? 'bg-slate-100 border-none' : 'bg-white/80 backdrop-blur-md border-b border-slate-200/50'} pt-safe-top transition-all`}>
                 <div className="px-5 py-3 flex justify-between items-center max-w-lg mx-auto">
                     <div>
-                        <h1 className="text-2xl font-black text-slate-900 tracking-tight">Pompey Haven</h1>
-                        <p className="text-xs font-bold text-slate-500 tracking-wide uppercase">Warmth • Dignity • Community</p>
+                        <h1 className={`text-2xl font-black ${stealthMode ? 'text-slate-400' : 'text-slate-900'} tracking-tight`}>
+                            {stealthMode ? 'Safe Haven' : 'Pompey Haven'}
+                        </h1>
+                        {!stealthMode && <p className="text-xs font-bold text-slate-500 tracking-wide uppercase">Warmth • Dignity • Community</p>}
                     </div>
                     <div className="flex gap-2">
-                        <button onClick={() => setHighContrast(!highContrast)} className="p-2 bg-slate-100 rounded-full text-slate-600 hover:bg-slate-200 transition-colors" aria-label="Toggle High Contrast">
-                            <Icon name="eye" size={20} />
+                        <button
+                            onClick={() => {
+                                if (confirm("GDPR Request: This will immediately delete all local preferences and cache. Proceed?")) {
+                                    localStorage.clear();
+                                    window.location.reload();
+                                }
+                            }}
+                            className="p-2 bg-slate-100 rounded-full text-slate-400 hover:text-rose-500 transition-colors"
+                            title="Clear Data (GDPR)"
+                        >
+                            <Icon name="trash" size={18} />
                         </button>
-                        <button onClick={() => setShowPrint(true)} className="p-2 bg-slate-100 rounded-full text-slate-600 hover:bg-slate-200 transition-colors" aria-label="Print/Offline Mode">
-                            <Icon name="printer" size={20} />
+                        <button
+                            onClick={() => setStealthMode(!stealthMode)}
+                            className={`p-2 rounded-full transition-all ${stealthMode ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-600'}`}
+                            title="Stealth Mode"
+                        >
+                            <Icon name={stealthMode ? 'eye' : 'eye'} size={20} />
+                        </button>
+                        <button onClick={() => setHighContrast(!highContrast)} className="p-2 bg-slate-100 rounded-full text-slate-600 hover:bg-slate-200 transition-colors" aria-label="Toggle High Contrast">
+                            <Icon name="zap" size={20} />
                         </button>
                     </div>
                 </div>
@@ -151,12 +173,16 @@ const App = () => {
 
             <BookingBar onSearch={handleSearch} currentFilters={filters} />
 
-            <div className="px-5 mt-2 relative z-20">
+            <div className={`px-5 mt-2 relative z-20 transition-all ${stealthMode ? 'opacity-90 grayscale-[0.5]' : ''}`}>
                 {view === 'home' && (
-                    <Dashboard
-                        data={ALL_DATA.filter(i => (filters.area === 'All' || i.area === filters.area))}
-                        onNavigate={(cat) => handleSearch({ ...filters, category: cat })}
-                    />
+                    <>
+                        {!stealthMode && <DailySpark />}
+                        {!stealthMode && <PulseMap />}
+                        <Dashboard
+                            data={ALL_DATA.filter(i => (filters.area === 'All' || i.area === filters.area))}
+                            onNavigate={(cat) => handleSearch({ ...filters, category: cat })}
+                        />
+                    </>
                 )}
 
                 <div className="flex gap-2 mb-6">
@@ -259,6 +285,7 @@ const App = () => {
                     <span className="text-[10px] font-bold">Plan</span>
                 </button>
             </div>
+            <PrivacyShield onAccept={() => console.log('Privacy accepted')} />
         </div>
     );
 };
