@@ -162,6 +162,7 @@ export const generateMockData = () => {
             type,
             area,
             address: `${Math.floor(random() * 200) + 1} ${['High St', 'London Rd', 'Albert Rd', 'Victoria Rd', 'Commercial Rd', 'Kingston Rd'][Math.floor(random() * 6)]}`,
+            phone: `023 92${Math.floor(random() * 8999) + 1000}`,
             transport: `Bus ${Math.floor(random() * 20) + 1}`,
             description: `A vital resource providing ${category} support for the ${area} community. Open to all.`,
             requirements: random() > 0.5 ? "Open access" : "Referral preferred",
