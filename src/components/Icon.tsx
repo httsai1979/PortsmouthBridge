@@ -53,6 +53,9 @@ const Icon: React.FC<IconProps> = ({ name, size = 18, className = "" }) => {
         sparkles: <><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z" /><path d="m5 3 1 2" /><path d="m19 3-1 2" /><path d="m5 21 1-2" /><path d="m19 21-1-2" /></>,
         'arrow-right': <><path d="M5 12h14" /><path d="m12 5 7 7-7 7" /></>,
         'share-2': <><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8m-16-4 4-4 4 4m-4-4v12" /></>,
+        plus: <><path d="M5 12h14" /><path d="M12 5v14" /></>,
+        star: <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />,
+        bus: <><rect width="16" height="16" x="4" y="4" rx="2" /><path d="M9 18h6" /><path d="M10 22v-4" /><path d="M14 22v-4" /><circle cx="7" cy="15" r="1" /><circle cx="17" cy="15" r="1" /><path d="M8 8h8" /></>,
     };
 
     return (
