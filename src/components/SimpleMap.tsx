@@ -17,6 +17,7 @@ interface SimpleMapProps {
 
 // Utility to create a custom marker icon
 const createCustomIcon = (item: Resource, isSelected: boolean) => {
+    const status = checkStatus(item.schedule);
     // High-contrast vibrant colors for standard categories
     const categoryColors: Record<string, string> = {
         food: '#059669', // Emerald 600
@@ -32,7 +33,14 @@ const createCustomIcon = (item: Resource, isSelected: boolean) => {
         className: 'custom-div-icon',
         html: `
             <div class="relative group">
-                <!-- Drop Shadow & Glow for visibility on any background -->
+                <!-- Phase 10: Tactical Status Dot on Map -->
+                ${status.status === 'open' ? `
+                    <div class="absolute -top-1 -right-1 w-4 h-4 bg-emerald-500 rounded-full border-2 border-white z-50 animate-pulse shadow-lg"></div>
+                ` : status.status === 'closing' ? `
+                    <div class="absolute -top-1 -right-1 w-4 h-4 bg-amber-500 rounded-full border-2 border-white z-50 shadow-lg"></div>
+                ` : ''}
+                
+                <!-- Drop Shadow & Glow -->
                 <div class="absolute inset-0 bg-black/20 blur-md rounded-full translate-y-1"></div>
                 <div class="w-10 h-10 rounded-full border-[3px] border-white shadow-2xl flex items-center justify-center transition-all ${isSelected ? 'scale-125 z-50 ring-4 ring-indigo-500/40 translate-y-[-4px]' : 'hover:scale-110'}" style="background-color: ${color}">
                     <div class="text-white drop-shadow-[0_1px_1px_rgba(0,0,0,0.5)]">
@@ -41,7 +49,7 @@ const createCustomIcon = (item: Resource, isSelected: boolean) => {
                         </svg>
                     </div>
                 </div>
-                <!-- Droplet stem for tactical precision -->
+                <!-- Droplet stem -->
                 <div class="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-4 h-4 bg-white rotate-45 border-r border-b border-slate-100 z-[-1] rounded-sm"></div>
                 <div class="absolute -bottom-1 left-1/2 -translate-x-1/2 w-3.5 h-3.5 rotate-45 z-[0]" style="background-color: ${color}"></div>
             </div>
@@ -161,9 +169,16 @@ const SimpleMap = ({ data, category, statusFilter }: SimpleMapProps) => {
                             <Icon name={getTagConfig(selectedItem.category, TAG_ICONS).icon} size={24} />
                         </div>
                         <div>
-                            <span className="text-[10px] font-black text-indigo-600 uppercase tracking-widest leading-none mb-1 block">
-                                {selectedItem.category} • {selectedItem.area}
-                            </span>
+                            <div className="flex items-center gap-2 mb-1">
+                                <span className="text-[10px] font-black text-indigo-600 uppercase tracking-widest leading-none">
+                                    {selectedItem.category} • {selectedItem.area}
+                                </span>
+                                {selectedItem.trustScore && selectedItem.trustScore > 90 && (
+                                    <span className="bg-indigo-50 text-indigo-600 text-[8px] font-black uppercase px-2 py-0.5 rounded-md border border-indigo-100 flex items-center gap-1">
+                                        <Icon name="check_circle" size={8} /> Verified
+                                    </span>
+                                )}
+                            </div>
                             <h3 className="text-xl font-black text-slate-900 leading-tight mb-1">{selectedItem.name}</h3>
                             <p className="text-sm font-medium text-slate-500 line-clamp-1">{selectedItem.address}</p>
                         </div>

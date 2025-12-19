@@ -39,9 +39,14 @@ export const AreaScheduleView = ({ data, area, category }: { data: Resource[]; a
 
     if (sortedData.length === 0) {
         return (
-            <div className="py-20 text-center bg-white rounded-[32px] border-2 border-dashed border-slate-200">
-                <Icon name="search" size={48} className="mx-auto text-slate-200 mb-4" />
-                <p className="font-black text-slate-400 uppercase tracking-widest">No plans found in {area}</p>
+            <div className="py-16 text-center bg-white rounded-[32px] border-2 border-dashed border-slate-100 px-8">
+                <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Icon name="search" size={32} className="text-slate-200" />
+                </div>
+                <p className="font-black text-slate-400 uppercase tracking-widest text-[10px] leading-relaxed">
+                    No results for {category !== 'all' ? category : ''} in {area}<br />
+                    Try changing your filters or pinning more items.
+                </p>
             </div>
         );
     }

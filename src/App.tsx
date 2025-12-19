@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { ALL_DATA } from './data';
+import { ALL_DATA, AREAS } from './data';
 import { checkStatus, getDistance } from './utils';
 
 // Components
@@ -98,9 +98,29 @@ const App = () => {
 
     const getGreeting = () => {
         const hour = new Date().getHours();
-        if (hour < 12) return { msg: "Good Morning, Portsmouth", sub: "A new day to cross new bridges." };
-        if (hour < 18) return { msg: "Good Afternoon", sub: "Keep moving forward, we're here for you." };
-        return { msg: "Good Evening", sub: "Rest well, you've done enough for today." };
+        const messages = {
+            morning: [
+                { msg: "Good Morning, Portsmouth", sub: "A new day to cross new bridges." },
+                { msg: "Rise with Hope", sub: "Small steps today lead to big changes." },
+                { msg: "Hello Neighbor", sub: "You are not alone in this journey." }
+            ],
+            afternoon: [
+                { msg: "Good Afternoon", sub: "Keep moving forward, we're here for you." },
+                { msg: "Steady Progress", sub: "Every connection you make is a win." },
+                { msg: "Find Your Path", sub: "The city is full of open doors today." }
+            ],
+            evening: [
+                { msg: "Good Evening", sub: "Rest well, you've done enough for today." },
+                { msg: "Peace & Rest", sub: "Tomorrow is another chance to build." },
+                { msg: "Home & Safety", sub: "The bridge stays open for you." }
+            ]
+        };
+
+        const timeKey = hour < 12 ? 'morning' : hour < 18 ? 'afternoon' : 'evening';
+        const pool = messages[timeKey];
+        // Use a simple hash based on date to keep it consistent for the day but varied
+        const dayOfMonth = new Date().getDate();
+        return pool[dayOfMonth % pool.length];
     };
 
     if (loading) {
@@ -223,18 +243,57 @@ const App = () => {
 
                 {view === 'planner' && (
                     <div className="animate-fade-in-up">
-                        <div className="mb-4 flex items-center justify-between">
-                            <h2 className="text-xl font-black text-slate-800">Journey Planner</h2>
-                            <button onClick={() => setView('home')} className="p-2 bg-slate-200 rounded-full"><Icon name="x" size={16} /></button>
+                        <div className="mb-6 flex items-center justify-between">
+                            <div>
+                                <h2 className="text-2xl font-black text-slate-900 tracking-tight">Journey Planner</h2>
+                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Organizing your success</p>
+                            </div>
+                            <button onClick={() => setView('home')} className="p-3 bg-slate-100 text-slate-400 rounded-2xl hover:bg-slate-200 transition-all"><Icon name="x" size={20} /></button>
                         </div>
+
+                        {savedIds.length > 0 && (
+                            <div className="space-y-4 mb-8">
+                                {/* Tactical Area Filter */}
+                                <div className="flex gap-2 overflow-x-auto no-scrollbar pb-2">
+                                    {AREAS.map(area => (
+                                        <button
+                                            key={area}
+                                            onClick={() => setFilters({ ...filters, area })}
+                                            className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest border-2 transition-all whitespace-nowrap ${filters.area === area ? 'bg-indigo-600 border-indigo-600 text-white shadow-lg' : 'bg-white border-slate-100 text-slate-400'}`}
+                                        >
+                                            {area}
+                                        </button>
+                                    ))}
+                                </div>
+                                {/* Tactical Category Filter */}
+                                <div className="flex gap-2 overflow-x-auto no-scrollbar pb-2">
+                                    {['all', 'food', 'shelter', 'warmth', 'support', 'family', 'charity'].map(cat => (
+                                        <button
+                                            key={cat}
+                                            onClick={() => setFilters({ ...filters, category: cat })}
+                                            className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest border-2 transition-all whitespace-nowrap ${filters.category === cat ? 'bg-slate-900 border-slate-900 text-white shadow-lg' : 'bg-white border-slate-100 text-slate-400'}`}
+                                        >
+                                            {cat === 'all' ? 'All Needs' : cat}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
                         {savedIds.length > 0 ? (
-                            <AreaScheduleView data={savedResources} area="All" category="all" />
+                            <AreaScheduleView
+                                data={savedResources}
+                                area={filters.area}
+                                category={filters.category}
+                            />
                         ) : (
-                            <div className="py-20 text-center bg-white rounded-[32px] border-2 border-dashed border-slate-200 p-8">
-                                <Icon name="star" size={48} className="mx-auto text-slate-200 mb-4" />
-                                <h3 className="text-lg font-black text-slate-800 mb-2">No Pins Yet</h3>
-                                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest leading-relaxed">Add resources to "My Bridge" to build your personalized daily journey.</p>
-                                <button onClick={() => setView('list')} className="mt-6 px-6 py-3 bg-indigo-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest">Browse Resources</button>
+                            <div className="py-20 text-center bg-white rounded-[40px] border-2 border-dashed border-slate-200 p-8 shadow-sm">
+                                <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-6">
+                                    <Icon name="star" size={40} className="text-slate-200" />
+                                </div>
+                                <h3 className="text-xl font-black text-slate-800 mb-2">No Pins Yet</h3>
+                                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest leading-relaxed mb-8">Add resources to "My Bridge" to build your personalized daily journey.</p>
+                                <button onClick={() => setView('list')} className="w-full py-5 bg-indigo-600 text-white rounded-[24px] text-[11px] font-black uppercase tracking-widest shadow-xl shadow-indigo-100 hover:scale-[1.02] transition-all">Browse Resources</button>
                             </div>
                         )}
                     </div>

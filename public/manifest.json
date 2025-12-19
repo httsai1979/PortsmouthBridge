@@ -1,0 +1,17 @@
+{
+    "name": "Portsmouth Bridge",
+    "short_name": "Bridge",
+    "description": "Connecting Community • Restoring Hope",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#4f46e5",
+    "theme_color": "#4f46e5",
+    "icons": [
+        {
+            "src": "icon.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "any maskable"
+        }
+    ]
+}

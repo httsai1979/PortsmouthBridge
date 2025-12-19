@@ -13,10 +13,10 @@ const ResourceCard = ({ item, isSaved, onToggleSave }: ResourceCardProps) => {
     const [expanded, setExpanded] = useState(false);
     const status = checkStatus(item.schedule);
 
-    // Phase 9: Traffic Light Status Logic
+    // Phase 9 & 10: Tactical Status Logic
     const getStatusColor = () => {
-        if (status.status === 'open') return 'bg-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.3)]';
-        if (status.status === 'closing') return 'bg-amber-500 shadow-[0_0_15px_rgba(245,158,11,0.3)]';
+        if (status.status === 'open') return 'bg-emerald-500 shadow-[0_0_20px_rgba(16,185,129,0.4)]';
+        if (status.status === 'closing') return 'bg-amber-500 shadow-[0_0_20px_rgba(245,158,11,0.4)]';
         return 'bg-slate-300';
     };
 
@@ -37,6 +37,11 @@ const ResourceCard = ({ item, isSaved, onToggleSave }: ResourceCardProps) => {
                         <span className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest border-2 ${status.status === 'open' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 'bg-slate-50 text-slate-400 border-slate-100'}`}>
                             {status.label}
                         </span>
+                        {item.trustScore && item.trustScore > 90 && (
+                            <span className="px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest bg-indigo-50 text-indigo-700 border-2 border-indigo-100 flex items-center gap-1">
+                                <Icon name="check_circle" size={10} /> Verified
+                            </span>
+                        )}
                         <span className="px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest bg-slate-50 text-slate-400 border-slate-100">
                             {item.type}
                         </span>
@@ -74,9 +79,9 @@ const ResourceCard = ({ item, isSaved, onToggleSave }: ResourceCardProps) => {
                         <div className="w-8 h-8 bg-white rounded-xl shadow-sm flex items-center justify-center text-blue-600">
                             <Icon name="bus" size={18} />
                         </div>
-                        <div className="min-w-0">
+                        <div className="min-w-0 flex-1">
                             <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Transport</p>
-                            <p className="text-[10px] font-black text-slate-700 truncate">{item.transport || 'Walkable'}</p>
+                            <p className="text-[10px] font-black text-slate-700 truncate">{item.transport || 'Direct Only'}</p>
                         </div>
                     </div>
                 </div>
