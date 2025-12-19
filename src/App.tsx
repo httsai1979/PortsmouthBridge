@@ -23,7 +23,7 @@ const App = () => {
     const [loading, setLoading] = useState(true);
 
     // Navigation & Modals
-    const [view, setView] = useState<'home' | 'map' | 'list' | 'planner'>('home');
+    const [view, setView] = useState<'home' | 'map' | 'list' | 'planner' | 'compare'>('home');
     const [showTips, setShowTips] = useState(false);
     const [showCrisis, setShowCrisis] = useState(false);
     const [showPrint, setShowPrint] = useState(false);
@@ -33,8 +33,7 @@ const App = () => {
     // Phase 25: Empowerment & Intelligence
     const [journeyItems, setJourneyItems] = useState<string[]>([]); // Resource IDs for multi-stop journey
     const [compareItems, setCompareItems] = useState<string[]>([]); // Resource IDs for comparison (max 3)
-    const [notifications, setNotifications] = useState<Array<{ id: string; type: string; message: string; timestamp: number }>>([]);
-    const [showNotifications, setShowNotifications] = useState(false);
+    const [notifications, setNotifications] = useState<Array<{ id: string; type: 'opening_soon' | 'favorite' | 'weather' | 'info'; message: string; timestamp: number; resourceId?: string }>>([]);
 
     // Personalization (Phase 8: My Bridge Cart)
     const [savedIds, setSavedIds] = useState<string[]>(() => {
@@ -115,7 +114,7 @@ const App = () => {
             const now = new Date();
             const currentHour = now.getHours();
             const currentMinutes = now.getMinutes();
-            const newNotifications: Array<{ id: string; type: string; message: string; timestamp: number; resourceId?: string }> = [];
+            const newNotifications: Array<{ id: string; type: 'opening_soon' | 'favorite' | 'weather' | 'info'; message: string; timestamp: number; resourceId?: string }> = [];
 
             // Check saved resources for opening soon
             savedIds.forEach(id => {
@@ -417,6 +416,82 @@ const App = () => {
                             <CategoryButton label="Work Skills" icon="briefcase" color="text-slate-700 bg-slate-100" active={filters.category === 'skills'} onClick={() => handleSearch({ ...filters, category: 'skills' })} />
                         </div>
 
+                        {/* Phase 25.5: Quick Actions - Core Features Highlight */}
+                        <div className="mb-10">
+                            <div className="flex items-center justify-between mb-4">
+                                <h3 className="text-sm font-black text-slate-800 uppercase tracking-widest">Quick Actions</h3>
+                                <div className="text-xs font-bold text-slate-400">Power tools at your fingertips</div>
+                            </div>
+
+                            <div className="grid grid-cols-1 gap-4">
+                                {/* Journey Planner Card */}
+                                <button
+                                    onClick={() => journeyItems.length > 0 ? setView('planner') : null}
+                                    className={`relative p-6 rounded-[28px] border-2 text-left overflow-hidden transition-all active:scale-[0.98] ${journeyItems.length > 0 ? 'bg-gradient-to-br from-indigo-600 to-indigo-700 border-indigo-500 shadow-2xl shadow-indigo-200 hover:shadow-indigo-300' : 'bg-white border-slate-200 hover:border-indigo-200'}`}
+                                >
+                                    <div className={`absolute top-0 right-0 w-32 h-32 rounded-full -mr-16 -mt-16 blur-3xl ${journeyItems.length > 0 ? 'bg-white/20' : 'bg-indigo-100/50'
+                                        }`}></div>
+
+                                    <div className="relative z-10">
+                                        <div className="flex items-center justify-between mb-3">
+                                            <div className={`w-14 h-14 rounded-2xl flex items-center justify-center ${journeyItems.length > 0 ? 'bg-white/20 backdrop-blur-sm' : 'bg-indigo-50'
+                                                } shadow-lg`}>
+                                                <Icon name="mapPin" size={24} className={journeyItems.length > 0 ? 'text-white' : 'text-indigo-600'} />
+                                            </div>
+                                            {journeyItems.length > 0 && (
+                                                <div className="bg-emerald-500 text-white px-4 py-2 rounded-full text-xs font-black shadow-lg">
+                                                    {journeyItems.length} STOPS
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        <h4 className={`text-lg font-black mb-2 ${journeyItems.length > 0 ? 'text-white' : 'text-slate-900'}`}>
+                                            Multi-Stop Journey
+                                        </h4>
+                                        <p className={`text-sm font-medium leading-relaxed ${journeyItems.length > 0 ? 'text-indigo-100' : 'text-slate-600'
+                                            }`}>
+                                            {journeyItems.length > 0
+                                                ? 'Your route is ready! Tap to view and navigate.'
+                                                : 'Add locations to plan your optimal route.'}
+                                        </p>
+                                    </div>
+                                </button>
+
+                                {/* Compare Tool Card */}
+                                <button
+                                    onClick={() => compareItems.length > 0 ? setView('compare') : null}
+                                    className={`relative p-6 rounded-[28px] border-2 text-left overflow-hidden transition-all active:scale-[0.98] ${compareItems.length > 0 ? 'bg-gradient-to-br from-emerald-600 to-emerald-700 border-emerald-500 shadow-2xl shadow-emerald-200 hover:shadow-emerald-300' : 'bg-white border-slate-200 hover:border-emerald-200'}`}
+                                >
+                                    <div className={`absolute top-0 right-0 w-32 h-32 rounded-full -mr-16 -mt-16 blur-3xl ${compareItems.length > 0 ? 'bg-white/20' : 'bg-emerald-100/50'
+                                        }`}></div>
+
+                                    <div className="relative z-10">
+                                        <div className="flex items-center justify-between mb-3">
+                                            <div className={`w-14 h-14 rounded-2xl flex items-center justify-center ${compareItems.length > 0 ? 'bg-white/20 backdrop-blur-sm' : 'bg-emerald-50'
+                                                } shadow-lg`}>
+                                                <Icon name="shield" size={24} className={compareItems.length > 0 ? 'text-white' : 'text-emerald-600'} />
+                                            </div>
+                                            {compareItems.length > 0 && (
+                                                <div className="bg-indigo-500 text-white px-4 py-2 rounded-full text-xs font-black shadow-lg">
+                                                    {compareItems.length} SELECTED
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        <h4 className={`text-lg font-black mb-2 ${compareItems.length > 0 ? 'text-white' : 'text-slate-900'}`}>
+                                            Smart Compare
+                                        </h4>
+                                        <p className={`text-sm font-medium leading-relaxed ${compareItems.length > 0 ? 'text-emerald-100' : 'text-slate-600'
+                                            }`}>
+                                            {compareItems.length > 0
+                                                ? 'Comparison ready! See which option suits you best.'
+                                                : 'Compare up to 3 resources side-by-side.'}
+                                        </p>
+                                    </div>
+                                </button>
+                            </div>
+                        </div>
+
                         {/* Phase 21: Growth Pathway Tips */}
                         <div className="mb-10 p-6 bg-gradient-to-br from-amber-50 via-white to-orange-50 rounded-[32px] border-2 border-amber-100/50 shadow-md shadow-amber-200/20 relative overflow-hidden group transition-all hover:shadow-lg">
                             <div className="absolute top-0 right-0 w-32 h-32 bg-amber-200/20 rounded-full -mr-16 -mt-16 blur-2xl"></div>
@@ -700,6 +775,10 @@ const App = () => {
                                         isSaved={savedIds.includes(item.id)}
                                         onToggleSave={() => toggleSaved(item.id)}
                                         highContrast={highContrast}
+                                        onAddToJourney={() => toggleJourneyItem(item.id)}
+                                        onAddToCompare={() => toggleCompareItem(item.id)}
+                                        isInJourney={journeyItems.includes(item.id)}
+                                        isInCompare={compareItems.includes(item.id)}
                                     />
                                 ))
                             ) : (
@@ -739,6 +818,86 @@ const App = () => {
             <TipsModal isOpen={showTips} onClose={() => setShowTips(false)} />
             <CrisisModal isOpen={showCrisis} onClose={() => setShowCrisis(false)} />
             <PrivacyShield onAccept={() => console.log('Privacy accepted')} />
+
+            {/* Phase 25: Smart Notifications */}
+            <SmartNotifications
+                notifications={notifications}
+                onDismiss={(id) => setNotifications(prev => prev.filter(n => n.id !== id))}
+                onClearAll={() => setNotifications([])}
+                onAction={(resourceId) => {
+                    const resource = ALL_DATA.find(r => r.id === resourceId);
+                    if (resource) {
+                        setMapFocus({ lat: resource.lat, lng: resource.lng, label: resource.name });
+                        setView('map');
+                    }
+                }}
+            />
+
+            {/* Phase 25: Floating Action Buttons */}
+            {(journeyItems.length > 0 || compareItems.length > 0) && (
+                <div className="fixed bottom-24 left-5 z-50 flex flex-col gap-3">
+                    {journeyItems.length > 0 && (
+                        <button
+                            onClick={() => setView('planner')}
+                            className="bg-indigo-600 text-white p-4 rounded-full shadow-2xl hover:bg-indigo-700 transition-all active:scale-95 relative"
+                        >
+                            <Icon name="mapPin" size={20} />
+                            <div className="absolute -top-1 -right-1 w-6 h-6 bg-emerald-500 rounded-full border-2 border-white flex items-center justify-center">
+                                <span className="text-xs font-black">{journeyItems.length}</span>
+                            </div>
+                        </button>
+                    )}
+                    {compareItems.length > 0 && (
+                        <button
+                            onClick={() => setView('compare')}
+                            className="bg-emerald-600 text-white p-4 rounded-full shadow-2xl hover:bg-emerald-700 transition-all active:scale-95 relative"
+                        >
+                            <Icon name="shield" size={20} />
+                            <div className="absolute -top-1 -right-1 w-6 h-6 bg-indigo-500 rounded-full border-2 border-white flex items-center justify-center">
+                                <span className="text-xs font-black">{compareItems.length}</span>
+                            </div>
+                        </button>
+                    )}
+                </div>
+            )}
+
+            {/* Phase 25: Journey Planner Modal */}
+            {view === 'planner' && journeyItems.length > 0 && (
+                <div className="fixed inset-0 z-50 bg-black/20 backdrop-blur-sm flex items-end" onClick={() => setView('home')}>
+                    <div className="w-full max-w-lg mx-auto animate-slide-up" onClick={(e) => e.stopPropagation()}>
+                        <JourneyPlanner
+                            items={ALL_DATA.filter(r => journeyItems.includes(r.id))}
+                            userLocation={userLocation}
+                            onRemove={(id) => setJourneyItems(prev => prev.filter(i => i !== id))}
+                            onClear={() => {
+                                setJourneyItems([]);
+                                setView('home');
+                            }}
+                            onNavigate={handleNavigateJourney}
+                        />
+                    </div>
+                </div>
+            )}
+
+            {/* Phase 25: Smart Compare Modal */}
+            {view === 'compare' && compareItems.length > 0 && (
+                <div className="fixed inset-0 z-50 bg-black/20 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setView('home')}>
+                    <div className="w-full max-w-4xl mx-auto animate-fade-in" onClick={(e) => e.stopPropagation()}>
+                        <SmartCompare
+                            items={ALL_DATA.filter(r => compareItems.includes(r.id))}
+                            userLocation={userLocation}
+                            onRemove={(id) => setCompareItems(prev => prev.filter(i => i !== id))}
+                            onNavigate={(id) => {
+                                const resource = ALL_DATA.find(r => r.id === id);
+                                if (resource) {
+                                    window.open(`https://www.google.com/maps/dir/?api=1&destination=${resource.lat},${resource.lng}`, '_blank');
+                                }
+                            }}
+                            onCall={(phone) => window.location.href = `tel:${phone}`}
+                        />
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
