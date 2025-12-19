@@ -137,6 +137,24 @@ const App = () => {
                     <div className="flex gap-2">
                         <button
                             onClick={() => {
+                                if (navigator.share) {
+                                    navigator.share({
+                                        title: 'Pompey Haven',
+                                        text: 'A safe, warm space for Portsmouth community resources.',
+                                        url: window.location.href
+                                    });
+                                } else {
+                                    navigator.clipboard.writeText(window.location.href);
+                                    alert("Link copied! Share the warmth.");
+                                }
+                            }}
+                            className="p-2 bg-indigo-50 text-indigo-600 rounded-full hover:bg-indigo-100 transition-colors"
+                            title="Share Haven"
+                        >
+                            <Icon name="share-2" size={18} />
+                        </button>
+                        <button
+                            onClick={() => {
                                 if (confirm("GDPR Request: This will immediately delete all local preferences and cache. Proceed?")) {
                                     localStorage.clear();
                                     window.location.reload();
@@ -240,15 +258,14 @@ const App = () => {
 
                 {view === 'home' && (
                     <>
-                        <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3 pl-1">Browse Categories</p>
-                        <div className="grid grid-cols-2 gap-3 pb-8">
-                            <CategoryButton label="Food & Meals" icon="utensils" color="bg-emerald-100 text-emerald-700" active={false} onClick={() => handleSearch({ ...filters, category: 'food' })} />
-                            <CategoryButton label="Shelter & Crisis" icon="bed" color="bg-indigo-100 text-indigo-700" active={false} onClick={() => handleSearch({ ...filters, category: 'shelter' })} />
-                            <CategoryButton label="Warmth & Net" icon="flame" color="bg-orange-100 text-orange-700" active={false} onClick={() => handleSearch({ ...filters, category: 'warmth' })} />
-                            <CategoryButton label="Family & Kids" icon="users" color="bg-pink-100 text-pink-700" active={false} onClick={() => handleSearch({ ...filters, category: 'family' })} />
-                            <CategoryButton label="Help & Health" icon="lifebuoy" color="bg-blue-100 text-blue-700" active={false} onClick={() => handleSearch({ ...filters, category: 'support' })} />
-                            <CategoryButton label="Charity Shops" icon="shopping-bag" color="text-pink-600 bg-pink-100" active={false} onClick={() => handleSearch({ ...filters, category: 'charity' })} />
-                            <CategoryButton label="View All" icon="search" color="text-slate-600 bg-slate-100" active={false} onClick={() => handleSearch({ ...filters, category: 'all' })} />
+                        <p className="text-xs font-black text-slate-400 uppercase tracking-widest mb-4 pl-1">Quick Compass</p>
+                        <div className="grid grid-cols-2 gap-4 pb-8">
+                            <CategoryButton label="Food" icon="utensils" color="text-emerald-700 bg-emerald-50" active={filters.category === 'food'} onClick={() => handleSearch({ ...filters, category: 'food' })} />
+                            <CategoryButton label="Shelter" icon="bed" color="text-indigo-700 bg-indigo-50" active={filters.category === 'shelter'} onClick={() => handleSearch({ ...filters, category: 'shelter' })} />
+                            <CategoryButton label="Warmth" icon="flame" color="text-orange-700 bg-orange-50" active={filters.category === 'warmth'} onClick={() => handleSearch({ ...filters, category: 'warmth' })} />
+                            <CategoryButton label="Family" icon="users" color="text-pink-700 bg-pink-50" active={filters.category === 'family'} onClick={() => handleSearch({ ...filters, category: 'family' })} />
+                            <CategoryButton label="Health" icon="lifebuoy" color="text-blue-700 bg-blue-50" active={filters.category === 'support'} onClick={() => handleSearch({ ...filters, category: 'support' })} />
+                            <CategoryButton label="Charity" icon="shopping-bag" color="text-rose-700 bg-rose-50" active={filters.category === 'charity'} onClick={() => handleSearch({ ...filters, category: 'charity' })} />
                         </div>
                     </>
                 )}

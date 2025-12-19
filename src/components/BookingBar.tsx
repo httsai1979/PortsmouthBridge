@@ -72,9 +72,10 @@ const BookingBar = ({ onSearch, currentFilters }: BookingBarProps) => {
                                         <button
                                             key={a}
                                             onClick={() => setLocalFilters({ ...localFilters, area: a })}
-                                            className={`px-4 py-2.5 rounded-full text-sm font-semibold transition-all border ${localFilters.area === a
-                                                ? 'bg-slate-900 text-white border-slate-900 shadow-lg shadow-slate-900/20'
-                                                : 'bg-white text-slate-600 border-slate-200 hover:border-slate-300'}`}
+                                            className={`px-6 py-3.5 rounded-2xl text-xs font-black uppercase tracking-widest transition-all border-4 ${localFilters.area === a
+                                                    ? 'bg-slate-900 text-white border-slate-900 scale-105 shadow-2xl shadow-slate-900/30'
+                                                    : 'bg-white text-slate-500 border-white shadow-lg shadow-slate-200/50 hover:border-slate-200'
+                                                }`}
                                         >
                                             {a}
                                         </button>
