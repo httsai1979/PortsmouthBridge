@@ -20,29 +20,29 @@ export interface Resource {
 export const MAP_BOUNDS = { minLat: 50.770, maxLat: 50.870, minLng: -1.120, maxLng: -1.040 };
 export const AREAS = ['All', 'PO1', 'PO2', 'PO3', 'PO4', 'PO5', 'PO6'];
 
-export const TAG_ICONS: Record<string, { icon: string; label: string; color: string; bg: string; border?: boolean }> = {
-    food: { icon: 'utensils', label: 'Food', color: 'text-emerald-600', bg: 'bg-emerald-50' },
-    shelter: { icon: 'bed', label: 'Shelter', color: 'text-blue-600', bg: 'bg-blue-50' },
-    warmth: { icon: 'flame', label: 'Warmth', color: 'text-orange-600', bg: 'bg-orange-50' },
-    support: { icon: 'lifebuoy', label: 'Support', color: 'text-indigo-600', bg: 'bg-indigo-50' },
-    family: { icon: 'family', label: 'Family', color: 'text-pink-600', bg: 'bg-pink-50' },
-    wifi: { icon: 'wifi', label: 'WiFi', color: 'text-sky-600', bg: 'bg-sky-50' },
-    charging: { icon: 'zap', label: 'Charge', color: 'text-yellow-600', bg: 'bg-yellow-50' },
-    shower: { icon: 'droplets', label: 'Shower', color: 'text-cyan-600', bg: 'bg-cyan-50' },
-    laundry: { icon: 'washing-machine', label: 'Laundry', color: 'text-blue-600', bg: 'bg-blue-50' },
-    toilet: { icon: 'toilet', label: 'Toilet', color: 'text-slate-600', bg: 'bg-slate-100' },
-    no_referral: { icon: 'check_circle', label: 'Open Access', color: 'text-teal-700', bg: 'bg-teal-50', border: true },
-    free: { icon: 'tag', label: 'Free', color: 'text-emerald-700', bg: 'bg-emerald-100', border: true },
-    membership: { icon: 'id-card', label: 'Member Only', color: 'text-slate-500', bg: 'bg-slate-100' },
-    referral: { icon: 'file-text', label: 'Referral', color: 'text-amber-600', bg: 'bg-amber-50' },
-    hot_meal: { icon: 'soup', label: 'Hot Meal', color: 'text-orange-600', bg: 'bg-orange-50' },
-    fresh_food: { icon: 'apple', label: 'Fresh Veg', color: 'text-green-600', bg: 'bg-green-50' },
-    medical: { icon: 'lifebuoy', label: 'Medical', color: 'text-red-600', bg: 'bg-red-50' },
-    women: { icon: 'heart', label: 'Women', color: 'text-rose-600', bg: 'bg-rose-50' },
-    pets: { icon: 'paw', label: 'Dogs OK', color: 'text-stone-600', bg: 'bg-stone-100' },
-    "24_7": { icon: 'clock', label: '24/7', color: 'text-purple-600', bg: 'bg-purple-50' },
-    charity: { icon: 'shopping-bag', label: 'Charity Shop', color: 'text-pink-500', bg: 'bg-pink-50' },
-    default: { icon: 'info', label: 'Info', color: 'text-gray-500', bg: 'bg-gray-50' }
+export const TAG_ICONS: Record<string, { icon: string; label: string; color: string; bg: string; hex: string; border?: boolean }> = {
+    food: { icon: 'utensils', label: 'Food', color: 'text-emerald-600', bg: 'bg-emerald-50', hex: '#059669' },
+    shelter: { icon: 'bed', label: 'Shelter', color: 'text-indigo-600', bg: 'bg-indigo-50', hex: '#4f46e5' },
+    warmth: { icon: 'flame', label: 'Warmth', color: 'text-orange-600', bg: 'bg-orange-50', hex: '#ea580c' },
+    support: { icon: 'lifebuoy', label: 'Support', color: 'text-blue-600', bg: 'bg-blue-50', hex: '#2563eb' },
+    family: { icon: 'family', label: 'Family', color: 'text-pink-600', bg: 'bg-pink-50', hex: '#db2777' },
+    wifi: { icon: 'wifi', label: 'WiFi', color: 'text-sky-600', bg: 'bg-sky-50', hex: '#0ea5e9' },
+    charging: { icon: 'zap', label: 'Charge', color: 'text-yellow-600', bg: 'bg-yellow-50', hex: '#eab308' },
+    shower: { icon: 'droplets', label: 'Shower', color: 'text-cyan-600', bg: 'bg-cyan-50', hex: '#0891b2' },
+    laundry: { icon: 'washing-machine', label: 'Laundry', color: 'text-blue-600', bg: 'bg-blue-50', hex: '#2563eb' },
+    toilet: { icon: 'toilet', label: 'Toilet', color: 'text-slate-600', bg: 'bg-slate-100', hex: '#475569' },
+    no_referral: { icon: 'check_circle', label: 'Open Access', color: 'text-teal-700', bg: 'bg-teal-50', hex: '#0f766e', border: true },
+    free: { icon: 'tag', label: 'Free', color: 'text-emerald-700', bg: 'bg-emerald-100', hex: '#047857', border: true },
+    membership: { icon: 'id-card', label: 'Member Only', color: 'text-slate-500', bg: 'bg-slate-100', hex: '#64748b' },
+    referral: { icon: 'file-text', label: 'Referral', color: 'text-amber-600', bg: 'bg-amber-50', hex: '#d97706' },
+    hot_meal: { icon: 'soup', label: 'Hot Meal', color: 'text-orange-600', bg: 'bg-orange-50', hex: '#ea580c' },
+    fresh_food: { icon: 'apple', label: 'Fresh Veg', color: 'text-green-600', bg: 'bg-green-50', hex: '#16a34a' },
+    medical: { icon: 'lifebuoy', label: 'Medical', color: 'text-red-600', bg: 'bg-red-50', hex: '#dc2626' },
+    women: { icon: 'heart', label: 'Women', color: 'text-rose-600', bg: 'bg-rose-50', hex: '#e11d48' },
+    pets: { icon: 'paw', label: 'Dogs OK', color: 'text-stone-600', bg: 'bg-stone-100', hex: '#57534e' },
+    "24_7": { icon: 'clock', label: '24/7', color: 'text-purple-600', bg: 'bg-purple-50', hex: '#9333ea' },
+    charity: { icon: 'shopping-bag', label: 'Charity Shop', color: 'text-pink-500', bg: 'bg-pink-50', hex: '#ec4899' },
+    default: { icon: 'info', label: 'Info', color: 'text-gray-500', bg: 'bg-gray-50', hex: '#6b7280' }
 };
 
 export const SUPERMARKET_TIPS = [
@@ -102,7 +102,12 @@ export const REAL_DATA: Resource[] = [
     { id: 's12', name: "Advice Portsmouth", category: "shelter", type: "Advice", area: "PO2", address: "Kingston Cres", description: "Legal housing advice.", requirements: "Drop-in.", tags: ["advice", "free"], schedule: { 1: "09:00-17:00", 2: "09:00-17:00", 3: "09:00-17:00", 4: "13:00-19:30", 5: "09:00-16:30", 6: "Closed", 0: "Closed" }, lat: 50.815, lng: -1.088, transport: "Bus 2, 3", phone: "023 9279 4340" },
     { id: 's13', name: "Two Saints Locksway", category: "shelter", type: "Hostel", area: "PO4", address: "Locksway Rd", description: "Supported housing.", requirements: "Referral.", tags: ["shelter"], schedule: { 1: "00:00-23:59", 2: "00:00-23:59", 3: "00:00-23:59", 4: "00:00-23:59", 5: "00:00-23:59", 6: "00:00-23:59", 0: "00:00-23:59" }, lat: 50.795, lng: -1.060, transport: "Bus 1, 18", phone: "023 9229 6919" },
     { id: 's14', name: "Nile House", category: "shelter", type: "Hostel", area: "PO5", address: "Nile St", description: "Supported housing.", requirements: "Referral.", tags: ["shelter"], schedule: { 1: "00:00-23:59", 2: "00:00-23:59", 3: "00:00-23:59", 4: "00:00-23:59", 5: "00:00-23:59", 6: "00:00-23:59", 0: "00:00-23:59" }, lat: 50.793, lng: -1.088, transport: "Bus 2, 3, 23", phone: "023 9229 6919" },
-    { id: 's15', name: "Hyde Housing", category: "shelter", type: "Assoc", area: "PO1", address: "Stanhope Rd", description: "Housing association.", requirements: "Apply.", tags: ["advice"], schedule: { 1: "09:00-17:00", 2: "09:00-17:00", 3: "09:00-17:00", 4: "09:00-17:00", 5: "09:00-17:00", 6: "Closed", 0: "Closed" }, lat: 50.800, lng: -1.090, transport: "Bus 1, 2, 3, 7, 8", phone: "0800 328 2282" }
+    { id: 's15', name: "Hyde Housing", category: "shelter", type: "Assoc", area: "PO1", address: "Stanhope Rd", description: "Housing association.", requirements: "Apply.", tags: ["advice"], schedule: { 1: "09:00-17:00", 2: "09:00-17:00", 3: "09:00-17:00", 4: "09:00-17:00", 5: "09:00-17:00", 6: "Closed", 0: "Closed" }, lat: 50.800, lng: -1.090, transport: "Bus 1, 2, 3, 7, 8", phone: "0800 328 2282" },
+
+    // --- 👨‍👩‍👧‍👦 FAMILY (SUPPORT) ---
+    { id: 'fam1', name: "Northern Parade Family Hub", category: "family", type: "Family Hub", area: "PO2", address: "Doyle Avenue, PO2 9NE", description: "Support for families with children 0-19. Advice & play groups.", requirements: "Open to all families.", tags: ["family", "advice", "playgroup"], schedule: { 1: "08:30-17:00", 2: "08:30-17:00", 3: "08:30-17:00", 4: "08:30-17:00", 5: "08:30-16:30", 6: "Closed", 0: "Closed" }, lat: 50.824, lng: -1.077, phone: "023 9266 2115", trustScore: 100 },
+    { id: 'fam2', name: "Somerstown Family Hub", category: "family", type: "Family Hub", area: "PO5", address: "Omega Street, PO5 4LP", description: "Central family support hub. Baby clinic, stay & play.", requirements: "Open to all.", tags: ["family", "medical", "playgroup"], schedule: { 1: "08:30-17:00", 2: "08:30-17:00", 3: "08:30-17:00", 4: "08:30-17:00", 5: "08:30-16:30", 6: "Closed", 0: "Closed" }, lat: 50.795, lng: -1.088, phone: "023 9282 1816", trustScore: 100 },
+    { id: 'fam3', name: "Paulsgrove Family Hub", category: "family", type: "Family Hub", area: "PO6", address: "Cheltenham Road, PO6 3PL", description: "North city family services. Parenting support.", requirements: "Free access.", tags: ["family", "advice"], schedule: { 1: "08:30-17:00", 2: "08:30-17:00", 3: "08:30-17:00", 4: "08:30-17:00", 5: "08:30-16:30", 6: "Closed", 0: "Closed" }, lat: 50.849, lng: -1.098, phone: "023 9238 5959", trustScore: 100 }
     // ... (rest of REAL_DATA would go here, omitting for brevity in this step)
 ];
 

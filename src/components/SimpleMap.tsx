@@ -21,16 +21,8 @@ interface SimpleMapProps {
 // Utility to create a custom marker icon
 const createCustomIcon = (item: Resource, isSelected: boolean) => {
     const status = checkStatus(item.schedule);
-    // High-contrast vibrant colors for standard categories
-    const categoryColors: Record<string, string> = {
-        food: '#059669', // Emerald 600
-        shelter: '#4f46e5', // Indigo 600
-        warmth: '#ea580c', // Orange 600
-        support: '#2563eb', // Blue 600
-        family: '#db2777', // Pink 600
-        charity: '#e11d48'  // Rose 600
-    };
-    const color = categoryColors[item.category] || '#475569';
+    const hex = TAG_ICONS[item.category]?.hex || TAG_ICONS.default.hex;
+    const color = hex;
 
     return L.divIcon({
         className: 'custom-div-icon',
@@ -100,7 +92,9 @@ const SimpleMap = ({ data, category, statusFilter, savedIds, onToggleSave, steal
         { id: 'all', label: 'All', icon: 'search' },
         { id: 'food', label: 'Food', icon: 'utensils' },
         { id: 'shelter', label: 'Shelter', icon: 'bed' },
+        { id: 'warmth', label: 'Warmth', icon: 'flame' },
         { id: 'support', label: 'Health', icon: 'lifebuoy' },
+        { id: 'family', label: 'Family', icon: 'family' },
     ];
 
     return (
@@ -176,7 +170,8 @@ const SimpleMap = ({ data, category, statusFilter, savedIds, onToggleSave, steal
             </button>
 
             {selectedItem && (
-                <div className="absolute bottom-6 left-6 right-6 z-[1000] bg-white rounded-3xl p-5 shadow-2xl animate-fade-in-up border border-slate-100">
+                <div className="absolute bottom-6 left-6 right-6 z-[1000] bg-white rounded-3xl p-5 shadow-2xl animate-fade-in-up border-2 transition-colors duration-500" style={{ borderColor: `${TAG_ICONS[selectedItem.category]?.hex || '#f1f5f9'}20` }}>
+                    <div className="absolute top-0 left-0 right-0 h-1.5 rounded-t-3xl" style={{ backgroundColor: TAG_ICONS[selectedItem.category]?.hex || '#475569' }}></div>
                     <button
                         onClick={() => setSelectedItem(null)}
                         className="absolute top-4 right-4 text-slate-400 hover:text-slate-600"
@@ -190,8 +185,8 @@ const SimpleMap = ({ data, category, statusFilter, savedIds, onToggleSave, steal
                         </div>
                         <div>
                             <div className="flex items-center gap-2 mb-1">
-                                <span className="text-[10px] font-black text-indigo-600 uppercase tracking-widest leading-none">
-                                    {selectedItem.category} • {selectedItem.area}
+                                <span className={`text-[10px] font-black uppercase tracking-widest leading-none ${TAG_ICONS[selectedItem.category]?.color || 'text-slate-400'}`}>
+                                    {TAG_ICONS[selectedItem.category]?.label || selectedItem.category} • {selectedItem.area}
                                 </span>
                                 {selectedItem.trustScore && selectedItem.trustScore > 90 && (
                                     <span className="bg-indigo-50 text-indigo-600 text-[8px] font-black uppercase px-2 py-0.5 rounded-md border border-indigo-100 flex items-center gap-1">

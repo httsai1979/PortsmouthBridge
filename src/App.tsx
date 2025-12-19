@@ -211,20 +211,27 @@ const App = () => {
 
                                 <div className="grid grid-cols-2 gap-4 border-t border-white/10 pt-6">
                                     <div className="flex flex-col">
-                                        <p className="text-[8px] font-black text-indigo-300 uppercase tracking-widest mb-1 flex items-center gap-1.5">
+                                        <div className="text-[8px] font-black text-indigo-300 uppercase tracking-widest mb-1 flex items-center gap-1.5">
                                             <div className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse shadow-[0_0_8px_rgba(52,211,153,0.8)]"></div>
-                                            Live Situation
-                                        </p>
+                                            City Pulse
+                                        </div>
                                         <div className="flex items-center gap-2">
-                                            <span className="text-xl font-black text-white">{ALL_DATA.filter(p => checkStatus(p.schedule).status === 'open').length}</span>
-                                            <span className="text-[10px] font-bold text-indigo-200 leading-none">Hubs Open<br />Right Now</span>
+                                            <span className="text-xl font-black text-white">
+                                                {(() => {
+                                                    const verified = ALL_DATA.filter(p => (p.trustScore || 0) > 90).length;
+                                                    return Math.round((verified / ALL_DATA.length) * 100);
+                                                })()}%
+                                            </span>
+                                            <span className="text-[10px] font-bold text-indigo-200 leading-none">High-Confidence<br />Verified Network</span>
                                         </div>
                                     </div>
                                     <div className="flex flex-col">
-                                        <p className="text-[8px] font-black text-indigo-300 uppercase tracking-widest mb-1">Total Support</p>
+                                        <div className="text-[8px] font-black text-indigo-300 uppercase tracking-widest mb-1">Active Lifelines</div>
                                         <div className="flex items-center gap-2">
-                                            <span className="text-xl font-black text-white">{ALL_DATA.length}</span>
-                                            <span className="text-[10px] font-bold text-indigo-200 leading-none">Network<br />Resources</span>
+                                            <span className="text-xl font-black text-white">
+                                                {ALL_DATA.filter(p => (filters.area === 'All' || p.area === filters.area) && checkStatus(p.schedule).status === 'open').length}
+                                            </span>
+                                            <span className="text-[10px] font-bold text-indigo-200 leading-none">Hubs Open In<br />{filters.area === 'All' ? 'Portsmouth' : filters.area}</span>
                                         </div>
                                     </div>
                                 </div>
