@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { ALL_DATA, AREAS } from './data';
+import { ALL_DATA, AREAS, PROGRESS_TIPS } from './data';
 import { checkStatus, getDistance, playSuccessSound } from './utils';
 
 // Components
@@ -263,9 +263,30 @@ const App = () => {
                             <CategoryButton label="Food" icon="utensils" color="text-emerald-700 bg-emerald-50" active={filters.category === 'food'} onClick={() => handleSearch({ ...filters, category: 'food' })} />
                             <CategoryButton label="Shelter" icon="bed" color="text-indigo-700 bg-indigo-50" active={filters.category === 'shelter'} onClick={() => handleSearch({ ...filters, category: 'shelter' })} />
                             <CategoryButton label="Warmth" icon="flame" color="text-orange-700 bg-orange-50" active={filters.category === 'warmth'} onClick={() => handleSearch({ ...filters, category: 'warmth' })} />
-                            <CategoryButton label="Family" icon="users" color="text-pink-700 bg-pink-50" active={filters.category === 'family'} onClick={() => handleSearch({ ...filters, category: 'family' })} />
+                            <CategoryButton label="Family" icon="family" color="text-pink-700 bg-pink-50" active={filters.category === 'family'} onClick={() => handleSearch({ ...filters, category: 'family' })} />
                             <CategoryButton label="Health" icon="lifebuoy" color="text-blue-700 bg-blue-50" active={filters.category === 'support'} onClick={() => handleSearch({ ...filters, category: 'support' })} />
                             <CategoryButton label="Charity" icon="shopping-bag" color="text-rose-700 bg-rose-50" active={filters.category === 'charity'} onClick={() => handleSearch({ ...filters, category: 'charity' })} />
+                            <CategoryButton label="Learning" icon="book-open" color="text-amber-700 bg-amber-50" active={filters.category === 'learning'} onClick={() => handleSearch({ ...filters, category: 'learning' })} />
+                            <CategoryButton label="Work Skills" icon="briefcase" color="text-slate-700 bg-slate-100" active={filters.category === 'skills'} onClick={() => handleSearch({ ...filters, category: 'skills' })} />
+                        </div>
+
+                        {/* Phase 21: Growth Pathway Tips */}
+                        <div className="mb-10 p-6 bg-gradient-to-br from-amber-50 via-white to-orange-50 rounded-[32px] border-2 border-amber-100/50 shadow-md shadow-amber-200/20 relative overflow-hidden group transition-all hover:shadow-lg">
+                            <div className="absolute top-0 right-0 w-32 h-32 bg-amber-200/20 rounded-full -mr-16 -mt-16 blur-2xl"></div>
+                            <h3 className="text-[10px] font-black text-amber-600 uppercase tracking-[0.2em] mb-3 flex items-center gap-2">
+                                <Icon name="sparkles" size={14} className="animate-pulse" /> Community Growth Tip
+                            </h3>
+                            <div className="relative z-10">
+                                {(() => {
+                                    const tip = PROGRESS_TIPS[Math.floor(new Date().getDate()) % PROGRESS_TIPS.length];
+                                    return (
+                                        <>
+                                            <p className="text-sm font-black text-slate-900 mb-1">{tip.title}</p>
+                                            <p className="text-xs text-slate-600 font-medium leading-relaxed opacity-90">{tip.note}</p>
+                                        </>
+                                    );
+                                })()}
+                            </div>
                         </div>
 
                         {savedResources.length > 0 && (
@@ -441,13 +462,13 @@ const App = () => {
                                 ))}
                             </div>
                             <div className="flex gap-2 overflow-x-auto no-scrollbar pb-2">
-                                {['all', 'food', 'shelter', 'warmth', 'support', 'family', 'charity'].map(cat => (
+                                {['all', 'food', 'shelter', 'warmth', 'support', 'family', 'learning', 'skills', 'charity'].map(cat => (
                                     <button
                                         key={cat}
                                         onClick={() => setFilters({ ...filters, category: cat })}
                                         className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest border-2 transition-all whitespace-nowrap ${filters.category === cat ? 'bg-slate-900 border-slate-900 text-white shadow-lg' : 'bg-white border-slate-100 text-slate-400'}`}
                                     >
-                                        {cat === 'all' ? 'All Needs' : cat}
+                                        {cat === 'all' ? 'All Needs' : cat === 'support' ? 'Health' : cat === 'skills' ? 'Work Skills' : cat}
                                     </button>
                                 ))}
                             </div>

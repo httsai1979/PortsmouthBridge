@@ -38,6 +38,11 @@ export const TAG_ICONS: Record<string, { icon: string; label: string; color: str
     hot_meal: { icon: 'soup', label: 'Hot Meal', color: 'text-orange-600', bg: 'bg-orange-50', hex: '#ea580c' },
     fresh_food: { icon: 'apple', label: 'Fresh Veg', color: 'text-green-600', bg: 'bg-green-50', hex: '#16a34a' },
     medical: { icon: 'lifebuoy', label: 'Medical', color: 'text-red-600', bg: 'bg-red-50', hex: '#dc2626' },
+    mental_health: { icon: 'brain', label: 'Well-being', color: 'text-purple-600', bg: 'bg-purple-50', hex: '#9333ea' },
+    addiction: { icon: 'shield-off', label: 'Recovery', color: 'text-slate-700', bg: 'bg-slate-100', hex: '#334155' },
+    learning: { icon: 'book-open', label: 'Library/Learning', color: 'text-amber-700', bg: 'bg-amber-50', hex: '#b45309' },
+    skills: { icon: 'briefcase', label: 'Job Skills', color: 'text-indigo-700', bg: 'bg-indigo-50', hex: '#4338ca' },
+    community: { icon: 'users', label: 'Social Group', color: 'text-emerald-700', bg: 'bg-emerald-50', hex: '#047857' },
     women: { icon: 'heart', label: 'Women', color: 'text-rose-600', bg: 'bg-rose-50', hex: '#e11d48' },
     pets: { icon: 'paw', label: 'Dogs OK', color: 'text-stone-600', bg: 'bg-stone-100', hex: '#57534e' },
     "24_7": { icon: 'clock', label: '24/7', color: 'text-purple-600', bg: 'bg-purple-50', hex: '#9333ea' },
@@ -52,6 +57,14 @@ export const SUPERMARKET_TIPS = [
     { store: "Lidl", time: "Morning/Evening", note: "Look for 30% off orange stickers." },
     { store: "Aldi", time: "Morning (08:00)", note: "50% off red stickers on fresh items." },
     { store: "Waitrose", time: "Before closing", note: "High quality reductions often available." }
+];
+
+export const PROGRESS_TIPS = [
+    { title: "Quit Smoking", note: "PCC offers free nicotine patches & support. Find in 'Health' (w5)." },
+    { title: "Digital Skills", note: "Central Library (PO1) has free computer workshops every Wed 10am." },
+    { title: "Job Support", note: "The Recovery Hub (PO1) offers peer-led job skills workshops." },
+    { title: "Family Fun", note: "Free children's storytime at Central Library (PO1) every Saturday morning." },
+    { title: "Mental Health", note: "Talking Change (PO3) allows self-referral for free NHS counseling." }
 ];
 
 export const REAL_DATA: Resource[] = [
@@ -107,7 +120,15 @@ export const REAL_DATA: Resource[] = [
     // --- 👨‍👩‍👧‍👦 FAMILY (SUPPORT) ---
     { id: 'fam1', name: "Northern Parade Family Hub", category: "family", type: "Family Hub", area: "PO2", address: "Doyle Avenue, PO2 9NE", description: "Support for families with children 0-19. Advice & play groups.", requirements: "Open to all families.", tags: ["family", "advice", "playgroup"], schedule: { 1: "08:30-17:00", 2: "08:30-17:00", 3: "08:30-17:00", 4: "08:30-17:00", 5: "08:30-16:30", 6: "Closed", 0: "Closed" }, lat: 50.824, lng: -1.077, phone: "023 9266 2115", trustScore: 100 },
     { id: 'fam2', name: "Somerstown Family Hub", category: "family", type: "Family Hub", area: "PO5", address: "Omega Street, PO5 4LP", description: "Central family support hub. Baby clinic, stay & play.", requirements: "Open to all.", tags: ["family", "medical", "playgroup"], schedule: { 1: "08:30-17:00", 2: "08:30-17:00", 3: "08:30-17:00", 4: "08:30-17:00", 5: "08:30-16:30", 6: "Closed", 0: "Closed" }, lat: 50.795, lng: -1.088, phone: "023 9282 1816", trustScore: 100 },
-    { id: 'fam3', name: "Paulsgrove Family Hub", category: "family", type: "Family Hub", area: "PO6", address: "Cheltenham Road, PO6 3PL", description: "North city family services. Parenting support.", requirements: "Free access.", tags: ["family", "advice"], schedule: { 1: "08:30-17:00", 2: "08:30-17:00", 3: "08:30-17:00", 4: "08:30-17:00", 5: "08:30-16:30", 6: "Closed", 0: "Closed" }, lat: 50.849, lng: -1.098, phone: "023 9238 5959", trustScore: 100 }
+    { id: 'fam3', name: "Paulsgrove Family Hub", category: "family", type: "Family Hub", area: "PO6", address: "Cheltenham Road, PO6 3PL", description: "North city family services. Parenting support.", requirements: "Free access.", tags: ["family", "advice"], schedule: { 1: "08:30-17:00", 2: "08:30-17:00", 3: "08:30-17:00", 4: "08:30-17:00", 5: "08:30-16:30", 6: "Closed", 0: "Closed" }, lat: 50.849, lng: -1.098, phone: "023 9238 5959", trustScore: 100 },
+
+    // --- 🌱 GROWTH & WELL-BEING (PROGRESS) ---
+    { id: 'w1', name: "Portsmouth Recovery Hub", category: "support", type: "Addiction Support", area: "PO1", address: "Camp Road, PO1 2JJ", description: "Specialist support for alcohol & drug recovery. Walk-in clinic.", requirements: "Open to all needing support.", tags: ["addiction", "mental_health", "no_referral"], schedule: { 1: "09:00-17:00", 2: "09:00-17:00", 3: "09:00-17:00", 4: "09:00-17:00", 5: "09:00-17:00", 6: "Closed", 0: "Closed" }, lat: 50.798, lng: -1.092, phone: "023 9275 1617", trustScore: 100 },
+    { id: 'w2', name: "Central Library", category: "learning", type: "Library & Hub", area: "PO1", address: "Guildhall Square, PO1 2DX", description: "Free WiFi, Computers, Study spaces, Workshops. Daily free activities.", requirements: "Library card (Free) for borrowing.", tags: ["learning", "wifi", "free", "no_referral"], schedule: { 1: "09:30-17:00", 2: "09:30-17:00", 3: "09:30-17:00", 4: "09:30-17:00", 5: "09:30-17:00", 6: "10:00-15:30", 0: "Closed" }, lat: 50.798, lng: -1.091, phone: "023 9281 9311", trustScore: 100 },
+    { id: 'w3', name: "Talking Change", category: "support", type: "Mental Health", area: "PO3", address: "The Pompey Centre", description: "NHS mental health support for stress, anxiety, & depression.", requirements: "Self-referral available.", tags: ["mental_health", "medical"], schedule: { 1: "08:00-20:00", 2: "08:00-20:00", 3: "08:00-20:00", 4: "08:00-20:00", 5: "08:00-17:00", 6: "Closed", 0: "Closed" }, lat: 50.797, lng: -1.065, phone: "023 9289 2211", trustScore: 100 },
+    { id: 'w4', name: "Portsmouth Wellbeing Centre", category: "support", type: "Social Hub", area: "PO1", address: "Guildhall Square", description: "Drop-ins for mental health peer support and groups.", requirements: "Open to adults.", tags: ["community", "mental_health", "no_referral"], schedule: { 1: "11:00-16:00", 2: "11:00-16:00", 3: "11:00-16:00", 4: "11:00-16:00", 5: "11:00-16:00", 6: "Closed", 0: "Closed" }, lat: 50.798, lng: -1.091, phone: "023 9229 4573" },
+    { id: 'w5', name: "Smoking Cessation (PCC)", category: "support", type: "Health Support", area: "All", address: "Civic Offices / Online", description: "Quit smoking clinics and free nicotine replacement therapy.", requirements: "Portsmouth residents.", tags: ["addiction", "medical"], schedule: { 1: "09:00-17:00", 2: "09:00-17:00", 3: "09:00-17:00", 4: "09:00-17:00", 5: "09:00-17:00", 6: "Closed", 0: "Closed" }, lat: 50.799, lng: -1.091, phone: "023 9273 5258" },
+    { id: 'sk1', name: "Portsmouth Skills Hub", category: "skills", type: "Career Advice", area: "PO1", address: "Arundel Street, PO1 1PN", description: "Careers advice, apprenticeship help, and digital skill training.", requirements: "Open to all residents.", tags: ["skills", "learning", "no_referral"], schedule: { 1: "09:00-17:00", 2: "09:00-17:00", 3: "09:00-17:00", 4: "09:00-17:00", 5: "09:00-17:00", 6: "Closed", 0: "Closed" }, lat: 50.801, lng: -1.090, phone: "023 9283 4092", trustScore: 100 }
     // ... (rest of REAL_DATA would go here, omitting for brevity in this step)
 ];
 

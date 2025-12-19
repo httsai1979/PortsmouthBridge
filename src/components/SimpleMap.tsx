@@ -95,6 +95,8 @@ const SimpleMap = ({ data, category, statusFilter, savedIds, onToggleSave, steal
         { id: 'warmth', label: 'Warmth', icon: 'flame' },
         { id: 'support', label: 'Health', icon: 'lifebuoy' },
         { id: 'family', label: 'Family', icon: 'family' },
+        { id: 'learning', label: 'Learning', icon: 'book-open' },
+        { id: 'skills', label: 'Work Skills', icon: 'briefcase' },
     ];
 
     return (

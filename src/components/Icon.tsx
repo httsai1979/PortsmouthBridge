@@ -58,6 +58,10 @@ const Icon: React.FC<IconProps> = ({ name, size = 18, className = "" }) => {
         bus: <><rect width="16" height="16" x="4" y="4" rx="2" /><path d="M9 18h6" /><path d="M10 22v-4" /><path d="M14 22v-4" /><circle cx="7" cy="15" r="1" /><circle cx="17" cy="15" r="1" /><path d="M8 8h8" /></>,
         shield: <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z" />,
         moon: <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />,
+        brain: <path d="M9.5 2a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h1m5 0a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h1M12 17c-4.418 0-8-2.686-8-6s3.582-6 8-6 8 2.686 8 6-3.582 6-8 6z" />,
+        'book-open': <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2zM22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />,
+        briefcase: <><rect width="20" height="14" x="2" y="7" rx="2" ry="2" /><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" /></>,
+        'shield-off': <><path d="M19.69 14a6.9 6.9 0 0 0 .31-2V5l-8-3-3.16 1.18" /><path d="M4.73 4.73 1.58 1.58" /><path d="M12 22s8-4 8-10" /><path d="M3.34 7a10.78 10.78 0 0 0-.34 3v2c0 6 8 10 8 10" /><line x1="1" x2="23" y1="1" y2="23" /></>,
     };
 
     return (
