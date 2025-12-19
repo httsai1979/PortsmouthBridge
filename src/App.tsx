@@ -475,10 +475,22 @@ const App = () => {
                 {view === 'map' && (
                     <div className="animate-fade-in-up">
                         <div className="mb-4 flex items-center justify-between">
-                            <h2 className="text-xl font-black text-slate-800">Explorer</h2>
-                            <div className="flex gap-1">
-                                <button onClick={() => setMapFilter('open')} className={`px-4 py-2 rounded-full text-[10px] font-black uppercase border-2 transition-all ${mapFilter === 'open' ? 'bg-emerald-600 text-white border-emerald-600' : 'bg-white text-slate-400 border-slate-100'}`}>Open</button>
-                                <button onClick={() => setMapFilter('all')} className={`px-4 py-2 rounded-full text-[10px] font-black uppercase border-2 transition-all ${mapFilter === 'all' ? 'bg-slate-900 text-white border-slate-900' : 'bg-white text-slate-400 border-slate-100'}`}>All</button>
+                            <div>
+                                <h2 className="text-xl font-black text-slate-800">Explorer</h2>
+                                <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Visual navigation</p>
+                            </div>
+                            <div className="flex gap-2">
+                                <button
+                                    onClick={() => setView('list')}
+                                    className="p-3 bg-white border-2 border-slate-100 rounded-2xl text-slate-600 hover:bg-slate-50 transition-all flex items-center gap-2 shadow-sm"
+                                    title="Switch to List View"
+                                >
+                                    <Icon name="list" size={18} />
+                                </button>
+                                <div className="flex gap-1">
+                                    <button onClick={() => setMapFilter('open')} className={`px-4 py-2 rounded-full text-[10px] font-black uppercase border-2 transition-all ${mapFilter === 'open' ? 'bg-emerald-600 text-white border-emerald-600' : 'bg-white text-slate-400 border-slate-100'}`}>Open</button>
+                                    <button onClick={() => setMapFilter('all')} className={`px-4 py-2 rounded-full text-[10px] font-black uppercase border-2 transition-all ${mapFilter === 'all' ? 'bg-slate-900 text-white border-slate-900' : 'bg-white text-slate-400 border-slate-100'}`}>All</button>
+                                </div>
                             </div>
                         </div>
                         <SimpleMap
@@ -500,7 +512,16 @@ const App = () => {
                                 <h2 className="text-2xl font-black text-slate-900 tracking-tight capitalize">{filters.category === 'all' ? 'Directory' : filters.category}</h2>
                                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Finding the right support</p>
                             </div>
-                            <button onClick={() => setView('home')} className="p-3 bg-slate-100 text-slate-400 rounded-2xl hover:bg-slate-200 transition-all"><Icon name="home" size={20} /></button>
+                            <div className="flex gap-2">
+                                <button
+                                    onClick={() => setView('map')}
+                                    className="p-3 bg-indigo-600 text-white rounded-2xl hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-200 flex items-center gap-2"
+                                    title="Switch to Map View"
+                                >
+                                    <Icon name="mapPin" size={20} />
+                                </button>
+                                <button onClick={() => setView('home')} className="p-3 bg-slate-100 text-slate-400 rounded-2xl hover:bg-slate-200 transition-all"><Icon name="home" size={20} /></button>
+                            </div>
                         </div>
 
                         {/* Directory Tactical Filters (Enhanced) */}
