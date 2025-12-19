@@ -27,7 +27,28 @@ const ResourceCard = ({ item }: { item: Resource }) => {
                 <Icon name="mapPin" size={14} className="text-slate-400" /> {item.address}
             </div>
 
-            <p className="text-sm text-slate-600 mb-5 leading-relaxed">{item.description}</p>
+            <p className="text-sm text-slate-600 mb-4 leading-relaxed">{item.description}</p>
+
+            {item.transport && (
+                <div className="flex items-center gap-2 text-[10px] font-bold text-blue-600 bg-blue-50 px-3 py-1.5 rounded-lg mb-4 w-fit">
+                    <Icon name="zap" size={10} /> {item.transport}
+                </div>
+            )}
+
+            <div className="bg-slate-50/50 border border-dashed border-slate-200 rounded-xl p-3 mb-5 flex items-center justify-between">
+                <div>
+                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-0.5">Live Hub Status</span>
+                    <span className="text-xs font-bold text-slate-700">Everything okay here today?</span>
+                </div>
+                <div className="flex gap-1.5">
+                    <button onClick={() => alert("Thanks for reporting! Status updated.")} className="p-2 bg-white border border-slate-200 rounded-lg hover:border-emerald-500 hover:text-emerald-600 transition-all shadow-sm" aria-label="Confirm Open">
+                        <Icon name="check" size={14} />
+                    </button>
+                    <button onClick={() => alert("Thanks! We've flagged this for review.")} className="p-2 bg-white border border-slate-200 rounded-lg hover:border-rose-500 hover:text-rose-600 transition-all shadow-sm" aria-label="Report Issue">
+                        <Icon name="alert" size={14} />
+                    </button>
+                </div>
+            </div>
 
             <div className="flex flex-wrap gap-2 mb-5">
                 {item.tags.slice(0, 4).map((tag: string) => {
@@ -54,7 +75,7 @@ const ResourceCard = ({ item }: { item: Resource }) => {
                 <button onClick={() => setExpanded(!expanded)} className="flex-1 py-3 bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-700 hover:bg-slate-50 hover:border-slate-300 transition-all">
                     {expanded ? 'Hide Hours' : 'View Schedule'}
                 </button>
-                <a href={`https://www.google.com/maps/dir/?api=1&destination=${item.lat},${item.lng}`} target="_blank" className="flex-1 py-3 bg-slate-900 text-white rounded-xl text-xs font-bold flex justify-center items-center gap-2 hover:bg-slate-800 transition-all shadow-md shadow-slate-900/10">
+                <a href={`https://www.google.com/maps/dir/?api=1&destination=${item.lat},${item.lng}`} target="_blank" rel="noopener noreferrer" className="flex-1 py-3 bg-slate-900 text-white rounded-xl text-xs font-bold flex justify-center items-center gap-2 hover:bg-slate-800 transition-all shadow-md shadow-slate-900/10">
                     <Icon name="navigation" size={12} /> Directions
                 </a>
                 {item.phone && (

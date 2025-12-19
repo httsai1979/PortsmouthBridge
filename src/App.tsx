@@ -11,13 +11,16 @@ import ResourceCard from './components/ResourceCard';
 import { TipsModal, CrisisModal } from './components/Modals';
 import PrintView from './components/PrintView';
 import { AreaScheduleView, CategoryButton } from './components/Schedule';
+import AIAssistant from './components/AIAssistant';
 
 const App = () => {
     // Branding & Accessibility State
     const [highContrast, setHighContrast] = useState(false);
+    const [isOffline, setIsOffline] = useState(!navigator.onLine);
 
     // Initial Loading State
     const [loading, setLoading] = useState(true);
+    // ... rest of state
     const [view, setView] = useState<'home' | 'map' | 'list' | 'planner'>('home');
     const [showTips, setShowTips] = useState(false);
     const [showCrisis, setShowCrisis] = useState(false);
@@ -44,6 +47,17 @@ const App = () => {
                 (err) => console.log("Location access denied/error", err)
             );
         }
+
+        const handleOnline = () => setIsOffline(false);
+        const handleOffline = () => setIsOffline(true);
+
+        window.addEventListener('online', handleOnline);
+        window.addEventListener('offline', handleOffline);
+
+        return () => {
+            window.removeEventListener('online', handleOnline);
+            window.removeEventListener('offline', handleOffline);
+        };
     }, []);
 
     const handleSearch = (newFilters: { area: string; category: string; date: string }) => {
@@ -123,7 +137,14 @@ const App = () => {
                         </button>
                     </div>
                 </div>
+                {isOffline && (
+                    <div className="bg-amber-500 text-amber-950 px-5 py-1.5 text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2 animate-pulse">
+                        <Icon name="wifi" size={12} /> Offline Mode: Browsing Saved Data
+                    </div>
+                )}
             </header>
+
+            <AIAssistant onIntent={handleSearch} currentArea={filters.area} />
 
             <TipsModal isOpen={showTips} onClose={() => setShowTips(false)} />
             <CrisisModal isOpen={showCrisis} onClose={() => setShowCrisis(false)} />
