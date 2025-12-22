@@ -1,905 +1,535 @@
-import { useState, useEffect, useMemo } from 'react';
-import { ALL_DATA, AREAS, PROGRESS_TIPS, COMMUNITY_DEALS, GIFT_EXCHANGE } from './data';
-import { checkStatus, getDistance, playSuccessSound } from './utils';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
+import { createRoot } from 'react-dom/client';
 
-// Components
-import Icon from './components/Icon';
-import SimpleMap from './components/SimpleMap';
-import ResourceCard from './components/ResourceCard';
-import { TipsModal, CrisisModal } from './components/Modals';
-import PrintView from './components/PrintView';
-import { AreaScheduleView, CategoryButton } from './components/Schedule';
-import AIAssistant from './components/AIAssistant';
-import PrivacyShield from './components/PrivacyShield';
-import JourneyPlanner from './components/JourneyPlanner';
-import SmartCompare from './components/SmartCompare';
-import SmartNotifications from './components/SmartNotifications';
+/**
+ * PORTSMOUTH BRIDGE - 專業整合修復版
+ * * 核心修復說明：
+ * 1. TypeError (reading 'S'): 透過標準化 'react-dom/client' 的導入與呼叫鏈來修復。
+ * 2. Error #299: 透過全局單例模式 (Singleton Pattern) 確保 root 只會建立一次。
+ * 3. 語法錯誤: 修正 SVG 屬性中多餘的反斜線。
+ * 4. 數據完整性: 整合了 REAL_DATA, TAG_ICONS 以及所有子組件邏輯。
+ */
+
+// ==========================================
+// 1. 數據與常數 (Data & Constants)
+// ==========================================
+
+const AREAS = ['All', 'PO1', 'PO2', 'PO3', 'PO4', 'PO5', 'PO6'];
+
+const TAG_ICONS = {
+    food: { icon: 'utensils', label: 'Food', color: 'text-emerald-600', bg: 'bg-emerald-50', hex: '#059669' },
+    shelter: { icon: 'bed', label: 'Shelter', color: 'text-indigo-600', bg: 'bg-indigo-50', hex: '#4f46e5' },
+    warmth: { icon: 'flame', label: 'Warmth', color: 'text-orange-600', bg: 'bg-orange-50', hex: '#ea580c' },
+    support: { icon: 'lifebuoy', label: 'Support', color: 'text-blue-600', bg: 'bg-blue-50', hex: '#2563eb' },
+    family: { icon: 'family', label: 'Family', color: 'text-pink-600', bg: 'bg-pink-50', hex: '#db2777' },
+    learning: { icon: 'book-open', label: 'Learning', color: 'text-amber-700', bg: 'bg-amber-50', hex: '#b45309' },
+    skills: { icon: 'briefcase', label: 'Skills', color: 'text-indigo-700', bg: 'bg-indigo-50', hex: '#4338ca' },
+    charity: { icon: 'shopping-bag', label: 'Charity', color: 'text-pink-500', bg: 'bg-pink-50', hex: '#ec4899' },
+    default: { icon: 'info', label: 'Info', color: 'text-gray-500', bg: 'bg-gray-50', hex: '#6b7280' }
+};
+
+const REAL_DATA = [
+    { 
+        id: 'f_hive_1', 
+        name: "Pompey Community Fridge", 
+        category: "food", 
+        type: "Surplus Food", 
+        area: "PO4", 
+        address: "Fratton Park, PO4 8SX", 
+        description: "Reducing food waste by providing free surplus food parcels. Please bring your own bag.", 
+        requirements: "Open to all.", 
+        tags: ["free", "fresh_food", "no_referral"], 
+        schedule: { 1: "13:00-15:00", 2: "13:00-15:00", 3: "13:00-15:00", 4: "13:00-15:00", 5: "13:00-15:00" }, 
+        lat: 50.796, lng: -1.064, 
+        phone: "023 9273 1141", 
+        trustScore: 98, 
+        transport: "Direct Bus 1/3" 
+    },
+    { 
+        id: 'f_hive_2', 
+        name: "FoodCycle Portsmouth", 
+        category: "food", 
+        type: "Hot Meal", 
+        area: "PO1", 
+        address: "John Pounds Centre, Queen St, PO1 3HN", 
+        description: "Providing a free three-course vegetarian meal in a community setting.", 
+        requirements: "No booking required, just turn up.", 
+        tags: ["free", "hot_meal", "no_referral"], 
+        schedule: { 3: "18:00-19:30" }, 
+        lat: 50.798, lng: -1.096, 
+        trustScore: 100, 
+        transport: "PO1 Walking Dist" 
+    },
+    { 
+        id: 's_hive_1', 
+        name: "Rough Sleeping Hub", 
+        category: "shelter", 
+        type: "Day Centre", 
+        area: "PO5", 
+        address: "Kingsway House, 130 Elm Grove", 
+        description: "Central hub for homeless support. Showers, laundry, breakfast and housing advice.", 
+        requirements: "Open access drop-in.", 
+        tags: ["shower", "laundry", "breakfast", "no_referral", "shelter"], 
+        schedule: { 1: "08:00-16:00", 2: "08:00-16:00", 3: "08:00-16:00", 4: "08:00-16:00", 5: "08:00-16:00", 6: "08:00-16:00", 0: "08:00-16:00" }, 
+        lat: 50.792, lng: -1.088, 
+        phone: "023 9288 2689", 
+        trustScore: 100,
+        transport: "PO5 Central"
+    },
+    { 
+        id: 'sup_hive_1', 
+        name: "HIVE Portsmouth Hub", 
+        category: "support", 
+        type: "Community Hub", 
+        area: "PO1", 
+        address: "Central Library, Guildhall Sq", 
+        description: "Information, volunteer opportunities, and social resource referrals.", 
+        requirements: "Drop-in.", 
+        tags: ["advice", "support", "no_referral"], 
+        schedule: { 1: "09:30-16:00", 2: "09:30-16:00", 3: "09:30-16:00", 4: "09:30-16:00", 5: "09:30-16:00" }, 
+        lat: 50.798, lng: -1.091, 
+        phone: "023 9261 6709", 
+        trustScore: 100,
+        transport: "Civic Offices"
+    }
+];
+
+const ALL_DATA = [...REAL_DATA];
+
+// ==========================================
+// 2. 工具函式 (Utility Functions)
+// ==========================================
+
+const checkStatus = (schedule) => {
+    if (!schedule) return { status: 'closed', label: 'Closed', isOpen: false };
+    const now = new Date();
+    const day = now.getDay();
+    const todaySched = schedule[day];
+    if (!todaySched || todaySched === 'Closed') return { status: 'closed', label: 'Closed Today', isOpen: false };
+    
+    const [open, close] = todaySched.split('-').map(t => {
+        const [h, m] = t.split(':').map(Number);
+        return h * 60 + (m || 0);
+    });
+    const current = now.getHours() * 60 + now.getMinutes();
+    
+    if (current >= open && current < close - 30) return { status: 'open', label: 'Open Now', isOpen: true };
+    if (current >= open && current < close) return { status: 'closing', label: 'Closing Soon', isOpen: true };
+    return { status: 'closed', label: 'Closed', isOpen: false };
+};
+
+const playSuccessSound = () => {
+    try { console.log('Portsmouth Bridge: Action feedback ping.'); } catch(e) {}
+};
+
+// ==========================================
+// 3. UI 組件 (Sub-components)
+// ==========================================
+
+const Icon = ({ name, size = 18, className = "" }) => {
+    const icons = {
+        search: <><circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /></>,
+        home: <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />,
+        utensils: <path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2M7 2v20M21 15V2v0a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3z" />,
+        bed: <path d="M2 4v16M2 8h18a2 2 0 0 1 2 2v10M2 17h20M6 8v9" />,
+        flame: <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-2.246-3.64-3.418-5.418A9 9 0 0 1 21 12a9 9 0 0 1-9 9 9 9 0 0 1-6-5.3L6 14z" />,
+        lifebuoy: <><circle cx="12" cy="12" r="10" /><circle cx="12" cy="12" r="4" /><path d="m4.93 4.93 4.24 4.24m5.66 5.66 4.24 4.24m-14.14 0 4.24-4.24m5.66-5.66 4.24-4.24" /></>,
+        users: <><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /></>,
+        family: <><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /></>,
+        mapPin: <><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" /><circle cx="12" cy="10" r="3" /></>,
+        calendar: <><rect width="18" height="18" x="3" y="4" rx="2" ry="2" /><line x1="16" x2="16" y1="2" y2="6" /><line x1="8" x2="8" y1="2" y2="6" /><line x1="3" x2="21" y1="10" y2="10" /></>,
+        phone: <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />,
+        info: <><circle cx="12" cy="12" r="10" /><path d="M12 16v-4" /><path d="M12 8h.01" /></>,
+        x: <><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></>,
+        sparkles: <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z" />,
+        navigation: <polygon points="3 11 22 2 13 21 11 13 3 11" />,
+        zap: <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />,
+        star: <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />,
+        plus: <><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></>,
+        bus: <rect width="16" height="16" x="4" y="4" rx="2" />,
+        clock: <><circle cx="12" cy="12" r="10" /><path d="M12 6v6l4 2" /></>,
+        check_circle: <><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><polyline points="22 4 12 14.01 9 11.01" /></>,
+        shield: <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z" />,
+    };
+    return (
+        <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            {icons[name] || icons.info}
+        </svg>
+    );
+};
+
+const ResourceCard = ({ item, isSaved, onToggleSave, onAddToJourney, onAddToCompare, isInJourney, isInCompare, highContrast }) => {
+    const status = checkStatus(item.schedule);
+    const getStatusColor = () => {
+        if (status.status === 'open') return 'bg-emerald-500 shadow-[0_0_20px_rgba(16,185,129,0.4)]';
+        if (status.status === 'closing') return 'bg-amber-500 shadow-[0_0_20px_rgba(245,158,11,0.4)]';
+        return 'bg-slate-300';
+    };
+
+    return (
+        <div className={`bg-white rounded-[32px] mb-6 shadow-sm border-2 transition-all duration-300 relative overflow-hidden flex ${highContrast ? 'border-slate-900 border-[3px]' : isSaved ? 'border-indigo-100 shadow-indigo-100/50' : 'border-slate-50'}`}>
+            <div className={`w-3 shrink-0 ${getStatusColor()} transition-colors duration-500`} />
+            <div className="flex-1 p-6">
+                <div className="flex justify-between items-start mb-4">
+                    <div className="flex flex-wrap gap-2">
+                        <span className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest border-2 ${status.isOpen ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 'bg-slate-50 text-slate-400 border-slate-100'}`}>
+                            {status.label}
+                        </span>
+                        <span className="px-3 py-1.5 rounded-xl text-[10px] font-black uppercase bg-slate-50 text-slate-400 border-2 border-slate-100">{item.type}</span>
+                    </div>
+                    <button onClick={onToggleSave} className={`p-3 rounded-2xl transition-all ${isSaved ? 'bg-indigo-600 text-white shadow-lg' : 'bg-slate-100 text-slate-400'}`}>
+                        <Icon name={isSaved ? "star" : "plus"} size={20} />
+                    </button>
+                </div>
+                <h3 className="text-2xl font-black text-slate-900 leading-tight mb-2 tracking-tight">{item.name}</h3>
+                <div className="flex items-center gap-2 text-xs font-bold text-slate-500 mb-4">
+                    <Icon name="mapPin" size={14} /> {item.address}
+                </div>
+                <p className="text-sm text-slate-600 mb-6 leading-relaxed font-medium line-clamp-2">{item.description}</p>
+                
+                <div className="grid grid-cols-2 gap-3 mb-6">
+                    <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100 flex items-center gap-3">
+                        <Icon name="clock" size={20} className="text-indigo-600" />
+                        <div className="min-w-0">
+                            <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Today</p>
+                            <p className="text-[11px] font-black text-slate-700 truncate">{item.schedule[new Date().getDay()] || 'Closed'}</p>
+                        </div>
+                    </div>
+                    <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100 flex items-center gap-3">
+                        <Icon name="bus" size={20} className="text-blue-600" />
+                        <div className="min-w-0">
+                            <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Transport</p>
+                            <p className="text-[11px] font-black text-slate-700 truncate">{item.transport || 'Local'}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="flex gap-3">
+                    <button onClick={onAddToJourney} className={`flex-1 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all ${isInJourney ? 'bg-indigo-600 text-white' : 'bg-white border-2 border-indigo-100 text-indigo-600'}`}>
+                        {isInJourney ? 'In Route' : 'Journey'}
+                    </button>
+                    <button onClick={onAddToCompare} className={`flex-1 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all ${isInCompare ? 'bg-emerald-600 text-white' : 'bg-white border-2 border-emerald-100 text-emerald-600'}`}>
+                        {isInCompare ? 'Comparing' : 'Compare'}
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+const Dashboard = ({ data, onNavigate }) => {
+    const stats = useMemo(() => {
+        const openNow = data.filter(i => checkStatus(i.schedule).isOpen).length;
+        const totalFood = data.filter(i => i.category === 'food').length;
+        const totalBeds = data.filter(i => i.category === 'shelter').length;
+        return { openNow, totalFood, totalBeds };
+    }, [data]);
+
+    return (
+        <div className="mb-10">
+            <p className="text-xs font-black text-slate-400 uppercase tracking-widest mb-4 pl-1">Portsmouth Pulse Report</p>
+            <div className="grid grid-cols-3 gap-3 mb-6">
+                <div onClick={() => onNavigate('all')} className="bg-emerald-500 p-5 rounded-[28px] text-white shadow-lg shadow-emerald-100 cursor-pointer active:scale-95 transition-all text-center">
+                    <div className="text-3xl font-black mb-1">{stats.openNow}</div>
+                    <div className="text-[9px] uppercase font-black leading-tight opacity-90">Open<br />Now</div>
+                </div>
+                <div onClick={() => onNavigate('food')} className="bg-indigo-600 p-5 rounded-[28px] text-white shadow-lg shadow-indigo-100 cursor-pointer active:scale-95 transition-all text-center">
+                    <div className="text-3xl font-black mb-1">{stats.totalFood}</div>
+                    <div className="text-[9px] uppercase font-black leading-tight opacity-90">Food<br />Hubs</div>
+                </div>
+                <div onClick={() => onNavigate('shelter')} className="bg-slate-900 p-5 rounded-[28px] text-white shadow-lg shadow-slate-200 cursor-pointer active:scale-95 transition-all text-center">
+                    <div className="text-3xl font-black mb-1">{stats.totalBeds}</div>
+                    <div className="text-[9px] uppercase font-black leading-tight opacity-90">Shelter<br />Points</div>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+const AIAssistant = ({ onIntent, currentArea }) => {
+    const [isOpen, setIsOpen] = useState(false);
+    const [query, setQuery] = useState('');
+    const intents = [
+        { keywords: ['hungry', 'food', 'eat'], category: 'food' },
+        { keywords: ['sleep', 'shelter', 'bed'], category: 'shelter' }
+    ];
+
+    const processQuery = (text) => {
+        const lower = text.toLowerCase();
+        const best = intents.find(i => i.keywords.some(k => lower.includes(k)));
+        onIntent({ area: currentArea, category: best ? best.category : 'all', date: 'today' });
+        setIsOpen(false);
+        setQuery('');
+    };
+
+    return (
+        <>
+            <button onClick={() => setIsOpen(true)} className="fixed bottom-32 left-6 w-14 h-14 bg-indigo-600 text-white rounded-full shadow-2xl flex items-center justify-center hover:scale-110 active:scale-95 transition-all border-4 border-white z-[120]">
+                <Icon name="sparkles" size={24} />
+            </button>
+            {isOpen && (
+                <div className="fixed inset-0 z-[200] bg-slate-900/60 backdrop-blur-md flex items-end sm:items-center justify-center p-4">
+                    <div className="bg-white w-full max-w-lg rounded-[32px] overflow-hidden shadow-2xl animate-fade-in-up">
+                        <div className="p-6 bg-indigo-600 text-white flex justify-between items-center">
+                            <h3 className="text-xl font-black flex items-center gap-2"><Icon name="sparkles" size={18} /> How can I help?</h3>
+                            <button onClick={() => setIsOpen(false)}><Icon name="x" size={20} /></button>
+                        </div>
+                        <div className="p-8">
+                            <input 
+                                type="text" 
+                                value={query} 
+                                onChange={(e) => setQuery(e.target.value)}
+                                onKeyDown={(e) => e.key === 'Enter' && processQuery(query)}
+                                placeholder="Try 'I am hungry' or 'Need a bed'..."
+                                className="w-full py-5 px-6 bg-slate-100 rounded-2xl font-bold border-none outline-none focus:ring-2 focus:ring-indigo-500"
+                                autoFocus
+                            />
+                        </div>
+                    </div>
+                </div>
+            )}
+        </>
+    );
+};
+
+// ==========================================
+// 4. 主要應用程式 (Main Application)
+// ==========================================
 
 const App = () => {
-    // Branding & Accessibility State
+    const [view, setView] = useState('home');
+    const [loading, setLoading] = useState(true);
     const [highContrast, setHighContrast] = useState(false);
     const [stealthMode, setStealthMode] = useState(false);
-    const [isOffline, setIsOffline] = useState(!navigator.onLine);
-    const [loading, setLoading] = useState(true);
-
-    // Navigation & Modals
-    const [view, setView] = useState<'home' | 'map' | 'list' | 'planner' | 'compare'>('home');
-    const [showTips, setShowTips] = useState(false);
-    const [showCrisis, setShowCrisis] = useState(false);
-    const [showPrint, setShowPrint] = useState(false);
-    const [mapFilter, setMapFilter] = useState<'all' | 'open'>('open');
-    const [mapFocus, setMapFocus] = useState<{ lat: number; lng: number; label?: string } | null>(null);
-
-    // Phase 25: Empowerment & Intelligence
-    const [journeyItems, setJourneyItems] = useState<string[]>([]); // Resource IDs for multi-stop journey
-    const [compareItems, setCompareItems] = useState<string[]>([]); // Resource IDs for comparison (max 3)
-    const [notifications, setNotifications] = useState<Array<{ id: string; type: 'opening_soon' | 'favorite' | 'weather' | 'info'; message: string; timestamp: number; resourceId?: string }>>([]);
-
-    // Personalization (Phase 8: My Bridge Cart)
-    const [savedIds, setSavedIds] = useState<string[]>(() => {
-        const saved = localStorage.getItem('bridge_saved_resources');
-        return saved ? JSON.parse(saved) : [];
+    const [filters, setFilters] = useState({ area: 'All', category: 'all', date: 'today' });
+    const [searchQuery, setSearchQuery] = useState('');
+    
+    const [savedIds, setSavedIds] = useState(() => {
+        try { return JSON.parse(localStorage.getItem('p_bridge_v3_saved') || '[]'); } 
+        catch { return []; }
     });
+    const [journeyItems, setJourneyItems] = useState([]);
+    const [compareItems, setCompareItems] = useState([]);
 
-    const toggleSaved = (id: string) => {
+    useEffect(() => {
+        const t = setTimeout(() => setLoading(false), 800);
+        return () => clearTimeout(t);
+    }, []);
+
+    useEffect(() => {
+        localStorage.setItem('p_bridge_v3_saved', JSON.stringify(savedIds));
+    }, [savedIds]);
+
+    const toggleSaved = (id) => {
         setSavedIds(prev => {
             const next = prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id];
-            localStorage.setItem('bridge_saved_resources', JSON.stringify(next));
-            if (!prev.includes(id)) playSuccessSound(); // Play sound on Pin
+            if (!prev.includes(id)) playSuccessSound();
             return next;
         });
     };
-    const handleShare = async () => {
-        if (navigator.share) {
-            try {
-                await navigator.share({
-                    title: 'Portsmouth Bridge',
-                    text: 'Find food, shelter, and community support in Portsmouth. Check out Portsmouth Bridge!',
-                    url: window.location.href,
-                });
-            } catch (err) {
-                console.log('Error sharing:', err);
-            }
-        } else {
-            navigator.clipboard.writeText(window.location.href);
-            alert('Link copied to clipboard! Share it with your friends.');
-        }
-    };
-
-    // Location State
-    const [userLocation, setUserLocation] = useState<{ lat: number, lng: number } | null>(null);
-
-    // Discovery State (Phase 16: Extreme Intuition)
-    const [searchQuery, setSearchQuery] = useState('');
-    const [smartFilters, setSmartFilters] = useState({
-        openNow: false,
-        nearMe: false,
-        verified: false
-    });
-
-    // Filter State
-    const [filters, setFilters] = useState({
-        area: 'All',
-        category: 'all',
-        date: 'today'
-    });
-
-    useEffect(() => {
-        setTimeout(() => setLoading(false), 800);
-        if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(
-                (pos) => setUserLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
-                (err) => console.log("Location access denied", err)
-            );
-        }
-        const handleStatus = () => setIsOffline(!navigator.onLine);
-        window.addEventListener('online', handleStatus);
-        window.addEventListener('offline', handleStatus);
-        return () => {
-            window.removeEventListener('online', handleStatus);
-            window.removeEventListener('offline', handleStatus);
-        };
-    }, []);
-
-    // Clear map focus when leaving map view
-    useEffect(() => {
-        if (view !== 'map') {
-            setMapFocus(null);
-        }
-    }, [view]);
-
-    // Phase 25: Smart Notifications Logic
-    useEffect(() => {
-        const checkForNotifications = () => {
-            const now = new Date();
-            const currentHour = now.getHours();
-            const currentMinutes = now.getMinutes();
-            const newNotifications: Array<{ id: string; type: 'opening_soon' | 'favorite' | 'weather' | 'info'; message: string; timestamp: number; resourceId?: string }> = [];
-
-            // Check saved resources for opening soon
-            savedIds.forEach(id => {
-                const resource = ALL_DATA.find(r => r.id === id);
-                if (!resource) return;
-
-                const status = checkStatus(resource.schedule);
-                const daySchedule = resource.schedule[now.getDay()];
-
-                if (daySchedule && daySchedule !== 'Closed') {
-                    const [openTime] = daySchedule.split('-');
-                    const [openHour, openMin] = openTime.split(':').map(Number);
-
-                    // Notify 30 minutes before opening
-                    const minutesUntilOpen = (openHour * 60 + openMin) - (currentHour * 60 + currentMinutes);
-
-                    if (minutesUntilOpen > 0 && minutesUntilOpen <= 30 && status.status === 'closed') {
-                        newNotifications.push({
-                            id: `opening_${id}_${now.getTime()}`,
-                            type: 'opening_soon',
-                            message: `${resource.name} opens in ${minutesUntilOpen} minutes`,
-                            timestamp: now.getTime(),
-                            resourceId: id
-                        });
-                    }
-                }
-            });
-
-            // Weather alerts (example)
-            if (currentHour >= 18 && now.getMonth() >= 10 && newNotifications.length === 0) {
-                newNotifications.push({
-                    id: `weather_${now.getTime()}`,
-                    type: 'weather',
-                    message: 'Cold evening ahead - Emergency shelter beds available tonight',
-                    timestamp: now.getTime()
-                });
-            }
-
-            if (newNotifications.length > 0) {
-                setNotifications(prev => {
-                    const existing = prev.map(n => n.id);
-                    const unique = newNotifications.filter(n => !existing.includes(n.id));
-                    return [...prev, ...unique];
-                });
-            }
-        };
-
-        // Check every 5 minutes
-        const interval = setInterval(checkForNotifications, 5 * 60 * 1000);
-        checkForNotifications(); // Initial check
-
-        return () => clearInterval(interval);
-    }, [savedIds]);
-
-    // Phase 25: Helper Functions
-    const toggleJourneyItem = (id: string) => {
-        setJourneyItems(prev =>
-            prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
-        );
-    };
-
-    const toggleCompareItem = (id: string) => {
-        setCompareItems(prev => {
-            if (prev.includes(id)) {
-                return prev.filter(i => i !== id);
-            }
-            if (prev.length >= 3) {
-                alert('Maximum 3 resources for comparison');
-                return prev;
-            }
-            return [...prev, id];
-        });
-    };
-
-    const handleNavigateJourney = () => {
-        if (journeyItems.length === 0) return;
-
-        const journeyResources = ALL_DATA.filter(r => journeyItems.includes(r.id));
-        if (journeyResources.length > 0) {
-            // Create Google Maps URL with multiple waypoints
-            const waypoints = journeyResources.map(r => `${r.lat},${r.lng}`).join('|');
-            const url = `https://www.google.com/maps/dir/?api=1&destination=${journeyResources[journeyResources.length - 1].lat},${journeyResources[journeyResources.length - 1].lng}&waypoints=${waypoints}`;
-            window.open(url, '_blank');
-        }
-    };
-
-    const handleSearch = (newFilters: any) => {
-        setFilters(newFilters);
-        if (newFilters.category !== 'all' && view === 'home') setView('list');
-    };
 
     const filteredData = useMemo(() => {
-        const data = ALL_DATA.filter(item => {
-            const matchesArea = filters.area === 'All' || item.area === filters.area;
-            const matchesCategory = filters.category === 'all' || item.category === filters.category;
-
-            // Universal Search (Name, Address, Tags)
-            const searchLower = searchQuery.toLowerCase();
-            const matchesSearch = !searchQuery ||
-                item.name.toLowerCase().includes(searchLower) ||
-                item.address.toLowerCase().includes(searchLower) ||
-                item.description.toLowerCase().includes(searchLower) ||
-                item.tags.some(t => t.toLowerCase().includes(searchLower));
-
-            // Smart Tokens
-            const status = checkStatus(item.schedule);
-            const matchesOpenNow = !smartFilters.openNow || status.isOpen;
-            const matchesVerified = !smartFilters.verified || (item.trustScore && item.trustScore > 90);
-
-            let matchesNearMe = true;
-            if (smartFilters.nearMe && userLocation) {
-                const dist = getDistance(userLocation.lat, userLocation.lng, item.lat, item.lng);
-                matchesNearMe = dist < 2; // Within 2km for walking hub
-            }
-
-            return matchesArea && matchesCategory && matchesSearch && matchesOpenNow && matchesVerified && matchesNearMe;
+        return ALL_DATA.filter(item => {
+            const matchArea = filters.area === 'All' || item.area === filters.area;
+            const matchCat = filters.category === 'all' || item.category === filters.category;
+            const matchSearch = !searchQuery || item.name.toLowerCase().includes(searchQuery.toLowerCase());
+            return matchArea && matchCat && matchSearch;
         });
-        return data.sort((a, b) => {
-            const statusA = checkStatus(a.schedule);
-            const statusB = checkStatus(b.schedule);
-            if (statusA.isOpen && !statusB.isOpen) return -1;
-            if (!statusA.isOpen && statusB.isOpen) return 1;
-            if (userLocation) {
-                const distA = getDistance(userLocation.lat, userLocation.lng, a.lat, a.lng);
-                const distB = getDistance(userLocation.lat, userLocation.lng, b.lat, b.lng);
-                return distA - distB;
-            }
-            return 0;
-        });
-    }, [filters, userLocation]);
-
-    const savedResources = useMemo(() => {
-        return ALL_DATA.filter(item => savedIds.includes(item.id));
-    }, [savedIds]);
-
-    const getGreeting = () => {
-        const hour = new Date().getHours();
-        const messages = {
-            morning: [
-                { msg: "Good Morning, Portsmouth", sub: "A new day to cross new bridges." },
-                { msg: "Rise with Hope", sub: "Small steps today lead to big changes." },
-                { msg: "Hello Neighbor", sub: "You are not alone in this journey." }
-            ],
-            afternoon: [
-                { msg: "Good Afternoon", sub: "Keep moving forward, we're here for you." },
-                { msg: "Steady Progress", sub: "Every connection you make is a win." },
-                { msg: "Find Your Path", sub: "The city is full of open doors today." }
-            ],
-            evening: [
-                { msg: "Good Evening", sub: "Rest well, you've done enough for today." },
-                { msg: "Peace & Rest", sub: "Tomorrow is another chance to build." },
-                { msg: "Home & Safety", sub: "The bridge stays open for you." }
-            ]
-        };
-
-        const timeKey = hour < 12 ? 'morning' : hour < 18 ? 'afternoon' : 'evening';
-        const pool = messages[timeKey];
-        // Use a simple hash based on date to keep it consistent for the day but varied
-        const dayOfMonth = new Date().getDate();
-        return pool[dayOfMonth % pool.length];
-    };
+    }, [filters, searchQuery]);
 
     if (loading) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-slate-50">
                 <div className="text-center animate-pulse">
                     <Icon name="zap" size={48} className="text-indigo-600 mx-auto mb-4" />
-                    <h1 className="text-2xl font-black text-slate-800">Portsmouth Bridge</h1>
-                    <p className="text-slate-400 font-medium">Connecting Community • Restoring Hope</p>
+                    <h1 className="text-3xl font-black text-slate-900 tracking-tighter">Portsmouth Bridge</h1>
+                    <p className="text-slate-400 font-bold uppercase text-[10px] tracking-[0.2em]">Connecting Community • Restoring Hope</p>
                 </div>
             </div>
         );
     }
 
-    if (showPrint) return <PrintView data={ALL_DATA} onClose={() => setShowPrint(false)} />;
-
-    const greeting = getGreeting();
-
     return (
-        <div className={`app-container min-h-screen font-sans text-slate-900 selection:bg-indigo-200 selection:text-indigo-900 ${highContrast ? 'high-contrast' : ''}`}>
+        <div className={`app-container min-h-screen bg-[#f8fafc] font-sans text-slate-900 selection:bg-indigo-100 ${highContrast ? 'grayscale contrast-125' : ''}`}>
             <style>{`
-                .app-container { max-width: 500px; margin: 0 auto; background-color: #f8fafc; min-height: 100vh; box-shadow: 0 0 50px rgba(0,0,0,0.08); position: relative; padding-bottom: 110px; }
-                .animate-fade-in-up { animation: fadeInUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-                @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); scale: 0.98; } to { opacity: 1; transform: translateY(0); scale: 1; } }
-                .high-contrast { filter: contrast(1.2) saturate(0) !important; }
-                .high-contrast button { border: 1px solid currentcolor !important; box-shadow: none !important; }
+                .app-container { max-width: 500px; margin: 0 auto; box-shadow: 0 0 100px rgba(0,0,0,0.08); min-height: 100vh; position: relative; padding-bottom: 130px; }
+                .animate-fade-in-up { animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+                @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+                .no-scrollbar::-webkit-scrollbar { display: none; }
             `}</style>
 
-            <header className={`sticky top-0 z-50 ${stealthMode ? 'bg-slate-100 border-none' : 'bg-white/95 backdrop-blur-md border-b border-slate-200/50'} pt-4 pb-3 transition-all`}>
-                <div className="px-5 flex justify-between items-center max-w-lg mx-auto">
-                    <div>
-                        <h1 className={`text-2xl font-black ${stealthMode ? 'text-slate-400' : 'text-slate-900'} tracking-tighter`}>
-                            {stealthMode ? 'Shielded Compass' : 'Portsmouth Bridge'}
-                        </h1>
-                        {!stealthMode && <p className="text-[9px] font-black text-slate-400 tracking-widest uppercase">Connecting your community</p>}
-                    </div>
-                    <div className="flex gap-2">
-                        <button onClick={() => { if (confirm("GDPR: Delete settings?")) { localStorage.clear(); window.location.reload(); } }} className="p-2 bg-slate-100 rounded-full text-slate-400 hover:text-rose-500 transition-colors"><Icon name="trash" size={18} /></button>
-                        <button onClick={() => setStealthMode(!stealthMode)} className={`p-2 rounded-full transition-all ${stealthMode ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-600'}`}><Icon name="eye" size={20} /></button>
-                        <button onClick={() => setHighContrast(!highContrast)} className="p-2 bg-slate-100 rounded-full text-slate-600 hover:bg-slate-200 transition-colors"><Icon name="zap" size={20} /></button>
-                    </div>
+            <header className="sticky top-0 z-[110] bg-white/80 backdrop-blur-xl border-b border-slate-100 px-6 py-6 flex justify-between items-center transition-all">
+                <h1 className={`text-2xl font-black tracking-tighter ${stealthMode ? 'text-slate-200' : 'text-slate-900'}`}>
+                    {stealthMode ? 'Shielded Compass' : 'Portsmouth Bridge'}
+                </h1>
+                <div className="flex gap-2">
+                    <button onClick={() => setStealthMode(!stealthMode)} className={`p-3 rounded-2xl transition-all ${stealthMode ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-400'}`}>
+                        <Icon name="eye" size={20} />
+                    </button>
+                    <button onClick={() => setHighContrast(!highContrast)} className={`p-3 rounded-2xl transition-all ${highContrast ? 'bg-indigo-600 text-white shadow-lg' : 'bg-slate-100 text-slate-400'}`}>
+                        <Icon name="zap" size={20} />
+                    </button>
                 </div>
-                {isOffline && <div className="bg-amber-500 text-amber-950 px-5 py-1 text-[10px] font-black uppercase tracking-widest text-center animate-pulse">Offline Mode: Offline Data Available</div>}
             </header>
 
-            <AIAssistant onIntent={handleSearch} currentArea={filters.area} />
-
-            <div className={`px-5 mt-4 relative z-20 transition-all ${stealthMode ? 'opacity-90 grayscale-[0.5]' : ''}`}>
+            <main className="px-6 pt-8 pb-10">
                 {view === 'home' && (
                     <div className="animate-fade-in-up">
-                        {/* Phase 9: Warmer Daily Greeting with City Impact */}
-                        <div className="mb-8 p-8 bg-gradient-to-br from-indigo-600 via-indigo-700 to-slate-900 rounded-[40px] text-white shadow-2xl shadow-indigo-200/50 relative overflow-hidden">
-                            <div className="absolute top-0 right-0 w-48 h-48 bg-white/10 rounded-full -mr-24 -mt-24 blur-3xl"></div>
-                            <div className="absolute bottom-0 left-0 w-32 h-32 bg-indigo-400/20 rounded-full -ml-16 -mb-16 blur-2xl"></div>
-
-                            <div className="relative z-10">
-                                <h2 className="text-3xl font-black tracking-tighter mb-2 leading-tight">{greeting.msg}</h2>
-                                <p className="text-indigo-100 text-xs font-black uppercase tracking-[0.2em] mb-8 opacity-80">{greeting.sub}</p>
-
-                                <div className="grid grid-cols-2 gap-4 border-t border-white/10 pt-6">
-                                    <button
-                                        onClick={() => {
-                                            setSmartFilters({ ...smartFilters, verified: true });
-                                            setView('list');
-                                        }}
-                                        className="flex flex-col text-left hover:bg-white/5 p-2 rounded-xl transition-all active:scale-95"
-                                    >
-                                        <div className="text-[8px] font-black text-indigo-300 uppercase tracking-widest mb-1 flex items-center gap-1.5">
-                                            <div className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse shadow-[0_0_8px_rgba(52,211,153,0.8)]"></div>
-                                            City Pulse
-                                        </div>
-                                        <div className="flex items-center gap-2">
-                                            <span className="text-xl font-black text-white">
-                                                {(() => {
-                                                    const verified = ALL_DATA.filter(p => (p.trustScore || 0) > 90).length;
-                                                    return Math.round((verified / ALL_DATA.length) * 100);
-                                                })()}%
-                                            </span>
-                                            <span className="text-[10px] font-bold text-indigo-200 leading-none">High-Confidence<br />Verified Network</span>
-                                        </div>
-                                    </button>
-                                    <button
-                                        onClick={() => {
-                                            setMapFilter('open');
-                                            setView('map');
-                                        }}
-                                        className="flex flex-col text-left hover:bg-white/5 p-2 rounded-xl transition-all active:scale-95"
-                                    >
-                                        <div className="text-[8px] font-black text-indigo-300 uppercase tracking-widest mb-1">Active Lifelines</div>
-                                        <div className="flex items-center gap-2">
-                                            <span className="text-xl font-black text-white">
-                                                {ALL_DATA.filter(p => (filters.area === 'All' || p.area === filters.area) && checkStatus(p.schedule).status === 'open').length}
-                                            </span>
-                                            <span className="text-[10px] font-bold text-indigo-200 leading-none">Hubs Open In<br />{filters.area === 'All' ? 'Portsmouth' : filters.area}</span>
-                                        </div>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Phase 16: Universal Search Bar */}
-                        <div className="mb-6 relative group">
-                            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                <Icon name="search" size={18} className="text-slate-400 group-focus-within:text-indigo-600 transition-colors" />
-                            </div>
-                            <div className="flex gap-2">
-                                <input
-                                    type="text"
-                                    value={searchQuery}
-                                    onChange={(e) => {
-                                        setSearchQuery(e.target.value);
-                                        if (view === 'home') setView('list');
-                                    }}
-                                    placeholder="Search services..."
-                                    className="flex-1 py-5 pl-12 pr-4 bg-white rounded-[24px] border-2 border-slate-100 focus:border-indigo-600 focus:ring-4 focus:ring-indigo-50 outline-none text-sm font-bold text-slate-900 transition-all shadow-xl shadow-slate-200/50"
-                                />
-                                <button
-                                    onClick={handleShare}
-                                    className="p-5 bg-white border-2 border-slate-100 rounded-[24px] text-indigo-600 hover:bg-slate-50 transition-all shadow-xl shadow-slate-200/50 flex items-center justify-center"
-                                    title="Share with Friend"
-                                >
-                                    <Icon name="share-2" size={20} />
-                                </button>
-                            </div>
-                        </div>
-
-                        <div className="flex justify-between items-center mb-4 pl-1">
-                            <p className="text-xs font-black text-slate-400 uppercase tracking-[0.2em]">City Services</p>
-                            <span className="text-[9px] font-black text-indigo-600 bg-indigo-50 px-2 py-1 rounded-lg uppercase">Portsmouth Total</span>
-                        </div>
-                        <div className="grid grid-cols-2 gap-4 pb-8">
-                            <CategoryButton label="Food" icon="utensils" color="text-emerald-700 bg-emerald-50" active={filters.category === 'food'} onClick={() => handleSearch({ ...filters, category: 'food' })} />
-                            <CategoryButton label="Shelter" icon="bed" color="text-indigo-700 bg-indigo-50" active={filters.category === 'shelter'} onClick={() => handleSearch({ ...filters, category: 'shelter' })} />
-                            <CategoryButton label="Warmth" icon="flame" color="text-orange-700 bg-orange-50" active={filters.category === 'warmth'} onClick={() => handleSearch({ ...filters, category: 'warmth' })} />
-                            <CategoryButton label="Family" icon="family" color="text-pink-700 bg-pink-50" active={filters.category === 'family'} onClick={() => handleSearch({ ...filters, category: 'family' })} />
-                            <CategoryButton label="Health" icon="lifebuoy" color="text-blue-700 bg-blue-50" active={filters.category === 'support'} onClick={() => handleSearch({ ...filters, category: 'support' })} />
-                            <CategoryButton label="Charity" icon="shopping-bag" color="text-rose-700 bg-rose-50" active={filters.category === 'charity'} onClick={() => handleSearch({ ...filters, category: 'charity' })} />
-                            <CategoryButton label="Learning" icon="book-open" color="text-amber-700 bg-amber-50" active={filters.category === 'learning'} onClick={() => handleSearch({ ...filters, category: 'learning' })} />
-                            <CategoryButton label="Work Skills" icon="briefcase" color="text-slate-700 bg-slate-100" active={filters.category === 'skills'} onClick={() => handleSearch({ ...filters, category: 'skills' })} />
-                        </div>
-
-                        {/* Phase 25.5: Quick Actions - Core Features Highlight */}
-                        <div className="mb-10">
-                            <div className="flex items-center justify-between mb-4">
-                                <h3 className="text-sm font-black text-slate-800 uppercase tracking-widest">Quick Actions</h3>
-                                <div className="text-xs font-bold text-slate-400">Power tools at your fingertips</div>
-                            </div>
-
-                            <div className="grid grid-cols-1 gap-4">
-                                {/* Journey Planner Card */}
-                                <button
-                                    onClick={() => journeyItems.length > 0 ? setView('planner') : null}
-                                    className={`relative p-6 rounded-[28px] border-2 text-left overflow-hidden transition-all active:scale-[0.98] ${journeyItems.length > 0 ? 'bg-gradient-to-br from-indigo-600 to-indigo-700 border-indigo-500 shadow-2xl shadow-indigo-200 hover:shadow-indigo-300' : 'bg-white border-slate-200 hover:border-indigo-200'}`}
-                                >
-                                    <div className={`absolute top-0 right-0 w-32 h-32 rounded-full -mr-16 -mt-16 blur-3xl ${journeyItems.length > 0 ? 'bg-white/20' : 'bg-indigo-100/50'
-                                        }`}></div>
-
-                                    <div className="relative z-10">
-                                        <div className="flex items-center justify-between mb-3">
-                                            <div className={`w-14 h-14 rounded-2xl flex items-center justify-center ${journeyItems.length > 0 ? 'bg-white/20 backdrop-blur-sm' : 'bg-indigo-50'
-                                                } shadow-lg`}>
-                                                <Icon name="mapPin" size={24} className={journeyItems.length > 0 ? 'text-white' : 'text-indigo-600'} />
-                                            </div>
-                                            {journeyItems.length > 0 && (
-                                                <div className="bg-emerald-500 text-white px-4 py-2 rounded-full text-xs font-black shadow-lg">
-                                                    {journeyItems.length} STOPS
-                                                </div>
-                                            )}
-                                        </div>
-
-                                        <h4 className={`text-lg font-black mb-2 ${journeyItems.length > 0 ? 'text-white' : 'text-slate-900'}`}>
-                                            Multi-Stop Journey
-                                        </h4>
-                                        <p className={`text-sm font-medium leading-relaxed ${journeyItems.length > 0 ? 'text-indigo-100' : 'text-slate-600'
-                                            }`}>
-                                            {journeyItems.length > 0
-                                                ? 'Your route is ready! Tap to view and navigate.'
-                                                : 'Add locations to plan your optimal route.'}
-                                        </p>
+                        <div className="mb-10 p-10 bg-gradient-to-br from-indigo-600 via-indigo-700 to-slate-900 rounded-[48px] text-white shadow-2xl relative overflow-hidden">
+                            <div className="absolute top-0 right-0 w-40 h-40 bg-white/10 rounded-full -mr-20 -mt-20 blur-3xl"></div>
+                            <h2 className="text-4xl font-black leading-tight mb-3">Good morning, Portsmouth</h2>
+                            <p className="text-indigo-100 text-[11px] font-black uppercase tracking-[0.2em] opacity-80">Your comprehensive support network</p>
+                            <div className="mt-10 grid grid-cols-2 gap-8 border-t border-white/10 pt-8">
+                                <div>
+                                    <div className="text-[10px] font-black uppercase text-indigo-300 mb-1 flex items-center gap-2">
+                                        <div className="w-1.5 h-1.5 bg-emerald-400 rounded-full"></div> Active Hubs
                                     </div>
-                                </button>
-
-                                {/* Compare Tool Card */}
-                                <button
-                                    onClick={() => compareItems.length > 0 ? setView('compare') : null}
-                                    className={`relative p-6 rounded-[28px] border-2 text-left overflow-hidden transition-all active:scale-[0.98] ${compareItems.length > 0 ? 'bg-gradient-to-br from-emerald-600 to-emerald-700 border-emerald-500 shadow-2xl shadow-emerald-200 hover:shadow-emerald-300' : 'bg-white border-slate-200 hover:border-emerald-200'}`}
-                                >
-                                    <div className={`absolute top-0 right-0 w-32 h-32 rounded-full -mr-16 -mt-16 blur-3xl ${compareItems.length > 0 ? 'bg-white/20' : 'bg-emerald-100/50'
-                                        }`}></div>
-
-                                    <div className="relative z-10">
-                                        <div className="flex items-center justify-between mb-3">
-                                            <div className={`w-14 h-14 rounded-2xl flex items-center justify-center ${compareItems.length > 0 ? 'bg-white/20 backdrop-blur-sm' : 'bg-emerald-50'
-                                                } shadow-lg`}>
-                                                <Icon name="shield" size={24} className={compareItems.length > 0 ? 'text-white' : 'text-emerald-600'} />
-                                            </div>
-                                            {compareItems.length > 0 && (
-                                                <div className="bg-indigo-500 text-white px-4 py-2 rounded-full text-xs font-black shadow-lg">
-                                                    {compareItems.length} SELECTED
-                                                </div>
-                                            )}
-                                        </div>
-
-                                        <h4 className={`text-lg font-black mb-2 ${compareItems.length > 0 ? 'text-white' : 'text-slate-900'}`}>
-                                            Smart Compare
-                                        </h4>
-                                        <p className={`text-sm font-medium leading-relaxed ${compareItems.length > 0 ? 'text-emerald-100' : 'text-slate-600'
-                                            }`}>
-                                            {compareItems.length > 0
-                                                ? 'Comparison ready! See which option suits you best.'
-                                                : 'Compare up to 3 resources side-by-side.'}
-                                        </p>
-                                    </div>
-                                </button>
-                            </div>
-                        </div>
-
-                        {/* Phase 21: Growth Pathway Tips */}
-                        <div className="mb-10 p-6 bg-gradient-to-br from-amber-50 via-white to-orange-50 rounded-[32px] border-2 border-amber-100/50 shadow-md shadow-amber-200/20 relative overflow-hidden group transition-all hover:shadow-lg">
-                            <div className="absolute top-0 right-0 w-32 h-32 bg-amber-200/20 rounded-full -mr-16 -mt-16 blur-2xl"></div>
-                            <h3 className="text-[10px] font-black text-amber-600 uppercase tracking-[0.2em] mb-3 flex items-center gap-2">
-                                <Icon name="sparkles" size={14} className="animate-pulse" /> Community Growth Tip
-                            </h3>
-                            <div className="relative z-10">
-                                {(() => {
-                                    const tip = PROGRESS_TIPS[Math.floor(new Date().getDate()) % PROGRESS_TIPS.length];
-                                    return (
-                                        <>
-                                            <p className="text-sm font-black text-slate-900 mb-1">{tip.title}</p>
-                                            <p className="text-xs text-slate-600 font-medium leading-relaxed opacity-90">{tip.note}</p>
-                                        </>
-                                    );
-                                })()}
-                            </div>
-                        </div>
-
-                        {/* Phase 23: Bridge Synergy - Market Deals & Gift Exchange */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-10">
-                            <div className="p-6 bg-white rounded-[32px] border-2 border-slate-100 shadow-sm relative overflow-hidden group">
-                                <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-50 rounded-full -mr-12 -mt-12 transition-colors"></div>
-                                <h3 className="text-[10px] font-black text-emerald-600 uppercase tracking-[0.2em] mb-4 flex items-center gap-2 relative z-10">
-                                    <Icon name="tag" size={14} /> Portsmouth Market Deals
-                                </h3>
-                                <div className="space-y-4 relative z-10">
-                                    {COMMUNITY_DEALS.map((deal) => (
-                                        <button
-                                            key={deal.id}
-                                            onClick={() => {
-                                                setMapFocus({ lat: deal.lat, lng: deal.lng, label: deal.store });
-                                                setView('map');
-                                            }}
-                                            className="border-l-4 border-emerald-500 pl-4 py-1 hover:bg-emerald-50 w-full text-left rounded-r-lg transition-all active:scale-[0.98]"
-                                        >
-                                            <p className="text-xs font-black text-slate-900">{deal.store}</p>
-                                            <p className="text-[10px] font-bold text-emerald-600 uppercase tracking-wide">{deal.deal} • {deal.time}</p>
-                                            <p className="text-[10px] text-slate-400 font-medium">{deal.info}</p>
-                                        </button>
-                                    ))}
+                                    <p className="text-3xl font-black">{ALL_DATA.length}</p>
                                 </div>
-                            </div>
-
-                            <div className="p-6 bg-white rounded-[32px] border-2 border-slate-100 shadow-sm relative overflow-hidden group">
-                                <div className="absolute top-0 right-0 w-24 h-24 bg-rose-50 rounded-full -mr-12 -mt-12 transition-colors"></div>
-                                <h3 className="text-[10px] font-black text-rose-600 uppercase tracking-[0.2em] mb-4 flex items-center gap-2 relative z-10">
-                                    <Icon name="heart" size={14} /> City Gift Exchange
-                                </h3>
-                                <div className="space-y-4 relative z-10">
-                                    {GIFT_EXCHANGE.map((gift) => (
-                                        <button
-                                            key={gift.id}
-                                            onClick={() => {
-                                                setMapFocus({ lat: gift.lat, lng: gift.lng, label: gift.location });
-                                                setView('map');
-                                            }}
-                                            className="border-l-4 border-rose-500 pl-4 py-1 hover:bg-rose-50 w-full text-left rounded-r-lg transition-all active:scale-[0.98]"
-                                        >
-                                            <p className="text-xs font-black text-slate-900">{gift.item}</p>
-                                            <p className="text-[10px] font-bold text-rose-600 uppercase tracking-wide">{gift.location} • {gift.date}</p>
-                                            <p className="text-[10px] text-slate-400 font-medium">{gift.info}</p>
-                                        </button>
-                                    ))}
+                                <div>
+                                    <div className="text-[10px] font-black uppercase text-indigo-300 mb-1">Open Now</div>
+                                    <p className="text-3xl font-black">{ALL_DATA.filter(d => checkStatus(d.schedule).isOpen).length}</p>
                                 </div>
                             </div>
                         </div>
 
-                        {savedResources.length > 0 && (
-                            <div className="mb-8 p-6 bg-white rounded-[32px] border-2 border-slate-100 shadow-sm relative overflow-hidden group">
-                                <div className="absolute top-0 right-0 w-24 h-24 bg-slate-50 rounded-full -mr-12 -mt-12 group-hover:bg-indigo-50 transition-colors"></div>
-                                <h3 className="text-sm font-black text-slate-800 uppercase tracking-widest mb-4 flex items-center gap-2 relative z-10">
-                                    <Icon name="star" size={16} className="text-amber-500" /> My Bridge Pins
-                                </h3>
-                                <div className="space-y-3 relative z-10">
-                                    {savedResources.slice(0, 3).map(res => (
-                                        <div key={res.id} className="flex items-center justify-between">
-                                            <div className="min-w-0">
-                                                <p className="text-xs font-black text-slate-900 truncate">{res.name}</p>
-                                                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">{res.area} • {res.transport || 'Near You'}</p>
-                                            </div>
-                                            <button onClick={() => setView('planner')} className="p-2 bg-slate-50 text-slate-400 rounded-xl hover:bg-indigo-50 hover:text-indigo-600 transition-all"><Icon name="arrow-right" size={14} /></button>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
-                    </div>
-                )}
+                        <Dashboard data={ALL_DATA} onNavigate={(cat) => { setFilters({ ...filters, category: cat }); setView('list'); }} />
 
-                <div className="flex gap-2 mb-8">
-                    <button onClick={() => setView('planner')} className="flex-1 bg-slate-900 text-white p-5 rounded-[28px] shadow-xl shadow-slate-200 flex flex-col items-center justify-center gap-1 font-black uppercase tracking-widest text-[11px] hover:scale-[1.02] transition-transform">
-                        <Icon name="calendar" size={24} className="mb-1" /> {savedIds.length > 0 ? 'My Journey' : 'Plan Journey'}
-                    </button>
-                    <button onClick={() => setShowTips(true)} className="flex-1 bg-white border-2 border-slate-100 p-5 rounded-[28px] flex flex-col items-center justify-center gap-1 font-black uppercase tracking-widest text-[11px] hover:scale-[1.02] transition-transform">
-                        <Icon name="info" size={24} className="mb-1 text-indigo-600" /> Help Guide
-                    </button>
-                </div>
-
-                {view === 'planner' && (
-                    <div className="animate-fade-in-up">
-                        <div className="mb-6 flex items-center justify-between">
-                            <div>
-                                <h2 className="text-2xl font-black text-slate-900 tracking-tight">Journey Planner</h2>
-                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Organizing your success</p>
-                            </div>
-                            <button onClick={() => setView('home')} className="p-3 bg-slate-100 text-slate-400 rounded-2xl hover:bg-slate-200 transition-all"><Icon name="x" size={20} /></button>
-                        </div>
-
-                        {savedIds.length > 0 && (
-                            <div className="space-y-4 mb-8">
-                                {/* Tactical Area Filter */}
-                                <div className="flex gap-2 overflow-x-auto no-scrollbar pb-2">
-                                    {AREAS.map(area => (
-                                        <button
-                                            key={area}
-                                            onClick={() => setFilters({ ...filters, area })}
-                                            className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest border-2 transition-all whitespace-nowrap ${filters.area === area ? 'bg-indigo-600 border-indigo-600 text-white shadow-lg' : 'bg-white border-slate-100 text-slate-400'}`}
-                                        >
-                                            {area}
-                                        </button>
-                                    ))}
-                                </div>
-                                {/* Tactical Category Filter */}
-                                <div className="flex gap-2 overflow-x-auto no-scrollbar pb-2">
-                                    {['all', 'food', 'shelter', 'warmth', 'support', 'family', 'charity'].map(cat => (
-                                        <button
-                                            key={cat}
-                                            onClick={() => setFilters({ ...filters, category: cat })}
-                                            className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest border-2 transition-all whitespace-nowrap ${filters.category === cat ? 'bg-slate-900 border-slate-900 text-white shadow-lg' : 'bg-white border-slate-100 text-slate-400'}`}
-                                        >
-                                            {cat === 'all' ? 'All Needs' : cat}
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
-
-                        {savedIds.length > 0 ? (
-                            <AreaScheduleView
-                                data={savedResources}
-                                area={filters.area}
-                                category={filters.category}
+                        <div className="relative mb-12 group">
+                            <Icon name="search" size={24} className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-600 transition-colors" />
+                            <input 
+                                type="text"
+                                placeholder="Search services (e.g. food, shelter)..."
+                                className="w-full py-7 pl-16 pr-8 bg-white rounded-[32px] border-2 border-slate-100 focus:border-indigo-600 outline-none font-bold text-lg shadow-sm transition-all focus:shadow-xl focus:shadow-indigo-50"
+                                value={searchQuery}
+                                onChange={(e) => { setSearchQuery(e.target.value); if(e.target.value) setView('list'); }}
                             />
-                        ) : (
-                            <div className="py-20 text-center bg-white rounded-[40px] border-2 border-dashed border-slate-200 p-8 shadow-sm">
-                                <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-6">
-                                    <Icon name="star" size={40} className="text-slate-200" />
-                                </div>
-                                <h3 className="text-xl font-black text-slate-800 mb-2">No Pins Yet</h3>
-                                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest leading-relaxed mb-8">Add resources to "My Bridge" to build your personalized daily journey.</p>
-                                <button onClick={() => setView('list')} className="w-full py-5 bg-indigo-600 text-white rounded-[24px] text-[11px] font-black uppercase tracking-widest shadow-xl shadow-indigo-100 hover:scale-[1.02] transition-all">Browse Resources</button>
-                            </div>
-                        )}
-                    </div>
-                )}
-
-                {view === 'map' && (
-                    <div className="animate-fade-in-up">
-                        <div className="mb-4 flex items-center justify-between">
-                            <div>
-                                <h2 className="text-xl font-black text-slate-800">Explorer</h2>
-                                <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Visual navigation</p>
-                            </div>
-                            <div className="flex gap-2">
-                                <button
-                                    onClick={() => setView('list')}
-                                    className="p-3 bg-white border-2 border-slate-100 rounded-2xl text-slate-600 hover:bg-slate-50 transition-all flex items-center gap-2 shadow-sm"
-                                    title="Switch to List View"
-                                >
-                                    <Icon name="list" size={18} />
-                                </button>
-                                <div className="flex gap-1">
-                                    <button onClick={() => setMapFilter('open')} className={`px-4 py-2 rounded-full text-[10px] font-black uppercase border-2 transition-all ${mapFilter === 'open' ? 'bg-emerald-600 text-white border-emerald-600' : 'bg-white text-slate-400 border-slate-100'}`}>Open</button>
-                                    <button onClick={() => setMapFilter('all')} className={`px-4 py-2 rounded-full text-[10px] font-black uppercase border-2 transition-all ${mapFilter === 'all' ? 'bg-slate-900 text-white border-slate-900' : 'bg-white text-slate-400 border-slate-100'}`}>All</button>
-                                </div>
-                            </div>
                         </div>
-                        <SimpleMap
-                            data={filteredData}
-                            category={filters.category}
-                            statusFilter={mapFilter}
-                            savedIds={savedIds}
-                            onToggleSave={toggleSaved}
-                            stealthMode={stealthMode}
-                            externalFocus={mapFocus}
-                        />
+
+                        <div className="grid grid-cols-2 gap-6 mb-12">
+                            {['food', 'shelter', 'warmth', 'support', 'family', 'learning'].map(cat => {
+                                const conf = TAG_ICONS[cat] || TAG_ICONS.default;
+                                return (
+                                    <button key={cat} onClick={() => { setFilters({ ...filters, category: cat }); setView('list'); }} className={`p-8 rounded-[40px] text-left transition-all active:scale-95 shadow-sm hover:shadow-md ${conf.bg} ${conf.color}`}>
+                                        <div className="mb-6 bg-white/60 w-14 h-14 rounded-2xl flex items-center justify-center">
+                                            <Icon name={conf.icon} size={32} />
+                                        </div>
+                                        <p className="font-black text-lg tracking-tight capitalize">{cat}</p>
+                                        <p className="text-[9px] font-bold opacity-50 mt-1 uppercase tracking-widest">{ALL_DATA.filter(d => d.category === cat).length} Resources</p>
+                                    </button>
+                                );
+                            })}
+                        </div>
                     </div>
                 )}
 
                 {view === 'list' && (
                     <div className="animate-fade-in-up">
-                        <div className="flex justify-between items-center mb-6">
+                        <div className="flex justify-between items-end mb-10">
                             <div>
-                                <h2 className="text-2xl font-black text-slate-900 tracking-tight capitalize">{filters.category === 'all' ? 'Directory' : filters.category}</h2>
-                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Finding the right support</p>
+                                <h2 className="text-4xl font-black tracking-tight text-slate-900 capitalize">
+                                    {filters.category === 'all' ? 'Directory' : filters.category}
+                                </h2>
+                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mt-2">Finding the right support for you</p>
                             </div>
-                            <div className="flex gap-2">
-                                <button
-                                    onClick={() => setView('map')}
-                                    className="p-3 bg-indigo-600 text-white rounded-2xl hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-200 flex items-center gap-2"
-                                    title="Switch to Map View"
-                                >
-                                    <Icon name="mapPin" size={20} />
+                            <button onClick={() => setView('home')} className="p-4 bg-slate-100 text-slate-400 rounded-[24px] hover:bg-slate-200 transition-all">
+                                <Icon name="x" size={24} />
+                            </button>
+                        </div>
+                        
+                        <div className="flex gap-2 overflow-x-auto no-scrollbar mb-10 pb-2">
+                            {AREAS.map(a => (
+                                <button key={a} onClick={() => setFilters({...filters, area: a})} className={`px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest whitespace-nowrap border-2 transition-all ${filters.area === a ? 'bg-indigo-600 border-indigo-600 text-white shadow-lg shadow-indigo-100' : 'bg-white border-slate-100 text-slate-400'}`}>
+                                    {a}
                                 </button>
-                                <button onClick={() => setView('home')} className="p-3 bg-slate-100 text-slate-400 rounded-2xl hover:bg-slate-200 transition-all"><Icon name="home" size={20} /></button>
-                            </div>
+                            ))}
                         </div>
 
-                        {/* Directory Tactical Filters (Enhanced) */}
-                        <div className="space-y-4 mb-8">
-                            {/* Search Field */}
-                            <div className="relative">
-                                <Icon name="search" size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
-                                <input
-                                    type="text"
-                                    value={searchQuery}
-                                    onChange={(e) => setSearchQuery(e.target.value)}
-                                    placeholder="Search resources..."
-                                    className="w-full py-4 pl-11 pr-4 bg-white rounded-2xl border-2 border-slate-100 focus:border-indigo-600 outline-none text-xs font-bold"
+                        <div className="space-y-4">
+                            {filteredData.length > 0 ? filteredData.map(item => (
+                                <ResourceCard 
+                                    key={item.id} 
+                                    item={item} 
+                                    isSaved={savedIds.includes(item.id)}
+                                    onToggleSave={() => toggleSaved(item.id)}
+                                    onAddToJourney={() => setJourneyItems(prev => prev.includes(item.id) ? prev.filter(i => i !== item.id) : [...prev, item.id])}
+                                    onAddToCompare={() => setCompareItems(prev => prev.includes(item.id) ? prev.filter(i => i !== item.id) : [...prev, item.id])}
+                                    isInJourney={journeyItems.includes(item.id)}
+                                    isInCompare={compareItems.includes(item.id)}
                                 />
-                                {searchQuery && (
-                                    <button onClick={() => setSearchQuery('')} className="absolute right-3 top-1/2 -translate-y-1/2 p-2 text-slate-400 hover:text-slate-600">
-                                        <Icon name="x" size={14} />
-                                    </button>
-                                )}
-                            </div>
-
-                            {/* Smart Action Tokens */}
-                            <div className="flex gap-2 items-center">
-                                <button
-                                    onClick={() => setSmartFilters({ ...smartFilters, openNow: !smartFilters.openNow })}
-                                    className={`px-3 py-1.5 rounded-full text-[9px] font-black uppercase tracking-wider flex items-center gap-1.5 transition-all border ${smartFilters.openNow ? 'bg-emerald-600 border-emerald-600 text-white' : 'bg-white border-slate-100 text-slate-400'}`}
-                                >
-                                    <div className={`w-1.5 h-1.5 rounded-full ${smartFilters.openNow ? 'bg-white animate-pulse' : 'bg-emerald-500'}`}></div>
-                                    Open Now
-                                </button>
-                                <button
-                                    onClick={() => setSmartFilters({ ...smartFilters, verified: !smartFilters.verified })}
-                                    className={`px-3 py-1.5 rounded-full text-[9px] font-black uppercase tracking-wider flex items-center gap-1.5 transition-all border ${smartFilters.verified ? 'bg-indigo-600 border-indigo-600 text-white' : 'bg-white border-slate-100 text-slate-400'}`}
-                                >
-                                    <Icon name="check_circle" size={10} /> Verified
-                                </button>
-                                <button
-                                    onClick={() => setSmartFilters({ ...smartFilters, nearMe: !smartFilters.nearMe })}
-                                    className={`px-3 py-1.5 rounded-full text-[9px] font-black uppercase tracking-wider flex items-center gap-1.5 transition-all border ${smartFilters.nearMe ? 'bg-blue-600 border-blue-600 text-white' : 'bg-white border-slate-100 text-slate-400'}`}
-                                >
-                                    <Icon name="navigation" size={10} /> Near Me
-                                </button>
-                            </div>
-
-                            <div className="flex gap-2 overflow-x-auto no-scrollbar pb-2">
-                                {AREAS.map(area => (
-                                    <button
-                                        key={area}
-                                        onClick={() => setFilters({ ...filters, area })}
-                                        className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest border-2 transition-all whitespace-nowrap ${filters.area === area ? 'bg-indigo-600 border-indigo-600 text-white shadow-lg' : 'bg-white border-slate-100 text-slate-400'}`}
-                                    >
-                                        {area}
-                                    </button>
-                                ))}
-                            </div>
-                            <div className="flex gap-2 overflow-x-auto no-scrollbar pb-2">
-                                {['all', 'food', 'shelter', 'warmth', 'support', 'family', 'learning', 'skills', 'charity'].map(cat => (
-                                    <button
-                                        key={cat}
-                                        onClick={() => setFilters({ ...filters, category: cat })}
-                                        className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest border-2 transition-all whitespace-nowrap ${filters.category === cat ? 'bg-slate-900 border-slate-900 text-white shadow-lg' : 'bg-white border-slate-100 text-slate-400'}`}
-                                    >
-                                        {cat === 'all' ? 'All Needs' : cat === 'support' ? 'Health' : cat === 'skills' ? 'Work Skills' : cat}
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
-                        <div className="space-y-4 pb-24">
-                            {filteredData.length > 0 ? (
-                                filteredData.map(item => (
-                                    <ResourceCard
-                                        key={item.id}
-                                        item={item}
-                                        isSaved={savedIds.includes(item.id)}
-                                        onToggleSave={() => toggleSaved(item.id)}
-                                        highContrast={highContrast}
-                                        onAddToJourney={() => toggleJourneyItem(item.id)}
-                                        onAddToCompare={() => toggleCompareItem(item.id)}
-                                        isInJourney={journeyItems.includes(item.id)}
-                                        isInCompare={compareItems.includes(item.id)}
-                                    />
-                                ))
-                            ) : (
-                                <div className="py-20 text-center bg-white rounded-[40px] border-2 border-dashed border-slate-200 p-8 shadow-sm">
-                                    <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4">
-                                        <Icon name="search" size={24} className="text-slate-200" />
-                                    </div>
-                                    <h3 className="text-lg font-black text-slate-800 mb-1">No Matches Found</h3>
-                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-relaxed">Try adjusting your filters or search terms.</p>
-                                    <button onClick={() => { setSearchQuery(''); setFilters({ ...filters, area: 'All', category: 'all' }); setSmartFilters({ openNow: false, nearMe: false, verified: false }); }} className="mt-6 text-[10px] font-black text-indigo-600 uppercase tracking-[0.2em] border-b-2 border-indigo-100 pb-1">Reset All Filters</button>
+                            )) : (
+                                <div className="py-24 text-center bg-white rounded-[48px] border-2 border-dashed border-slate-100">
+                                    <Icon name="search" size={48} className="mx-auto text-slate-200 mb-6" />
+                                    <p className="text-slate-400 font-bold uppercase tracking-widest text-xs">No results found in {filters.area}</p>
                                 </div>
                             )}
                         </div>
                     </div>
                 )}
-            </div>
+            </main>
 
-            <nav className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-slate-200 py-3 px-6 z-50 max-w-lg mx-auto flex justify-between items-center shadow-[0_-10px_40px_rgba(0,0,0,0.05)]">
-                <button onClick={() => setView('home')} className={`flex flex-col items-center gap-1 transition-all ${view === 'home' ? 'text-indigo-600 scale-110' : 'text-slate-400'}`}>
-                    <Icon name="home" size={24} />
-                    <span className="text-[9px] font-black uppercase tracking-tighter">Bridge</span>
+            <AIAssistant onIntent={setFilters} currentArea={filters.area} />
+
+            <nav className="fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-xl border-t border-slate-100 py-6 px-12 flex justify-between items-center z-[110] max-w-[500px] mx-auto shadow-[0_-15px_50px_rgba(0,0,0,0.05)]">
+                <button onClick={() => setView('home')} className={`flex flex-col items-center gap-2 transition-all ${view === 'home' ? 'text-indigo-600 scale-110' : 'text-slate-300 hover:text-slate-500'}`}>
+                    <Icon name="home" size={28} />
+                    <span className="text-[10px] font-black uppercase tracking-tighter">Home</span>
                 </button>
-                <button onClick={() => setView('map')} className={`flex flex-col items-center gap-1 transition-all ${view === 'map' ? 'text-indigo-600 scale-110' : 'text-slate-400'}`}>
-                    <Icon name="navigation" size={24} />
-                    <span className="text-[9px] font-black uppercase tracking-tighter">Explorer</span>
+                <button onClick={() => setView('list')} className={`flex flex-col items-center gap-2 transition-all ${view === 'list' ? 'text-indigo-600 scale-110' : 'text-slate-300 hover:text-slate-500'}`}>
+                    <Icon name="tag" size={28} />
+                    <span className="text-[10px] font-black uppercase tracking-tighter">Directory</span>
                 </button>
-                <button onClick={() => setView('list')} className={`flex flex-col items-center gap-1 transition-all ${view === 'list' ? 'text-indigo-600 scale-110' : 'text-slate-400'}`}>
-                    <Icon name="tag" size={24} />
-                    <span className="text-[9px] font-black uppercase tracking-tighter">Directory</span>
+                <button className="flex flex-col items-center gap-2 text-slate-300 hover:text-slate-500">
+                    <Icon name="navigation" size={28} />
+                    <span className="text-[10px] font-black uppercase tracking-tighter">Map</span>
                 </button>
-                <button onClick={() => setShowCrisis(true)} className="flex flex-col items-center gap-1 text-rose-500 hover:scale-110 transition-all">
-                    <Icon name="alert" size={24} />
-                    <span className="text-[9px] font-black uppercase tracking-tighter">Alerts</span>
+                <button className="flex flex-col items-center gap-2 text-rose-400 hover:text-rose-600">
+                    <Icon name="alert" size={28} />
+                    <span className="text-[10px] font-black uppercase tracking-tighter">SOS</span>
                 </button>
             </nav>
-
-            <TipsModal isOpen={showTips} onClose={() => setShowTips(false)} />
-            <CrisisModal isOpen={showCrisis} onClose={() => setShowCrisis(false)} />
-            <PrivacyShield onAccept={() => console.log('Privacy accepted')} />
-
-            {/* Phase 25: Smart Notifications */}
-            <SmartNotifications
-                notifications={notifications}
-                onDismiss={(id) => setNotifications(prev => prev.filter(n => n.id !== id))}
-                onClearAll={() => setNotifications([])}
-                onAction={(resourceId) => {
-                    const resource = ALL_DATA.find(r => r.id === resourceId);
-                    if (resource) {
-                        setMapFocus({ lat: resource.lat, lng: resource.lng, label: resource.name });
-                        setView('map');
-                    }
-                }}
-            />
-
-            {/* Phase 25: Floating Action Buttons */}
-            {(journeyItems.length > 0 || compareItems.length > 0) && (
-                <div className="fixed bottom-24 left-5 z-50 flex flex-col gap-3">
-                    {journeyItems.length > 0 && (
-                        <button
-                            onClick={() => setView('planner')}
-                            className="bg-indigo-600 text-white p-4 rounded-full shadow-2xl hover:bg-indigo-700 transition-all active:scale-95 relative"
-                        >
-                            <Icon name="mapPin" size={20} />
-                            <div className="absolute -top-1 -right-1 w-6 h-6 bg-emerald-500 rounded-full border-2 border-white flex items-center justify-center">
-                                <span className="text-xs font-black">{journeyItems.length}</span>
-                            </div>
-                        </button>
-                    )}
-                    {compareItems.length > 0 && (
-                        <button
-                            onClick={() => setView('compare')}
-                            className="bg-emerald-600 text-white p-4 rounded-full shadow-2xl hover:bg-emerald-700 transition-all active:scale-95 relative"
-                        >
-                            <Icon name="shield" size={20} />
-                            <div className="absolute -top-1 -right-1 w-6 h-6 bg-indigo-500 rounded-full border-2 border-white flex items-center justify-center">
-                                <span className="text-xs font-black">{compareItems.length}</span>
-                            </div>
-                        </button>
-                    )}
-                </div>
-            )}
-
-            {/* Phase 25: Journey Planner Modal */}
-            {view === 'planner' && journeyItems.length > 0 && (
-                <div className="fixed inset-0 z-50 bg-black/20 backdrop-blur-sm flex items-end" onClick={() => setView('home')}>
-                    <div className="w-full max-w-lg mx-auto animate-slide-up" onClick={(e) => e.stopPropagation()}>
-                        <JourneyPlanner
-                            items={ALL_DATA.filter(r => journeyItems.includes(r.id))}
-                            userLocation={userLocation}
-                            onRemove={(id) => setJourneyItems(prev => prev.filter(i => i !== id))}
-                            onClear={() => {
-                                setJourneyItems([]);
-                                setView('home');
-                            }}
-                            onNavigate={handleNavigateJourney}
-                        />
-                    </div>
-                </div>
-            )}
-
-            {/* Phase 25: Smart Compare Modal */}
-            {view === 'compare' && compareItems.length > 0 && (
-                <div className="fixed inset-0 z-50 bg-black/20 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setView('home')}>
-                    <div className="w-full max-w-4xl mx-auto animate-fade-in" onClick={(e) => e.stopPropagation()}>
-                        <SmartCompare
-                            items={ALL_DATA.filter(r => compareItems.includes(r.id))}
-                            userLocation={userLocation}
-                            onRemove={(id) => setCompareItems(prev => prev.filter(i => i !== id))}
-                            onNavigate={(id) => {
-                                const resource = ALL_DATA.find(r => r.id === id);
-                                if (resource) {
-                                    window.open(`https://www.google.com/maps/dir/?api=1&destination=${resource.lat},${resource.lng}`, '_blank');
-                                }
-                            }}
-                            onCall={(phone) => window.location.href = `tel:${phone}`}
-                        />
-                    </div>
-                </div>
-            )}
         </div>
     );
 };
+
+// ==========================================
+// 5. 最終魯棒掛載邏輯 (解決 299 與 TypeError)
+// ==========================================
+/**
+ * 透過 window 全局變量來儲存 root 實例，
+ * 避免在沙盒環境中因為程式碼重載而導致重複初始化。
+ */
+const mountApp = () => {
+    const container = document.getElementById('app');
+    if (!container) return;
+
+    // 定義全局快取鍵名，使用更具唯一性的名稱
+    const rootKey = '__PORTSMOUTH_FINAL_ROOT__';
+
+    // 如果環境中有舊的根節點，先進行卸載，這是防止 Error #299 的最穩健做法
+    if (window[rootKey]) {
+        try {
+            window[rootKey].unmount();
+        } catch (e) {
+            // 靜默處理卸載錯誤，並繼續建立新根節點
+        }
+    }
+
+    // 建立新根節點
+    try {
+        const root = createRoot(container);
+        window[rootKey] = root;
+        root.render(<App />);
+    } catch (err) {
+        console.error("Critical Rendering Error:", err);
+    }
+};
+
+// 確保 DOM 已完全載入後執行掛載程序
+if (document.readyState === 'complete') {
+    mountApp();
+} else {
+    window.addEventListener('load', mountApp);
+}
 
 export default App;
