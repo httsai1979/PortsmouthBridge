@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useMemo } from 'react';
 
-// --- 模擬數據與工具函式 ---
+// --- Mock Data & Utility Functions ---
 const AREAS = ['All', 'Southsea', 'City Centre', 'Fratton', 'North End', 'Cosham'];
 
 const ALL_DATA = [
-  { id: '1', name: 'Portsmouth Food Bank', area: 'City Centre', category: 'food', address: '72 King St', description: '提供緊急食物援助，幫助有需要的家庭度過難關。', tags: ['food', 'emergency'], lat: 50.7989, lng: -1.0912, trustScore: 95, schedule: { 1: '09:00-17:00', 3: '09:00-17:00', 5: '09:00-17:00' } },
-  { id: '2', name: 'Safe Haven Shelter', area: 'Southsea', category: 'shelter', address: '15 Hope Road', description: '提供安全、溫暖的夜間避難所與專業諮詢服務。', tags: ['shelter', 'night'], lat: 50.7850, lng: -1.0750, trustScore: 92, schedule: { 0: '20:00-08:00', 1: '20:00-08:00', 2: '20:00-08:00', 3: '20:00-08:00', 4: '20:00-08:00', 5: '20:00-08:00', 6: '20:00-08:00' } },
-  { id: '3', name: 'Warmth Hub', area: 'Fratton', category: 'warmth', address: 'Community Hall', description: '一個可以免費休息、喝熱飲並獲得社區支持的溫馨空間。', tags: ['warmth', 'coffee'], lat: 50.8010, lng: -1.0700, trustScore: 88, schedule: { 1: '10:00-16:00', 2: '10:00-16:00' } }
+  { id: '1', name: 'Portsmouth Food Bank', area: 'City Centre', category: 'food', address: '72 King St', description: 'Providing emergency food assistance to help families in need through difficult times.', tags: ['food', 'emergency'], lat: 50.7989, lng: -1.0912, trustScore: 95, schedule: { 1: '09:00-17:00', 3: '09:00-17:00', 5: '09:00-17:00' } },
+  { id: '2', name: 'Safe Haven Shelter', area: 'Southsea', category: 'shelter', address: '15 Hope Road', description: 'Providing a safe, warm night shelter and professional advisory services.', tags: ['shelter', 'night'], lat: 50.7850, lng: -1.0750, trustScore: 92, schedule: { 0: '20:00-08:00', 1: '20:00-08:00', 2: '20:00-08:00', 3: '20:00-08:00', 4: '20:00-08:00', 5: '20:00-08:00', 6: '20:00-08:00' } },
+  { id: '3', name: 'Warmth Hub', area: 'Fratton', category: 'warmth', address: 'Community Hall', description: 'A welcoming space to rest for free, have a hot drink, and receive community support.', tags: ['warmth', 'coffee'], lat: 50.8010, lng: -1.0700, trustScore: 88, schedule: { 1: '10:00-16:00', 2: '10:00-16:00' } }
 ];
 
 const checkStatus = (schedule) => {
@@ -15,18 +15,18 @@ const checkStatus = (schedule) => {
   const time = now.getHours() * 60 + now.getMinutes();
   const todaySchedule = schedule[day];
   
-  if (!todaySchedule || todaySchedule === 'Closed') return { isOpen: false, status: 'closed', message: '今日關閉' };
+  if (!todaySchedule || todaySchedule === 'Closed') return { isOpen: false, status: 'closed', message: 'Closed today' };
   
   const [open, close] = todaySchedule.split('-').map(t => {
     const [h, m] = t.split(':').map(Number);
     return h * 60 + m;
   });
 
-  if (time >= open && time < close) return { isOpen: true, status: 'open', message: '營業中' };
-  return { isOpen: false, status: 'closed', message: '目前關閉' };
+  if (time >= open && time < close) return { isOpen: true, status: 'open', message: 'Open now' };
+  return { isOpen: false, status: 'closed', message: 'Currently closed' };
 };
 
-// --- 子組件 ---
+// --- Sub-components ---
 const Icon = ({ name, size = 20, className = "" }) => {
   const icons = {
     zap: <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />,
@@ -206,14 +206,14 @@ const ResourceCard = ({ item, isSaved, onToggleSave, onAddToJourney, isInJourney
             onClick={onAddToJourney} 
             className={`flex-1 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all ${isInJourney ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-100' : 'bg-slate-900 text-white hover:bg-slate-800'}`}
         >
-          {isInJourney ? '已在行程中' : '加入每日行程'}
+          {isInJourney ? 'In Itinerary' : 'Add to Daily Itinerary'}
         </button>
       </div>
     </div>
   );
 };
 
-// --- 主應用組件 ---
+// --- Main App Component ---
 const App = () => {
     const [highContrast, setHighContrast] = useState(false);
     const [stealthMode, setStealthMode] = useState(false);
@@ -267,7 +267,7 @@ const App = () => {
                 <div className="text-center animate-pulse">
                     <Icon name="zap" size={48} className="text-indigo-600 mx-auto mb-4" />
                     <h1 className="text-2xl font-black text-slate-800 tracking-tighter">Portsmouth Bridge</h1>
-                    <p className="text-slate-400 font-bold uppercase text-[10px] tracking-[0.2em]">連接社區 • 建立希望</p>
+                    <p className="text-slate-400 font-bold uppercase text-[10px] tracking-[0.2em]">Connecting Community • Restoring Hope</p>
                 </div>
             </div>
         );
@@ -292,14 +292,14 @@ const App = () => {
                     <button 
                         onClick={() => setStealthMode(!stealthMode)} 
                         className={`p-2.5 rounded-2xl transition-all ${stealthMode ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-100' : 'bg-slate-100 text-slate-400 hover:bg-slate-200'}`}
-                        title="隱身模式"
+                        title="Stealth Mode"
                     >
                         <Icon name="eye" size={20} />
                     </button>
                     <button 
                         onClick={() => setHighContrast(!highContrast)} 
                         className={`p-2.5 rounded-2xl transition-all ${highContrast ? 'bg-indigo-600 text-white shadow-lg' : 'bg-slate-100 text-slate-400 hover:bg-slate-200'}`}
-                        title="高對比度"
+                        title="High Contrast"
                     >
                         <Icon name="zap" size={20} />
                     </button>
@@ -309,38 +309,37 @@ const App = () => {
             <main className="px-6 pt-6 pb-20">
                 {view === 'home' && (
                     <div className="animate-fade-in-up">
-                        {/* 歡迎橫幅 */}
+                        {/* Welcome Banner */}
                         <div className="mb-8 p-8 bg-gradient-to-br from-indigo-600 via-indigo-700 to-slate-900 rounded-[40px] text-white shadow-2xl shadow-indigo-100 relative overflow-hidden">
                             <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16 blur-3xl"></div>
                             <div className="relative z-10">
-                                <h2 className="text-3xl font-black leading-tight mb-2">早安, Portsmouth</h2>
-                                <p className="text-indigo-100 text-[11px] font-black uppercase tracking-[0.2em] opacity-80">您的全方位社區支持網絡</p>
+                                <h2 className="text-3xl font-black leading-tight mb-2">Good morning, Portsmouth</h2>
+                                <p className="text-indigo-100 text-[11px] font-black uppercase tracking-[0.2em] opacity-80">Your comprehensive community support network</p>
                                 
                                 <div className="mt-8 grid grid-cols-2 gap-6 border-t border-white/10 pt-6">
                                     <div>
-                                        {/* FIXED: Changed <p> to <div> to avoid <div> nested inside <p> warning */}
                                         <div className="text-[10px] font-black uppercase text-indigo-300 mb-1 flex items-center gap-1.5">
                                             <div className="w-1.5 h-1.5 bg-emerald-400 rounded-full"></div>
-                                            活躍中心
+                                            Active Hubs
                                         </div>
-                                        <p className="text-2xl font-black">{ALL_DATA.length} <span className="text-xs font-medium opacity-60">個站點</span></p>
+                                        <p className="text-2xl font-black">{ALL_DATA.length} <span className="text-xs font-medium opacity-60">sites</span></p>
                                     </div>
                                     <div>
-                                        <div className="text-[10px] font-black uppercase text-indigo-300 mb-1">今日開放</div>
-                                        <p className="text-2xl font-black">{ALL_DATA.filter(d => checkStatus(d.schedule).isOpen).length} <span className="text-xs font-medium opacity-60">個</span></p>
+                                        <div className="text-[10px] font-black uppercase text-indigo-300 mb-1">Open Today</div>
+                                        <p className="text-2xl font-black">{ALL_DATA.filter(d => checkStatus(d.schedule).isOpen).length} <span className="text-xs font-medium opacity-60">open</span></p>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-                        {/* 搜尋欄位 */}
+                        {/* Search Bar */}
                         <div className="relative mb-10 group">
                             <div className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-600 transition-colors">
                                 <Icon name="search" size={22} />
                             </div>
                             <input 
                                 type="text"
-                                placeholder="搜尋服務 (例如: 食物, 避難所)..."
+                                placeholder="Search services (e.g. food, shelter)..."
                                 className="w-full py-6 pl-14 pr-6 bg-white rounded-[28px] border-2 border-slate-100 focus:border-indigo-600 outline-none font-bold text-slate-800 shadow-sm transition-all focus:shadow-xl focus:shadow-indigo-50"
                                 value={searchQuery}
                                 onChange={(e) => { setSearchQuery(e.target.value); if(e.target.value) setView('list'); }}
@@ -348,16 +347,16 @@ const App = () => {
                         </div>
 
                         <div className="flex justify-between items-center mb-5 px-1">
-                            <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400">熱門需求</h3>
-                            <button onClick={() => setView('list')} className="text-[10px] font-black text-indigo-600 uppercase">瀏覽全部</button>
+                            <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400">Popular Needs</h3>
+                            <button onClick={() => setView('list')} className="text-[10px] font-black text-indigo-600 uppercase">View All</button>
                         </div>
 
                         <div className="grid grid-cols-2 gap-5 mb-12">
                             {[
-                                { id: 'food', label: '食物援助', icon: 'utensils', color: 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100' },
-                                { id: 'shelter', label: '住宿避難', icon: 'bed', color: 'bg-indigo-50 text-indigo-700 hover:bg-indigo-100' },
-                                { id: 'warmth', label: '溫暖空間', icon: 'flame', color: 'bg-orange-50 text-orange-700 hover:bg-orange-100' },
-                                { id: 'family', label: '家庭支持', icon: 'family', color: 'bg-pink-50 text-pink-700 hover:bg-pink-100' }
+                                { id: 'food', label: 'Food Assistance', icon: 'utensils', color: 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100' },
+                                { id: 'shelter', label: 'Accommodation & Shelter', icon: 'bed', color: 'bg-indigo-50 text-indigo-700 hover:bg-indigo-100' },
+                                { id: 'warmth', label: 'Warm Spaces', icon: 'flame', color: 'bg-orange-50 text-orange-700 hover:bg-orange-100' },
+                                { id: 'family', label: 'Family Support', icon: 'family', color: 'bg-pink-50 text-pink-700 hover:bg-pink-100' }
                             ].map(cat => (
                                 <button 
                                     key={cat.id}
@@ -368,7 +367,7 @@ const App = () => {
                                         <Icon name={cat.icon} size={24} />
                                     </div>
                                     <p className="font-black text-sm tracking-tight">{cat.label}</p>
-                                    <p className="text-[9px] font-bold opacity-50 mt-1 uppercase tracking-wider">{ALL_DATA.filter(d => d.category === cat.id).length} 個資源</p>
+                                    <p className="text-[9px] font-bold opacity-50 mt-1 uppercase tracking-wider">{ALL_DATA.filter(d => d.category === cat.id).length} resources</p>
                                 </button>
                             ))}
                         </div>
@@ -380,16 +379,16 @@ const App = () => {
                         <div className="flex justify-between items-end mb-8">
                             <div>
                                 <h2 className="text-3xl font-black tracking-tight text-slate-900 capitalize">
-                                    {filters.category === 'all' ? '資源目錄' : filters.category}
+                                    {filters.category === 'all' ? 'Resource Directory' : filters.category}
                                 </h2>
-                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">找到適合您的支持</p>
+                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">Finding the right support for you</p>
                             </div>
                             <button onClick={() => setView('home')} className="p-3 bg-slate-100 text-slate-400 rounded-2xl hover:bg-slate-200 transition-all">
                                 <Icon name="x" size={20} />
                             </button>
                         </div>
                         
-                        {/* 區域過濾器 */}
+                        {/* Area Filter */}
                         <div className="flex gap-2 overflow-x-auto no-scrollbar mb-8 pb-2">
                             {AREAS.map(a => (
                                 <button 
@@ -415,7 +414,7 @@ const App = () => {
                             )) : (
                                 <div className="py-20 text-center bg-white rounded-[40px] border-2 border-dashed border-slate-100">
                                     <Icon name="search" size={40} className="mx-auto text-slate-200 mb-4" />
-                                    <p className="text-slate-400 font-bold">沒有找到相關結果</p>
+                                    <p className="text-slate-400 font-bold">No results found</p>
                                 </div>
                             )}
                         </div>
@@ -423,30 +422,30 @@ const App = () => {
                 )}
             </main>
 
-            {/* 底部導覽列 */}
+            {/* Bottom Navigation Bar */}
             <nav className="fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-xl border-t border-slate-100 py-5 px-10 flex justify-between items-center z-50 max-w-[500px] mx-auto shadow-[0_-10px_40px_rgba(0,0,0,0.04)]">
                 <button onClick={() => setView('home')} className={`flex flex-col items-center gap-1.5 transition-all ${view === 'home' ? 'text-indigo-600 scale-110' : 'text-slate-300'}`}>
                     <Icon name="home" size={24} />
-                    <span className="text-[9px] font-black uppercase tracking-tighter">首頁</span>
+                    <span className="text-[9px] font-black uppercase tracking-tighter">Home</span>
                 </button>
                 <button onClick={() => setView('list')} className={`flex flex-col items-center gap-1.5 transition-all ${view === 'list' ? 'text-indigo-600 scale-110' : 'text-slate-300'}`}>
                     <Icon name="tag" size={24} />
-                    <span className="text-[9px] font-black uppercase tracking-tighter">目錄</span>
+                    <span className="text-[9px] font-black uppercase tracking-tighter">Directory</span>
                 </button>
                 <button className={`flex flex-col items-center gap-1.5 transition-all text-slate-300`}>
                     <Icon name="navigation" size={24} />
-                    <span className="text-[9px] font-black uppercase tracking-tighter">地圖</span>
+                    <span className="text-[9px] font-black uppercase tracking-tighter">Map</span>
                 </button>
                 <button className={`flex flex-col items-center gap-1.5 transition-all text-rose-400 hover:text-rose-600`}>
                     <Icon name="alert" size={24} />
-                    <span className="text-[9px] font-black uppercase tracking-tighter">緊急</span>
+                    <span className="text-[9px] font-black uppercase tracking-tighter">Emergency</span>
                 </button>
             </nav>
         </div>
     );
 };
 
-// --- 掛載邏輯 ---
+// --- Mounting Logic ---
 const rootElement = document.getElementById('app');
 if (rootElement) {
     import('react-dom/client').then(ReactDOM => {
