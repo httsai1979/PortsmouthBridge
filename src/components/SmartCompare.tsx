@@ -106,19 +106,19 @@ const SmartCompare = ({ items, userLocation, onRemove, onNavigate, onCall }: Sma
                                 <div className="space-y-3 mb-6">
                                     {/* Status Metric */}
                                     <div className={`p-4 rounded-2xl border-2 transition-all ${item.isOpen
-                                            ? 'bg-emerald-50 border-emerald-200'
-                                            : item.isClosingSoon
-                                                ? 'bg-amber-50 border-amber-200'
-                                                : 'bg-slate-50 border-slate-200'
+                                        ? 'bg-emerald-50 border-emerald-200'
+                                        : item.isClosingSoon
+                                            ? 'bg-amber-50 border-amber-200'
+                                            : 'bg-slate-50 border-slate-200'
                                         }`}>
                                         <div className="flex items-center justify-between">
                                             <span className="text-xs font-bold text-slate-600">Status</span>
                                             <div className="flex items-center gap-2">
                                                 <div className={`w-3 h-3 rounded-full ${item.isOpen ? 'bg-emerald-500 animate-pulse shadow-lg shadow-emerald-200' :
-                                                        item.isClosingSoon ? 'bg-amber-500' : 'bg-slate-300'
+                                                    item.isClosingSoon ? 'bg-amber-500' : 'bg-slate-300'
                                                     }`}></div>
                                                 <span className={`text-sm font-black ${item.isOpen ? 'text-emerald-700' :
-                                                        item.isClosingSoon ? 'text-amber-700' : 'text-slate-500'
+                                                    item.isClosingSoon ? 'text-amber-700' : 'text-slate-500'
                                                     }`}>
                                                     {item.isOpen ? 'OPEN NOW' : item.isClosingSoon ? 'CLOSING SOON' : 'CLOSED'}
                                                 </span>
@@ -129,8 +129,8 @@ const SmartCompare = ({ items, userLocation, onRemove, onNavigate, onCall }: Sma
                                     {/* Distance Metric */}
                                     {item.distance !== null && (
                                         <div className={`p-4 rounded-2xl border-2 ${isBestDistance
-                                                ? 'bg-emerald-50 border-emerald-300 ring-2 ring-emerald-200'
-                                                : 'bg-white border-slate-200'
+                                            ? 'bg-emerald-50 border-emerald-300 ring-2 ring-emerald-200'
+                                            : 'bg-white border-slate-200'
                                             }`}>
                                             <div className="flex items-center justify-between">
                                                 <span className="text-xs font-bold text-slate-600">Distance</span>
@@ -153,8 +153,8 @@ const SmartCompare = ({ items, userLocation, onRemove, onNavigate, onCall }: Sma
                                     {/* Trust Score Metric */}
                                     {item.trustScore > 0 && (
                                         <div className={`p-4 rounded-2xl border-2 ${isBestTrust
-                                                ? 'bg-indigo-50 border-indigo-300 ring-2 ring-indigo-200'
-                                                : 'bg-white border-slate-200'
+                                            ? 'bg-indigo-50 border-indigo-300 ring-2 ring-indigo-200'
+                                            : 'bg-white border-slate-200'
                                             }`}>
                                             <div className="flex items-center justify-between">
                                                 <span className="text-xs font-bold text-slate-600">Trust Score</span>
@@ -175,7 +175,7 @@ const SmartCompare = ({ items, userLocation, onRemove, onNavigate, onCall }: Sma
                                     )}
 
                                     {/* Tags */}
-                                    <div className="p-4 bg-white rounded-2xl border-2 border-slate-200">
+                                    <div className="p-4 bg-white rounded-2xl border-2 border-slate-200 mb-4">
                                         <span className="text-xs font-bold text-slate-600 block mb-3">Services</span>
                                         <div className="flex flex-wrap gap-2">
                                             {item.tags.slice(0, 4).map(tag => (
@@ -186,6 +186,26 @@ const SmartCompare = ({ items, userLocation, onRemove, onNavigate, onCall }: Sma
                                                     {TAG_ICONS[tag]?.label || tag}
                                                 </span>
                                             ))}
+                                        </div>
+                                    </div>
+
+                                    {/* Language & Culture Grid */}
+                                    <div className="grid grid-cols-2 gap-3 mb-6">
+                                        <div className="p-3 bg-white rounded-2xl border-2 border-slate-200">
+                                            <span className="text-[10px] font-bold text-slate-400 block mb-2 uppercase">Languages</span>
+                                            <div className="flex flex-wrap gap-1">
+                                                {item.languages?.length ? item.languages.map(l => (
+                                                    <span key={l} className="text-[9px] font-black px-1.5 py-0.5 rounded bg-slate-100 text-slate-600">{l}</span>
+                                                )) : <span className="text-[9px] text-slate-400">Default (En)</span>}
+                                            </div>
+                                        </div>
+                                        <div className="p-3 bg-white rounded-2xl border-2 border-slate-200">
+                                            <span className="text-[10px] font-bold text-slate-400 block mb-2 uppercase">Culture</span>
+                                            <div className="flex flex-wrap gap-1">
+                                                {item.culture_tags?.length ? item.culture_tags.map(t => (
+                                                    <span key={t} className="text-[9px] font-black px-1.5 py-0.5 rounded bg-rose-50 text-rose-500">{t}</span>
+                                                )) : <span className="text-[9px] text-slate-400">-</span>}
+                                            </div>
                                         </div>
                                     </div>
                                 </div>

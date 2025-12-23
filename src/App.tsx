@@ -14,13 +14,16 @@ import PrivacyShield from './components/PrivacyShield';
 import JourneyPlanner from './components/JourneyPlanner';
 import SmartCompare from './components/SmartCompare';
 import SmartNotifications from './components/SmartNotifications';
+import ProgressTimeline from './components/ProgressTimeline';
 
 const App = () => {
     // Branding & Accessibility State
     const [highContrast, setHighContrast] = useState(false);
     const [stealthMode, setStealthMode] = useState(false);
     const [isOffline, setIsOffline] = useState(!navigator.onLine);
+    const [language, setLanguage] = useState<'en' | 'zh' | 'pl'>('en'); // Language Integration
     const [loading, setLoading] = useState(true);
+    const [installPrompt, setInstallPrompt] = useState<any>(null); // PWA Install
 
     // Navigation & Modals
     const [view, setView] = useState<'home' | 'map' | 'list' | 'planner' | 'compare'>('home');
@@ -95,6 +98,13 @@ const App = () => {
         const handleStatus = () => setIsOffline(!navigator.onLine);
         window.addEventListener('online', handleStatus);
         window.addEventListener('offline', handleStatus);
+
+        // PWA Install Prompt Capture
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            setInstallPrompt(e);
+        });
+
         return () => {
             window.removeEventListener('online', handleStatus);
             window.removeEventListener('offline', handleStatus);
@@ -170,6 +180,20 @@ const App = () => {
     }, [savedIds]);
 
     // Phase 25: Helper Functions
+    const handleInstallClick = () => {
+        if (installPrompt) {
+            installPrompt.prompt();
+            installPrompt.userChoice.then((choiceResult: any) => {
+                if (choiceResult.outcome === 'accepted') {
+                    console.log('User accepted the A2HS prompt');
+                }
+                setInstallPrompt(null);
+            });
+        } else {
+            alert(language === 'zh' ? "請使用瀏覽器選單加入主畫面以離線使用" : "Add to Home Screen from browser menu for offline use.");
+        }
+    };
+
     const toggleJourneyItem = (id: string) => {
         setJourneyItems(prev =>
             prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
@@ -323,8 +347,30 @@ const App = () => {
             <AIAssistant onIntent={handleSearch} currentArea={filters.area} />
 
             <div className={`px-5 mt-4 relative z-20 transition-all ${stealthMode ? 'opacity-90 grayscale-[0.5]' : ''}`}>
+                {/* Language & Offline Controls */}
+                <div className="flex justify-end gap-2 mb-4">
+                    <button
+                        onClick={() => setLanguage(prev => prev === 'en' ? 'zh' : prev === 'zh' ? 'pl' : 'en')}
+                        className="bg-white px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border border-slate-200 shadow-sm flex items-center gap-1"
+                    >
+                        <Icon name="globe" size={12} /> {language === 'en' ? 'ENG' : language === 'zh' ? '繁體中文' : 'POLSKI'}
+                    </button>
+                    {(isOffline || installPrompt) && (
+                        <button
+                            onClick={handleInstallClick}
+                            className="bg-slate-900 text-white px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider shadow-sm flex items-center gap-1"
+                        >
+                            <Icon name="download" size={12} /> {isOffline ? 'Offline Ready' : 'Install App'}
+                        </button>
+                    )}
+                </div>
+
                 {view === 'home' && (
                     <div className="animate-fade-in-up">
+                        {/* Progress Timeline Integration */}
+                        {savedIds.length > 0 && (
+                            <ProgressTimeline savedCount={savedIds.length} />
+                        )}
                         {/* Phase 9: Warmer Daily Greeting with City Impact */}
                         <div className="mb-8 p-8 bg-gradient-to-br from-indigo-600 via-indigo-700 to-slate-900 rounded-[40px] text-white shadow-2xl shadow-indigo-200/50 relative overflow-hidden">
                             <div className="absolute top-0 right-0 w-48 h-48 bg-white/10 rounded-full -mr-24 -mt-24 blur-3xl"></div>
