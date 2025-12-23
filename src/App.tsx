@@ -396,6 +396,12 @@ const App = () => {
                             <Icon name="download" size={12} /> {isOffline ? 'Offline Ready' : 'Install App'}
                         </button>
                     )}
+                    <button
+                        onClick={() => setShowPrint(true)}
+                        className="bg-white px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border border-slate-200 shadow-sm flex items-center gap-1 hover:bg-slate-50 transition-colors"
+                    >
+                        <Icon name="printer" size={12} /> Save PDF
+                    </button>
                 </div>
 
                 {view === 'home' && (
@@ -642,7 +648,7 @@ const App = () => {
                             </div>
                             <button onClick={() => setView('home')} className="p-3 bg-slate-100 text-slate-400 rounded-2xl hover:bg-slate-200 transition-all"><Icon name="x" size={20} /></button>
                         </div>
-                        <FoodSchedule data={filteredData.length > 0 && filters.category === 'food' ? filteredData : ALL_DATA} />
+                        <FoodSchedule data={filteredData.length > 0 && filters.category === 'food' ? filteredData : ALL_DATA.filter(i => i.category === 'food')} />
                     </div>
                 )}
 
@@ -862,16 +868,28 @@ const App = () => {
                             ))}
                         </div>
 
+                        {/* Infinite Scroll Sentinel */}
                         {visibleCount < filteredData.length && (
-                            <div className="pb-32 text-center">
-                                <button
-                                    onClick={() => setVisibleCount(prev => prev + 10)}
-                                    className="px-8 py-3 bg-white border-2 border-slate-200 rounded-full text-xs font-black uppercase tracking-widest text-slate-600 hover:border-indigo-200 hover:text-indigo-600 transition-all shadow-sm"
-                                >
-                                    Load More Resources ({filteredData.length - visibleCount} remaining)
-                                </button>
+                            <div
+                                ref={(node) => {
+                                    if (!node) return;
+                                    const observer = new IntersectionObserver(
+                                        (entries) => {
+                                            if (entries[0].isIntersecting) {
+                                                setVisibleCount(prev => Math.min(prev + 10, filteredData.length));
+                                            }
+                                        },
+                                        { threshold: 0.1, rootMargin: '100px' }
+                                    );
+                                    observer.observe(node);
+                                    return () => observer.disconnect();
+                                }}
+                                className="h-20 flex items-center justify-center p-4 text-slate-400 font-bold text-xs uppercase tracking-widest animate-pulse"
+                            >
+                                Loading more resources...
                             </div>
                         )}
+                        <div className="pb-32"></div>
                     </div>
                 )}
 
@@ -919,6 +937,7 @@ const App = () => {
 
                 <TipsModal isOpen={showTips} onClose={() => setShowTips(false)} />
                 <CrisisModal isOpen={showCrisis} onClose={() => setShowCrisis(false)} />
+                {showPrint && <PrintView data={ALL_DATA} onClose={() => setShowPrint(false)} />}
                 <PrivacyShield onAccept={() => console.log('Privacy accepted')} />
 
                 {/* Phase 25: Smart Notifications */}

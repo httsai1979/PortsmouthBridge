@@ -51,74 +51,72 @@ const FoodSchedule = ({ data }: FoodScheduleProps) => {
             </div>
 
             {/* Legend */}
-            <div className="flex gap-4 mb-6 text-[10px] font-bold uppercase tracking-wide bg-slate-50 p-3 rounded-xl">
-                <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-full bg-emerald-100 border-2 border-white shadow-sm ring-1 ring-emerald-200"></div>
-                    <span className="text-slate-600">Free / Meal</span>
+            <div className="flex gap-4 mb-6 justify-center">
+                <div className="flex items-center gap-2 bg-emerald-50 px-3 py-1.5 rounded-full border border-emerald-100">
+                    <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
+                    <span className="text-[9px] font-black uppercase text-emerald-800 tracking-wider">Free / Hot Meal</span>
                 </div>
-                <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-full bg-orange-100 border-2 border-white shadow-sm ring-1 ring-orange-200"></div>
-                    <span className="text-slate-600">Pantry / Low Cost</span>
+                <div className="flex items-center gap-2 bg-orange-50 px-3 py-1.5 rounded-full border border-orange-100">
+                    <div className="w-2 h-2 rounded-full bg-orange-500"></div>
+                    <span className="text-[9px] font-black uppercase text-orange-800 tracking-wider">Pantry (Membership)</span>
                 </div>
             </div>
 
             <div className="space-y-6 relative">
-                {/* Timeline Line */}
-                <div className="absolute left-[19px] top-4 bottom-4 w-0.5 bg-slate-100 z-0"></div>
+                {/* Main Vertical Timeline Line */}
+                <div className="absolute left-[19px] top-6 bottom-6 w-0.5 bg-slate-100 z-0"></div>
 
                 {DAYS.map((dayName, index) => {
                     const dayIndex = DAY_INDICES[index];
                     const items = processedSchedule[dayIndex] || [];
-                    const isToday = new Date().getDay() === dayIndex;
+                    const today = new Date().getDay();
+                    const isToday = dayIndex === today;
 
                     return (
-                        <div key={dayName} className="relative z-10">
-                            <div className="flex items-center gap-4 mb-3">
-                                <div className={`w-10 h-10 rounded-full border-4 border-white shadow-sm flex items-center justify-center font-black text-[10px] uppercase tracking-wider shrink-0 transition-colors ${isToday ? 'bg-indigo-600 text-white shadow-indigo-200' : 'bg-slate-200 text-slate-500'
-                                    }`}>
-                                    {dayName.slice(0, 3)}
+                        <div key={dayIndex} className={`mb-8 relative ${isToday ? 'opacity-100' : 'opacity-80'}`}>
+                            {/* Day Node */}
+                            <div className="flex items-center gap-4 mb-4 relative z-10">
+                                <div className={`w-10 h-10 rounded-full flex items-center justify-center font-black text-xs border-4 transition-all ${isToday ? 'bg-white border-indigo-600 text-indigo-600 shadow-lg shadow-indigo-200 scale-110' : 'bg-white border-slate-200 text-slate-400'}`}>
+                                    {dayName.substring(0, 3)}
                                 </div>
-                                <h4 className={`text-sm font-black ${isToday ? 'text-indigo-600' : 'text-slate-400'}`}>
-                                    {dayName} {isToday && <span className="ml-2 text-[8px] bg-indigo-50 px-2 py-0.5 rounded-full text-indigo-600">TODAY</span>}
+                                <h4 className={`text-lg font-black tracking-tight ${isToday ? 'text-indigo-900' : 'text-slate-400'}`}>
+                                    {dayName} {isToday && <span className="ml-2 text-[9px] bg-indigo-600 text-white px-2 py-0.5 rounded-full align-middle tracking-wider shadow-sm">TODAY</span>}
                                 </h4>
                             </div>
 
-                            <div className="pl-14 space-y-2">
+                            <div className="pl-14 space-y-4">
                                 {items.length > 0 ? (
                                     items.map(({ resource, time }) => {
-                                        // Stronger Visual Logic
                                         const isPantry = resource.type.toLowerCase().includes('pantry') || resource.tags.includes('membership');
 
                                         return (
-                                            <div key={resource.id} className={`p-4 rounded-[20px] border-l-8 shadow-md transition-all hover:scale-[1.02] mb-3 ${isPantry
-                                                ? 'bg-orange-50/80 border-orange-500 shadow-orange-100'
-                                                : 'bg-emerald-50/80 border-emerald-500 shadow-emerald-100'
+                                            <div key={resource.id} className={`relative p-5 rounded-[24px] border-l-[6px] shadow-sm transition-all hover:scale-[1.02] hover:shadow-md bg-white ${isPantry
+                                                    ? 'border-orange-400 shadow-orange-50'
+                                                    : 'border-emerald-400 shadow-emerald-50'
                                                 }`}>
                                                 <div className="flex justify-between items-start">
                                                     <div>
                                                         <h5 className="text-sm font-black text-slate-900 leading-tight mb-1">{resource.name}</h5>
-                                                        <div className="flex flex-wrap gap-2">
-                                                            <span className={`text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md ${isPantry ? 'bg-orange-200 text-orange-800' : 'bg-emerald-200 text-emerald-800'
+                                                        <div className="flex flex-wrap gap-2 mt-2">
+                                                            <span className={`text-[9px] font-black uppercase tracking-wider px-2 py-1 rounded-md ${isPantry ? 'bg-orange-50 text-orange-800' : 'bg-emerald-50 text-emerald-800'
                                                                 }`}>
-                                                                {isPantry ? 'Membership Pantry' : 'Free / Hot Meal'}
+                                                                {isPantry ? 'Membership' : 'Free / Meal'}
                                                             </span>
-                                                            <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest self-center">
+                                                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest self-center">
                                                                 {resource.area}
                                                             </span>
                                                         </div>
                                                     </div>
-                                                    <span className={`text-[11px] font-black px-3 py-1.5 rounded-xl shadow-sm ${isPantry ? 'bg-white text-orange-600 ring-1 ring-orange-200' : 'bg-white text-emerald-600 ring-1 ring-emerald-200'
-                                                        }`}>
-                                                        {time}
-                                                    </span>
+                                                    <div className="text-right">
+                                                        <span className="block text-xs font-black text-slate-900">{time}</span>
+                                                        {isPantry && <span className="text-[9px] font-bold text-orange-500 uppercase">£ Fees</span>}
+                                                    </div>
                                                 </div>
                                             </div>
                                         );
                                     })
                                 ) : (
-                                    <div className="p-3 rounded-xl bg-slate-50 border border-slate-100 text-[10px] text-slate-400 italic">
-                                        No food resources scheduled.
-                                    </div>
+                                    <p className="text-xs text-slate-400 italic font-medium py-2 ml-1">No services scheduled.</p>
                                 )}
                             </div>
                         </div>

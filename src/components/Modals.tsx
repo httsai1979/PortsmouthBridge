@@ -58,18 +58,22 @@ export const TipsModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () =>
                         </p>
                     </section>
 
-                    <section className="bg-indigo-50 p-6 rounded-[24px] border border-indigo-100">
-                        <h3 className="text-[10px] font-black text-indigo-400 uppercase tracking-[0.2em] mb-3 flex items-center gap-2">
-                            Our Promise
+                    <section className="bg-indigo-50 p-6 rounded-[24px] border border-indigo-100 mb-6">
+                        <h3 className="text-[10px] font-black text-indigo-400 uppercase tracking-[0.2em] mb-4 flex items-center gap-2">
+                            Our Community Charter
                         </h3>
                         <div className="space-y-4">
                             <div>
-                                <h4 className="text-xs font-black text-indigo-900">Dignity First</h4>
-                                <p className="text-[10px] text-indigo-700/80 leading-relaxed mt-1">We only list verified, 100% real services. No dead ends. You deserve respect and accuracy.</p>
+                                <h4 className="text-xs font-black text-indigo-900 border-l-2 border-indigo-500 pl-2">Dignity First</h4>
+                                <p className="text-[10px] text-indigo-800/80 leading-relaxed mt-1">We promise to only list verified, 100% real services. No dead ends. You deserve accuracy and respect.</p>
                             </div>
                             <div>
-                                <h4 className="text-xs font-black text-indigo-900">Warmth & Connection</h4>
-                                <p className="text-[10px] text-indigo-700/80 leading-relaxed mt-1">This tool is built with love to connect you to the community that cares about you.</p>
+                                <h4 className="text-xs font-black text-indigo-900 border-l-2 border-indigo-500 pl-2">Warmth & Connection</h4>
+                                <p className="text-[10px] text-indigo-800/80 leading-relaxed mt-1">This tool is built with love to connect you to the community that cares. You are never alone.</p>
+                            </div>
+                            <div>
+                                <h4 className="text-xs font-black text-indigo-900 border-l-2 border-indigo-500 pl-2">Support & Empowerment</h4>
+                                <p className="text-[10px] text-indigo-800/80 leading-relaxed mt-1">We provide tools (Plan, Compare, Print) to give you control over your journey.</p>
                             </div>
                         </div>
                     </section>

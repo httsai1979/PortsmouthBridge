@@ -425,5 +425,37 @@ export const ALL_DATA: Resource[] = [
         lng: -1.091,
         phone: "023 9287 3633",
         trustScore: 95
+    },
+    {
+        id: 'fam8',
+        name: "Landport Adventure Playground",
+        category: "family",
+        type: "Adventure Play",
+        area: "PO1",
+        address: "Arundel Street, PO1 1PH",
+        description: "Staffed adventure playground for ages 6-13. Free entry. Checking opening times recommended.",
+        requirements: "Register on arrival.",
+        tags: ["free", "children", "community"],
+        schedule: { 1: "15:30-18:00", 2: "15:30-18:00", 3: "15:30-18:00", 4: "15:30-18:00", 5: "15:30-18:00", 6: "11:00-16:00", 0: "Closed" },
+        lat: 50.803,
+        lng: -1.087,
+        phone: "023 9283 1756",
+        trustScore: 98
+    },
+    {
+        id: 'fam9',
+        name: "Paulsgrove Adventure Playground",
+        category: "family",
+        type: "Adventure Play",
+        area: "PO6",
+        address: "Marsden Road, PO6 4JB",
+        description: "Large adventure play area with structures and activities for children 6-13. Free.",
+        requirements: "Register on arrival.",
+        tags: ["free", "children", "community"],
+        schedule: { 1: "15:30-18:00", 2: "15:30-18:00", 3: "15:30-18:00", 4: "15:30-18:00", 5: "15:30-18:00", 6: "11:00-16:00", 0: "Closed" },
+        lat: 50.843,
+        lng: -1.088,
+        phone: "023 9237 0643",
+        trustScore: 98
     }
 ];
