@@ -19,8 +19,25 @@ interface SimpleMapProps {
 }
 
 // Utility to create a custom marker icon
-const createCustomIcon = (item: Resource, isSelected: boolean) => {
+const createCustomIcon = (item: Resource, isSelected: boolean, stealthMode?: boolean) => {
     const status = checkStatus(item.schedule);
+
+    // PB: Safe Mode (Privacy Protection)
+    if (stealthMode) {
+        return L.divIcon({
+            className: 'custom-div-icon',
+            html: `
+                <div class="relative group">
+                    <div class="w-6 h-6 rounded-full border-2 border-white bg-slate-400 shadow-sm flex items-center justify-center ${isSelected ? 'scale-110 ring-2 ring-slate-300' : ''}">
+                         <div class="w-1.5 h-1.5 rounded-full bg-white opacity-50"></div>
+                    </div>
+                </div>
+            `,
+            iconSize: [24, 24],
+            iconAnchor: [12, 12],
+        });
+    }
+
     const config = TAG_ICONS[item.category] || TAG_ICONS.default;
     const color = config.hex;
 
@@ -55,7 +72,7 @@ const createCustomIcon = (item: Resource, isSelected: boolean) => {
 
 // Component to handle map center/zoom updates
 const MapController = ({ selectedPos, locateTrigger, externalPos }: { selectedPos: [number, number] | null, locateTrigger: number, externalPos?: [number, number] | null }) => {
-    const map = useMap();
+    const map = useMap(); // Get map instance here inside the component that is child of MapContainer
 
     useEffect(() => {
         if (selectedPos) {
@@ -156,7 +173,7 @@ const SimpleMap = ({ data, category, statusFilter, savedIds, onToggleSave, steal
                     <Marker
                         key={item.id}
                         position={[item.lat, item.lng]}
-                        icon={createCustomIcon(item, selectedItem?.id === item.id)}
+                        icon={createCustomIcon(item, selectedItem?.id === item.id, stealthMode)}
                         eventHandlers={{
                             click: () => {
                                 setSelectedItem(item);
@@ -200,7 +217,7 @@ const SimpleMap = ({ data, category, statusFilter, savedIds, onToggleSave, steal
             </MapContainer>
 
             {/* Phase 17: Tactical HUD (Situational Awareness) */}
-            <div className={`absolute top-20 left-4 z-[1000] pointer-events-none transition-all ${stealthMode ? 'opacity-60 grayscale-[0.3]' : ''}`}>
+            <div className={`absolute top-20 left-4 z-[1000] pointer-events-none transition-all ${stealthMode ? 'opacity-0' : ''}`}> {/* Hide HUD in Stealth */}
                 <div className="bg-slate-900/90 backdrop-blur-md text-white px-4 py-3 rounded-2xl shadow-2xl flex flex-col gap-1 border border-white/10">
                     <div className="flex items-center gap-2">
                         <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
@@ -222,8 +239,8 @@ const SimpleMap = ({ data, category, statusFilter, savedIds, onToggleSave, steal
             </button>
 
             {selectedItem && (
-                <div className="absolute bottom-6 left-6 right-6 z-[1000] bg-white rounded-3xl p-5 shadow-2xl animate-fade-in-up border-2 transition-colors duration-500" style={{ borderColor: `${TAG_ICONS[selectedItem.category]?.hex || '#f1f5f9'}20` }}>
-                    <div className="absolute top-0 left-0 right-0 h-1.5 rounded-t-3xl" style={{ backgroundColor: TAG_ICONS[selectedItem.category]?.hex || '#475569' }}></div>
+                <div className="absolute bottom-6 left-6 right-6 z-[1000] bg-white rounded-3xl p-5 shadow-2xl animate-fade-in-up border-2 transition-colors duration-500" style={{ borderColor: stealthMode ? '#e2e8f0' : `${TAG_ICONS[selectedItem.category]?.hex || '#f1f5f9'}20` }}>
+                    <div className="absolute top-0 left-0 right-0 h-1.5 rounded-t-3xl" style={{ backgroundColor: stealthMode ? '#cbd5e1' : TAG_ICONS[selectedItem.category]?.hex || '#475569' }}></div>
                     <button
                         onClick={() => setSelectedItem(null)}
                         className="absolute top-4 right-4 text-slate-400 hover:text-slate-600"
@@ -232,21 +249,16 @@ const SimpleMap = ({ data, category, statusFilter, savedIds, onToggleSave, steal
                     </button>
 
                     <div className="flex gap-4">
-                        <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 ${getTagConfig(selectedItem.category, TAG_ICONS).bg}`}>
-                            <Icon name={getTagConfig(selectedItem.category, TAG_ICONS).icon} size={24} />
+                        <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 ${stealthMode ? 'bg-slate-100 text-slate-400' : getTagConfig(selectedItem.category, TAG_ICONS).bg}`}>
+                            <Icon name={stealthMode ? 'mapPin' : getTagConfig(selectedItem.category, TAG_ICONS).icon} size={24} />
                         </div>
                         <div>
                             <div className="flex items-center gap-2 mb-1">
-                                <span className={`text-[10px] font-black uppercase tracking-widest leading-none ${TAG_ICONS[selectedItem.category]?.color || 'text-slate-400'}`}>
-                                    {TAG_ICONS[selectedItem.category]?.label || selectedItem.category} • {selectedItem.area}
+                                <span className={`text-[10px] font-black uppercase tracking-widest leading-none ${stealthMode ? 'text-slate-400' : TAG_ICONS[selectedItem.category]?.color || 'text-slate-400'}`}>
+                                    {stealthMode ? 'Place' : TAG_ICONS[selectedItem.category]?.label || selectedItem.category} • {stealthMode ? 'Nearby' : selectedItem.area}
                                 </span>
-                                {selectedItem.trustScore && selectedItem.trustScore > 90 && (
-                                    <span className="bg-indigo-50 text-indigo-600 text-[8px] font-black uppercase px-2 py-0.5 rounded-md border border-indigo-100 flex items-center gap-1">
-                                        <Icon name="check_circle" size={8} /> Verified
-                                    </span>
-                                )}
                             </div>
-                            <h3 className="text-xl font-black text-slate-900 leading-tight mb-1">{selectedItem.name}</h3>
+                            <h3 className="text-xl font-black text-slate-900 leading-tight mb-1">{stealthMode ? 'Local Resource' : selectedItem.name}</h3>
                             <div className="flex items-center gap-1.5 text-xs font-bold text-slate-400">
                                 <Icon name="mapPin" size={12} /> {selectedItem.address}
                             </div>

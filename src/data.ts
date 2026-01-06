@@ -18,6 +18,19 @@ export interface Resource {
     thanksCount?: number;
     languages?: string[]; // New: Language Integration
     culture_tags?: string[]; // New: Cultural tags
+    // PB: Time Criticality & Traffic Light
+    capacityLevel?: 'high' | 'medium' | 'low' | 'unknown';
+    // PB: Psychological Visibility
+    entranceMeta?: {
+        imageUrl?: string;
+        queueStatus?: 'empty' | 'light' | 'busy' | 'unknown';
+        idRequired: boolean;
+        isWheelchairAccessible?: boolean;
+    };
+    // PB: Door Threshold Transparency
+    eligibility?: 'open' | 'referral' | 'membership';
+    // PB: B2B
+    partner_access?: boolean;
 }
 
 export const MAP_BOUNDS = { minLat: 50.770, maxLat: 50.870, minLng: -1.120, maxLng: -1.040 };
@@ -109,7 +122,15 @@ export const ALL_DATA: Resource[] = [
         lng: -1.0991,
         transport: "Bus 1, 3, X4 (Hard Interchange)",
         phone: "023 9289 2010",
-        trustScore: 100
+        trustScore: 100,
+        capacityLevel: 'high',
+        entranceMeta: {
+            imageUrl: 'https://images.unsplash.com/photo-1599059813005-11265ba4b4ce?auto=format&fit=crop&q=80&w=300',
+            queueStatus: 'light',
+            idRequired: false,
+            isWheelchairAccessible: true
+        },
+        eligibility: 'open'
     },
     {
         id: 'f2',
@@ -126,7 +147,14 @@ export const ALL_DATA: Resource[] = [
         lng: -1.0991,
         transport: "Bus 1, 3, X4",
         phone: "023 9289 2010",
-        trustScore: 98
+        trustScore: 98,
+        capacityLevel: 'medium',
+        entranceMeta: {
+            queueStatus: 'light',
+            idRequired: true,
+            isWheelchairAccessible: true
+        },
+        eligibility: 'membership'
     },
     {
         id: 'f3',
@@ -145,7 +173,14 @@ export const ALL_DATA: Resource[] = [
         lng: -1.0760,
         transport: "Bus 1, 18",
         phone: "023 9229 3733",
-        trustScore: 99
+        trustScore: 99,
+        capacityLevel: 'high',
+        entranceMeta: {
+            queueStatus: 'busy',
+            idRequired: false,
+            imageUrl: 'https://images.unsplash.com/photo-1469571400559-01c8d646ed0e?auto=format&fit=crop&q=80&w=300' // Generic welcoming door
+        },
+        eligibility: 'open'
     },
     {
         id: 'f7',
@@ -161,7 +196,10 @@ export const ALL_DATA: Resource[] = [
         lat: 50.7852,
         lng: -1.0725,
         phone: "023 9435 1995",
-        trustScore: 98
+        trustScore: 98,
+        capacityLevel: 'medium',
+        entranceMeta: { idRequired: true },
+        eligibility: 'membership'
     },
     {
         id: 'f8',
@@ -177,7 +215,10 @@ export const ALL_DATA: Resource[] = [
         lat: 50.7925,
         lng: -1.0655,
         transport: "Bus 1, 2",
-        trustScore: 100
+        trustScore: 100,
+        capacityLevel: 'high',
+        entranceMeta: { idRequired: false, queueStatus: 'empty' },
+        eligibility: 'open'
     },
     {
         id: 'f4',
@@ -194,7 +235,10 @@ export const ALL_DATA: Resource[] = [
         lng: -1.0765,
         transport: "Bus 2, 3",
         phone: "07733 624248",
-        trustScore: 95
+        trustScore: 95,
+        capacityLevel: 'medium',
+        entranceMeta: { idRequired: true },
+        eligibility: 'membership'
     },
     {
         id: 'f5',
@@ -211,7 +255,15 @@ export const ALL_DATA: Resource[] = [
         lng: -1.085,
         transport: "Bus 1, 13",
         phone: "023 9298 7976",
-        trustScore: 100
+        trustScore: 100,
+        capacityLevel: 'low', // Critical stock
+        entranceMeta: {
+            idRequired: true,
+            queueStatus: 'busy',
+            imageUrl: 'https://images.unsplash.com/photo-1481026469463-66327c86e544?auto=format&fit=crop&q=80&w=300'
+        },
+        eligibility: 'referral',
+        partner_access: true // B2B hub potential
     },
     {
         id: 'f6',
@@ -227,7 +279,10 @@ export const ALL_DATA: Resource[] = [
         lat: 50.8035,
         lng: -1.0890,
         transport: "Bus 1, 3, 23",
-        trustScore: 95
+        trustScore: 95,
+        capacityLevel: 'high',
+        entranceMeta: { idRequired: false },
+        eligibility: 'open'
     },
     {
         id: 'f9',
@@ -297,7 +352,9 @@ export const ALL_DATA: Resource[] = [
         lng: -1.0875,
         phone: "023 9288 2689",
         transport: "Bus 1, 13",
-        trustScore: 100
+        trustScore: 100,
+        entranceMeta: { idRequired: false, isWheelchairAccessible: true },
+        eligibility: 'open'
     },
 
     // --- 🔥 WARMTH (WARM & SAFE) ---

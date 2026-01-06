@@ -1019,8 +1019,15 @@ const App = () => {
                         </div>
                     </div>
                 )}
+                {/* PB: B2B Hint - Internal Marketplace (Point 7) */}
+                <div className="mt-8 mb-8 text-center opacity-30 hover:opacity-100 transition-opacity">
+                    <button onClick={() => alert("Partner Portal: Please sign in with your organization ID to access the Resource Exchange Market.")} className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-400 border-b border-transparent hover:border-slate-400 pb-1">
+                        Partner Portal Access
+                    </button>
+                </div>
             </div>
-            );
+        </div>
+    );
 };
 
-            export default App;
+export default App;
