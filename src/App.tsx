@@ -16,6 +16,7 @@ import SmartCompare from './components/SmartCompare';
 import SmartNotifications from './components/SmartNotifications';
 import ProgressTimeline from './components/ProgressTimeline';
 import FoodSchedule from './components/FoodSchedule'; // Phase 27: Food Calendar
+import CrisisWizard from './components/CrisisWizard'; // Phase 28: Decision Wizard
 
 const App = () => {
     // Branding & Accessibility State
@@ -33,6 +34,7 @@ const App = () => {
     const [showPrint, setShowPrint] = useState(false);
     const [mapFilter, setMapFilter] = useState<'all' | 'open'>('open');
     const [mapFocus, setMapFocus] = useState<{ lat: number; lng: number; label?: string } | null>(null);
+    const [showWizard, setShowWizard] = useState(false);
 
     // List View Pagination
     const [visibleCount, setVisibleCount] = useState(10);
@@ -472,6 +474,25 @@ const App = () => {
                                 <Icon name="info" size={20} className="mb-1 text-indigo-600 group-hover:scale-110 transition-transform" /> Help Guide
                             </button>
                         </div>
+
+                        {/* Phase 28: Critical Decision Button */}
+                        <button
+                            onClick={() => setShowWizard(true)}
+                            className="w-full mb-8 bg-rose-500 text-white p-5 rounded-[28px] shadow-xl shadow-rose-200 flex items-center justify-between group transition-all hover:scale-[1.02] active:scale-95"
+                        >
+                            <div className="flex items-center gap-4">
+                                <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center animate-pulse">
+                                    <Icon name="lifebuoy" size={24} className="text-white" />
+                                </div>
+                                <div className="text-left">
+                                    <h3 className="text-lg font-black leading-none mb-1">I Need Help Now</h3>
+                                    <p className="text-[10px] font-bold text-rose-100 uppercase tracking-widest">Decision Wizard • Find Support Instantly</p>
+                                </div>
+                            </div>
+                            <div className="w-10 h-10 bg-white text-rose-600 rounded-full flex items-center justify-center shadow-sm group-hover:bg-rose-50">
+                                <Icon name="arrow-right" size={20} />
+                            </div>
+                        </button>
 
                         {/* Phase 25.5: Quick Actions - Now Higher Up */}
                         <div className="mb-8">
@@ -1025,6 +1046,23 @@ const App = () => {
                         Partner Portal Access
                     </button>
                 </div>
+
+                {/* Decision Wizard Modal */}
+                {showWizard && (
+                    <CrisisWizard
+                        userLocation={userLocation}
+                        onClose={() => setShowWizard(false)}
+                        savedIds={savedIds}
+                        onToggleSave={(id) => {
+                            if (savedIds.includes(id)) {
+                                setSavedIds(prev => prev.filter(i => i !== id));
+                            } else {
+                                setSavedIds(prev => [...prev, id]);
+                                playSuccessSound();
+                            }
+                        }}
+                    />
+                )}
             </div>
         </div>
     );
