@@ -876,6 +876,29 @@ const App = () => {
                                     </button>
                                 ))}
                             </div>
+
+                            {/* Phase 30: Eligibility Pre-Filters (User Request) */}
+                            <div className="flex gap-2 pb-4 overflow-x-auto scrollbar-hide">
+                                {[
+                                    { label: 'No Referral', tag: 'no_referral', icon: 'check_circle' },
+                                    { label: 'Free', tag: 'free', icon: 'tag' },
+                                    { label: 'Membership', tag: 'membership', icon: 'id-card' }
+                                ].map(f => (
+                                    <button
+                                        key={f.tag}
+                                        onClick={() => setSearchQuery(searchQuery === f.tag ? '' : f.tag)}
+                                        className={`
+                                            flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider transition-all border
+                                            ${searchQuery === f.tag
+                                                ? 'bg-indigo-600 text-white border-indigo-600 shadow-md'
+                                                : 'bg-white text-slate-600 border-slate-200 hover:border-indigo-300'}
+                                        `}
+                                    >
+                                        <Icon name={f.icon} size={12} />
+                                        {f.label}
+                                    </button>
+                                ))}
+                            </div>
                         </div>
                         <div className="space-y-4 pb-24">
                             {filteredData.slice(0, visibleCount).map(item => (

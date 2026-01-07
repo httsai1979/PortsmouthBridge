@@ -168,12 +168,12 @@ export const ALL_DATA: Resource[] = [
         tags: ["hot_meal", "no_referral", "pets", "support", "free"],
         culture_tags: ["halal"],
         languages: ["English"],
-        schedule: { 0: "Closed", 1: "Closed", 2: "Closed", 3: "09:00-11:30", 4: "18:00-19:30", 5: "Closed", 6: "Closed" },
-        lat: 50.7869,
-        lng: -1.0766,
+        schedule: { 0: "Closed", 1: "Closed", 2: "Closed", 3: "09:00-11:30", 4: "18:00-20:00", 5: "Closed", 6: "Closed" }, // Updated: User verified
+        lat: 50.7853, // Corrected: Exact building location
+        lng: -1.0772,
         transport: "Bus 1, 18",
-        phone: "023 9229 3733",
-        trustScore: 99,
+        phone: "07800 933 983", // Updated: Direct mobile
+        trustScore: 100, // Verified by user feedback
         capacityLevel: 'high',
         entranceMeta: {
             queueStatus: 'busy',
@@ -193,8 +193,8 @@ export const ALL_DATA: Resource[] = [
         requirements: "Membership required (£5/week). Open to PO4/PO5 residents.",
         tags: ["membership", "fresh_food", "community"],
         schedule: { 0: "Closed", 1: "15:00-16:30", 2: "15:00-16:30", 3: "10:00-11:30", 4: "Closed", 5: "Closed", 6: "Closed" }, // Updated: Mon/Tue 3-4:30pm, Wed 10-11:30am
-        lat: 50.7852,
-        lng: -1.0725,
+        lat: 50.7870, // Corrected: St Margaret's Church
+        lng: -1.0658,
         phone: "023 9435 1995",
         trustScore: 98,
         capacityLevel: 'medium',
@@ -251,8 +251,8 @@ export const ALL_DATA: Resource[] = [
         requirements: "E-referral voucher required + ID.",
         tags: ["referral", "emergency"],
         schedule: { 0: "Closed", 1: "11:00-13:00", 2: "Closed", 3: "11:00-13:00", 4: "Closed", 5: "11:00-13:00", 6: "Closed" }, // Updated: Mon/Wed/Fri 11am-1pm
-        lat: 50.7960,
-        lng: -1.0898,
+        lat: 50.7935, // Corrected: Hope Church
+        lng: -1.0841,
         transport: "Bus 1, 13",
         phone: "023 9298 7976",
         trustScore: 100,
@@ -461,8 +461,8 @@ export const ALL_DATA: Resource[] = [
         requirements: "Drop-in / Appt. Free.",
         tags: ["free", "community", "children", "medical"],
         schedule: { 0: "Closed", 1: "08:30-17:00", 2: "08:30-17:00", 3: "08:30-17:00", 4: "08:30-17:00", 5: "08:30-16:30", 6: "Closed" },
-        lat: 50.8066,
-        lng: -1.0911,
+        lat: 50.8038, // Corrected: Precise Buckland Hub
+        lng: -1.0877,
         phone: "023 9273 3440",
         transport: "Bus 1, 3",
         trustScore: 100
@@ -590,8 +590,8 @@ export const ALL_DATA: Resource[] = [
         requirements: "Register on arrival.",
         tags: ["free", "children", "community"],
         schedule: { 0: "Closed", 1: "15:30-18:00", 2: "15:30-18:00", 3: "15:30-18:00", 4: "15:30-18:00", 5: "15:30-18:00", 6: "11:00-16:00" },
-        lat: 50.7997,
-        lng: -1.0833,
+        lat: 50.7993, // Corrected: Exact location
+        lng: -1.0816,
         phone: "023 9283 1756",
         trustScore: 98
     },
@@ -606,8 +606,8 @@ export const ALL_DATA: Resource[] = [
         requirements: "Register on arrival.",
         tags: ["free", "children", "community"],
         schedule: { 0: "Closed", 1: "15:30-18:00", 2: "15:30-18:00", 3: "15:30-18:00", 4: "15:30-18:00", 5: "15:30-18:00", 6: "11:00-16:00" },
-        lat: 50.8482,
-        lng: -1.0938,
+        lat: 50.8482, // Corrected: Exact location
+        lng: -1.0937,
         phone: "023 9237 0643",
         transport: "Bus 18, 3",
         trustScore: 98
