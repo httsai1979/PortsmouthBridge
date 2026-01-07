@@ -26,6 +26,7 @@ import CrisisWizard from './components/CrisisWizard'; // Phase 28: Decision Wiza
 import { fetchLiveStatus, type LiveStatus } from './services/LiveStatusService';
 import { useAuth } from './contexts/AuthContext';
 import PartnerLogin from './components/PartnerLogin';
+import PartnerDashboard from './components/PartnerDashboard';
 
 const App = () => {
     // Branding & Accessibility State
@@ -37,7 +38,7 @@ const App = () => {
     const [liveStatus, setLiveStatus] = useState<Record<string, LiveStatus>>({});
 
     // Navigation & Modals
-    const [view, setView] = useState<'home' | 'map' | 'list' | 'planner' | 'compare' | 'community-plan' | 'safe-sleep-plan' | 'warm-spaces-plan' | 'faq'>('home');
+    const [view, setView] = useState<'home' | 'map' | 'list' | 'planner' | 'compare' | 'community-plan' | 'safe-sleep-plan' | 'warm-spaces-plan' | 'faq' | 'partner-dashboard'>('home');
     const [showTips, setShowTips] = useState(false);
     const [showCrisis, setShowCrisis] = useState(false);
     const [showPrint, setShowPrint] = useState(false);
@@ -360,6 +361,17 @@ const App = () => {
                     <div className="flex gap-2">
                         <button onClick={() => setStealthMode(!stealthMode)} className={`p-2 rounded-xl transition-all ${stealthMode ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-600'}`} title="Stealth Mode"><Icon name="eye" size={20} /></button>
                         <button onClick={() => setHighContrast(!highContrast)} className="p-2 bg-slate-100 rounded-xl text-slate-600 hover:bg-slate-200 transition-colors" title="High Contrast"><Icon name="zap" size={20} /></button>
+
+                        {isPartner && (
+                            <button
+                                onClick={() => setView(view === 'partner-dashboard' ? 'home' : 'partner-dashboard')}
+                                className={`p-2 rounded-xl transition-all ${view === 'partner-dashboard' ? 'bg-indigo-600 text-white shadow-lg' : 'bg-emerald-50 text-emerald-600'}`}
+                                title="Agency Dashboard"
+                            >
+                                <Icon name="briefcase" size={20} />
+                            </button>
+                        )}
+
                         <button
                             onClick={() => setShowPartnerLogin(true)}
                             className={`p-2 rounded-xl transition-all ${currentUser ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-600'}`}
@@ -666,6 +678,10 @@ const App = () => {
                             savedIds={savedIds}
                         />
                     </div>
+                )}
+
+                {view === 'partner-dashboard' && (
+                    <PartnerDashboard />
                 )}
 
                 {showPartnerLogin && (

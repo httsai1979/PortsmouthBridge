@@ -24,7 +24,9 @@ export const migrateData = async () => {
             },
             thresholdInfo: {
                 idRequired: resource.entranceMeta?.idRequired ?? false,
-                queueStatus: (resource.entranceMeta?.queueStatus?.charAt(0).toUpperCase() + resource.entranceMeta?.queueStatus?.slice(1)) as any || 'Empty',
+                queueStatus: resource.entranceMeta?.queueStatus
+                    ? (resource.entranceMeta.queueStatus.charAt(0).toUpperCase() + resource.entranceMeta.queueStatus.slice(1)) as any
+                    : 'Empty',
                 entrancePhotoUrl: resource.entranceMeta?.imageUrl
             },
             liveStatus: {
