@@ -135,7 +135,6 @@ const SimpleMap = ({ data, category, statusFilter, savedIds, onToggleSave, steal
             // If parent passes ALL_DATA, this is needed. If parent passes filtered data, this is a no-op if logic matches.
             // However, the issue is 'App' passes filtered data.
             // So if 'category' prop matches 'filters.category', we are good.
-            const matchCat = category === 'all' || item.category === category;
             const status = checkStatus(item.schedule).status;
             const matchStatus = statusFilter === 'all' || (status === 'open' || status === 'closing');
             return matchStatus;
@@ -232,6 +231,20 @@ const SimpleMap = ({ data, category, statusFilter, savedIds, onToggleSave, steal
                     data={filteredPoints}
                 />
             </MapContainer>
+
+            {filteredPoints.length === 0 && (
+                <div className="absolute inset-0 z-[500] flex flex-col items-center justify-center bg-slate-100/50 backdrop-blur-sm">
+                    <div className="bg-white p-6 rounded-[32px] shadow-2xl text-center border-2 border-slate-100 max-w-[200px]">
+                        <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <Icon name="search" size={32} className="text-slate-300" />
+                        </div>
+                        <h3 className="text-lg font-black text-slate-800 mb-1">No Results</h3>
+                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-relaxed">
+                            Try switching categories or checking the "Open" toggle.
+                        </p>
+                    </div>
+                </div>
+            )}
 
             {/* Phase 17: Tactical HUD (Situational Awareness) */}
             <div className={`absolute top-20 left-4 z-[1000] pointer-events-none transition-all ${stealthMode ? 'opacity-0' : ''}`}> {/* Hide HUD in Stealth */}
