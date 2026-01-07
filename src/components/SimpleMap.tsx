@@ -121,7 +121,7 @@ interface SimpleMapProps {
     savedIds: string[];
     onToggleSave: (id: string) => void;
     stealthMode?: boolean;
-    externalFocus?: { lat: number; lng: number; label?: string } | null;
+    externalFocus?: { lat: number; lng: number; label?: string; id?: string } | null;
     onCategoryChange: (category: string) => void;
     liveStatus?: Record<string, LiveStatus>;
 }
@@ -130,6 +130,16 @@ const SimpleMap = ({ data, category, statusFilter, savedIds, onToggleSave, steal
     const [selectedItem, setSelectedItem] = useState<Resource | null>(null);
     const [locateTrigger, setLocateTrigger] = useState(0);
     const [showHours, setShowHours] = useState(false);
+
+    useEffect(() => {
+        if (externalFocus?.id) {
+            const item = data.find(i => i.id === externalFocus.id);
+            if (item) {
+                setSelectedItem(item);
+                setShowHours(true);
+            }
+        }
+    }, [externalFocus, data]);
 
     // Filter points based on category (passed from parent) and status
     const filteredPoints = useMemo(() => {
@@ -145,14 +155,14 @@ const SimpleMap = ({ data, category, statusFilter, savedIds, onToggleSave, steal
     }, [data, category, statusFilter]);
 
     const categories = [
-        { id: 'all', label: 'All', icon: 'search' },
-        { id: 'food', label: 'Food', icon: 'utensils' },
-        { id: 'shelter', label: 'Shelter', icon: 'bed' },
-        { id: 'warmth', label: 'Warmth', icon: 'flame' },
-        { id: 'support', label: 'Health', icon: 'lifebuoy' },
-        { id: 'family', label: 'Family', icon: 'family' },
-        { id: 'learning', label: 'Learn', icon: 'book-open' },
-        { id: 'skills', label: 'Skills', icon: 'briefcase' },
+        { id: 'all', label: 'All Needs', icon: 'search' },
+        { id: 'food', label: 'Food Support', icon: 'utensils' },
+        { id: 'shelter', label: 'Safe Sleep', icon: 'home' },
+        { id: 'warmth', label: 'Warm Hubs', icon: 'flame' },
+        { id: 'support', label: 'Community', icon: 'lifebuoy' },
+        { id: 'family', label: 'Family Support', icon: 'family' },
+        { id: 'learning', label: 'Learning Hub', icon: 'book-open' },
+        { id: 'skills', label: 'Opportunity', icon: 'briefcase' },
     ];
 
     return (

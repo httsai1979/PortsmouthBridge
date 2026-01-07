@@ -9,7 +9,7 @@ import ResourceCard from './components/ResourceCard';
 import { TipsModal, CrisisModal } from './components/Modals';
 import PrintView from './components/PrintView';
 import { AreaScheduleView } from './components/Schedule';
-import FoodSchedule from './components/FoodSchedule';
+import UnifiedSchedule from './components/UnifiedSchedule';
 import AIAssistant from './components/AIAssistant';
 import PrivacyShield from './components/PrivacyShield';
 import JourneyPlanner from './components/JourneyPlanner';
@@ -30,12 +30,12 @@ const App = () => {
     const [liveStatus, setLiveStatus] = useState<Record<string, LiveStatus>>({});
 
     // Navigation & Modals
-    const [view, setView] = useState<'home' | 'map' | 'list' | 'planner' | 'compare' | 'food-calendar'>('home');
+    const [view, setView] = useState<'home' | 'map' | 'list' | 'planner' | 'compare' | 'community-plan' | 'safe-sleep-plan' | 'warm-spaces-plan'>('home');
     const [showTips, setShowTips] = useState(false);
     const [showCrisis, setShowCrisis] = useState(false);
     const [showPrint, setShowPrint] = useState(false);
     const [mapFilter, setMapFilter] = useState<'all' | 'open'>('open');
-    const [mapFocus, setMapFocus] = useState<{ lat: number; lng: number; label?: string } | null>(null);
+    const [mapFocus, setMapFocus] = useState<{ lat: number, lng: number, label: string, id?: string } | null>(null);
     const [showWizard, setShowWizard] = useState(false);
 
     // List View Pagination
@@ -287,25 +287,24 @@ const App = () => {
         const hour = new Date().getHours();
         const messages = {
             morning: [
-                { msg: "Good Morning", sub: "A new day to build bridges." },
-                { msg: "Rise with Hope", sub: "Small steps lead to change." },
-                { msg: "Hello Neighbor", sub: "You are part of this city." }
+                { msg: "Good Morning", sub: "We're here to support you today." },
+                { msg: "Welcome Back", sub: "Connecting you with city resources." },
+                { msg: "Hello Neighbor", sub: "You belong to our Portsmouth community." }
             ],
             afternoon: [
-                { msg: "Good Afternoon", sub: "Keep moving focused and strong." },
-                { msg: "Community First", sub: "Connections make us stronger." },
-                { msg: "Pathways Open", sub: "Explore opportunities today." }
+                { msg: "Good Afternoon", sub: "Shared paths lead to shared strength." },
+                { msg: "City Support", sub: "Explore active community projects." },
+                { msg: "Here to Help", sub: "Finding the right support for you." }
             ],
             evening: [
-                { msg: "Good Evening", sub: "Rest is part of the journey." },
-                { msg: "Safe & Support", sub: "Portsmouth cares for you." },
-                { msg: "Peaceful Night", sub: "Tomorrow brings new light." }
+                { msg: "Good Evening", sub: "Rest well, Portsmouth cares for you." },
+                { msg: "Safe & Support", sub: "Night support is available near you." },
+                { msg: "Peaceful Night", sub: "A new day brings new opportunities." }
             ]
         };
 
         const timeKey = hour < 12 ? 'morning' : hour < 18 ? 'afternoon' : 'evening';
         const pool = messages[timeKey];
-        // Use a simple hash based on date to keep it consistent for the day but varied
         const dayOfMonth = new Date().getDate();
         return pool[dayOfMonth % pool.length];
     };
@@ -316,11 +315,13 @@ const App = () => {
 
     if (loading) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-slate-50">
+            <div className="min-h-screen flex items-center justify-center bg-white">
                 <div className="text-center animate-pulse">
-                    <Icon name="zap" size={48} className="text-indigo-600 mx-auto mb-4" />
-                    <h1 className="text-2xl font-black text-slate-800">Portsmouth Bridge</h1>
-                    <p className="text-slate-400 font-medium">Connecting Community • Restoring Hope</p>
+                    <div className="w-16 h-16 bg-indigo-600 rounded-3xl rotate-12 flex items-center justify-center mx-auto mb-6 shadow-2xl shadow-indigo-200">
+                        <Icon name="zap" size={32} className="text-white -rotate-12" />
+                    </div>
+                    <h1 className="text-2xl font-black text-slate-900 tracking-tighter">Portsmouth Bridge</h1>
+                    <p className="text-slate-400 font-bold uppercase tracking-widest text-[10px]">Connecting Community Support</p>
                 </div>
             </div>
         );
@@ -333,67 +334,65 @@ const App = () => {
     return (
         <div className={`app-container min-h-screen font-sans text-slate-900 selection:bg-indigo-200 selection:text-indigo-900 ${highContrast ? 'high-contrast' : ''}`}>
             <style>{`
-                .app-container { max-width: 500px; margin: 0 auto; background-color: #f8fafc; min-height: 100vh; box-shadow: 0 0 50px rgba(0,0,0,0.08); position: relative; padding-bottom: 140px; }
+                .app-container { max-width: 500px; margin: 0 auto; background-color: #ffffff; min-height: 100vh; box-shadow: 0 0 50px rgba(0,0,0,0.08); position: relative; padding-bottom: 140px; }
                 .animate-fade-in-up { animation: fadeInUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
                 @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); scale: 0.98; } to { opacity: 1; transform: translateY(0); scale: 1; } }
-                .high-contrast { filter: contrast(1.2) saturate(0) !important; }
-                .high-contrast button { border: 1px solid currentcolor !important; box-shadow: none !important; }
+                .scrollbar-hide::-webkit-scrollbar { display: none; }
+                .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
             `}</style>
 
             {/* Scroll To Top Button */}
             {showScrollTop && (
                 <button
                     onClick={scrollToTop}
-                    className="fixed bottom-24 right-5 z-[5000] p-4 bg-slate-900 text-white rounded-full shadow-2xl animate-fade-in-up hover:bg-black transition-colors"
+                    className="fixed bottom-24 right-5 z-[5000] p-4 bg-slate-900 text-white rounded-full shadow-2xl animate-fade-in-up hover:bg-black transition-all active:scale-90"
                     aria-label="Scroll to top"
                 >
                     <Icon name="arrow-right" size={20} className="-rotate-90" />
                 </button>
             )}
 
-            <header className={`sticky top-0 z-50 ${stealthMode ? 'bg-slate-100 border-none' : 'bg-white/95 backdrop-blur-md border-b border-slate-200/50'} pt-4 pb-3 transition-all`}>
+            <header className={`sticky top-0 z-50 ${stealthMode ? 'bg-slate-50 border-none' : 'bg-white/95 backdrop-blur-md border-b border-slate-100'} pt-4 pb-3 transition-all`}>
                 <div className="px-5 flex justify-between items-center max-w-lg mx-auto">
                     <div>
                         <h1 className={`text-2xl font-black ${stealthMode ? 'text-slate-400' : 'text-slate-900'} tracking-tighter`}>
-                            {stealthMode ? 'Shielded Compass' : 'Portsmouth Bridge'}
+                            {stealthMode ? 'Safe Compass' : 'Portsmouth Bridge'}
                         </h1>
-                        {!stealthMode && <p className="text-[9px] font-black text-slate-400 tracking-widest uppercase">Connecting your community</p>}
+                        {!stealthMode && <p className="text-[9px] font-black text-slate-400 tracking-widest uppercase">Community Support Network</p>}
                     </div>
                     <div className="flex gap-2">
-                        <button onClick={() => { if (confirm("GDPR: Delete settings?")) { localStorage.clear(); window.location.reload(); } }} className="p-2 bg-slate-100 rounded-full text-slate-400 hover:text-rose-500 transition-colors"><Icon name="trash" size={18} /></button>
-                        <button onClick={() => setStealthMode(!stealthMode)} className={`p-2 rounded-full transition-all ${stealthMode ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-600'}`}><Icon name="eye" size={20} /></button>
-                        <button onClick={() => setHighContrast(!highContrast)} className="p-2 bg-slate-100 rounded-full text-slate-600 hover:bg-slate-200 transition-colors"><Icon name="zap" size={20} /></button>
+                        <button onClick={() => setStealthMode(!stealthMode)} className={`p-2 rounded-xl transition-all ${stealthMode ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-600'}`} title="Stealth Mode"><Icon name="eye" size={20} /></button>
+                        <button onClick={() => setHighContrast(!highContrast)} className="p-2 bg-slate-100 rounded-xl text-slate-600 hover:bg-slate-200 transition-colors" title="High Contrast"><Icon name="zap" size={20} /></button>
                     </div>
                 </div>
-                {isOffline && <div className="bg-amber-500 text-amber-950 px-5 py-1 text-[10px] font-black uppercase tracking-widest text-center animate-pulse">Offline Mode: Offline Data Available</div>}
+                {isOffline && <div className="bg-amber-50 text-amber-700 px-5 py-2 text-[10px] font-black uppercase tracking-widest text-center border-b border-amber-100 animate-pulse">Offline Support Active</div>}
             </header>
 
             <AIAssistant onIntent={handleSearch} currentArea={filters.area} />
 
-            <div className={`px-5 mt-4 relative z-20 transition-all ${stealthMode ? 'opacity-90 grayscale-[0.5]' : ''}`}>
-
-                {/* Clean Spacer */}
-                <div className="mb-4"></div>
+            <div className={`px-5 mt-4 relative z-20 transition-all ${stealthMode ? 'opacity-90 grayscale-[0.3]' : ''}`}>
 
                 {view === 'home' && (
                     <div className="animate-fade-in-up">
                         {/* Progress Timeline Integration */}
                         {savedIds.length > 0 && (
-                            <ProgressTimeline savedCount={savedIds.length} />
+                            <div className="mb-6">
+                                <ProgressTimeline savedCount={savedIds.length} />
+                            </div>
                         )}
+
                         {/* Phase 9: Warmer Daily Greeting with City Impact */}
-                        <div className="mb-6 p-8 bg-gradient-to-br from-indigo-600 via-indigo-700 to-slate-900 rounded-[40px] text-white shadow-2xl shadow-indigo-200/50 relative overflow-hidden">
-                            <div className="absolute top-0 right-0 w-48 h-48 bg-white/10 rounded-full -mr-24 -mt-24 blur-3xl"></div>
-                            <div className="absolute bottom-0 left-0 w-32 h-32 bg-indigo-400/20 rounded-full -ml-16 -mb-16 blur-2xl"></div>
+                        <div className="mb-6 p-8 bg-gradient-to-br from-indigo-600 via-indigo-800 to-slate-900 rounded-[40px] text-white shadow-2xl shadow-indigo-100/50 relative overflow-hidden">
+                            <div className="absolute top-0 right-0 w-48 h-48 bg-white/5 rounded-full -mr-24 -mt-24 blur-3xl"></div>
 
                             <div className="relative z-10">
                                 <h2 className="text-3xl font-black tracking-tighter mb-2 leading-tight">{greeting.msg}</h2>
-                                <p className="text-indigo-100 text-xs font-black uppercase tracking-[0.2em] mb-4 opacity-80">{greeting.sub}</p>
+                                <p className="text-indigo-100 text-xs font-bold uppercase tracking-[0.2em] mb-4 opacity-70">{greeting.sub}</p>
                             </div>
                         </div>
 
-                        {/* Phase 16: Universal Search Bar (Apple Style: Prime Position) */}
-                        <div className="mb-4 relative group">
+                        {/* Phase 16: Universal Search Bar */}
+                        <div className="mb-8 relative group">
                             <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                                 <Icon name="search" size={18} className="text-slate-400 group-focus-within:text-indigo-600 transition-colors" />
                             </div>
@@ -405,47 +404,39 @@ const App = () => {
                                         setSearchQuery(e.target.value);
                                         if (view === 'home') setView('list');
                                     }}
-                                    placeholder="Search Portsmouth (e.g., 'food', 'shelter')"
-                                    className="flex-1 py-4 pl-12 pr-4 bg-white rounded-[20px] border border-slate-200 focus:border-indigo-600 focus:ring-4 focus:ring-indigo-50 outline-none text-sm font-bold text-slate-900 transition-all shadow-lg shadow-slate-100 placeholder:text-slate-400"
+                                    placeholder="Search resources..."
+                                    className="flex-1 py-4 pl-12 pr-4 bg-white rounded-[24px] border-2 border-slate-100 focus:border-indigo-600 outline-none text-sm font-bold text-slate-900 transition-all shadow-sm"
                                 />
                                 <button
                                     onClick={handleShare}
-                                    className="p-4 bg-white border border-slate-200 rounded-[20px] text-indigo-600 hover:bg-slate-50 transition-all shadow-lg shadow-slate-100 flex items-center justify-center active:scale-95"
-                                    title="Share App"
+                                    className="p-4 bg-white border-2 border-slate-100 rounded-[24px] text-indigo-600 hover:bg-slate-50 transition-all shadow-sm flex items-center justify-center active:scale-95"
                                 >
                                     <Icon name="share-2" size={20} />
                                 </button>
                             </div>
                         </div>
 
-                        {/* Toggle: All vs Open (Apple Segmented Control) */}
-                        <div className="bg-slate-100 p-1.5 rounded-[18px] flex mb-6 border border-slate-200">
-                            <button
-                                onClick={() => setSmartFilters({ ...smartFilters, openNow: false })}
-                                className={`flex-1 py-3 rounded-[14px] text-[10px] font-black uppercase tracking-widest transition-all ${!smartFilters.openNow ? 'bg-white text-slate-900 shadow-sm ring-1 ring-slate-200' : 'text-slate-400 hover:text-slate-600'}`}
-                            >
-                                All Resources
-                            </button>
-                            <button
-                                onClick={() => setSmartFilters({ ...smartFilters, openNow: true })}
-                                className={`flex-1 py-3 rounded-[14px] text-[10px] font-black uppercase tracking-widest transition-all ${smartFilters.openNow ? 'bg-emerald-500 text-white shadow-md shadow-emerald-200' : 'text-slate-400 hover:text-slate-600'}`}
-                            >
-                                Open Now
-                            </button>
-                        </div>
-
-                        {/* Categories - Grid */}
+                        {/* Top Category Selection (Apple Style: Prime Position) */}
                         <div className="grid grid-cols-4 gap-3 mb-8">
-                            {['food', 'shelter', 'warmth', 'support', 'family', 'skills', 'charity', 'all'].map(cat => (
+                            {[
+                                { id: 'food', ...TAG_ICONS.food },
+                                { id: 'shelter', ...TAG_ICONS.shelter },
+                                { id: 'warmth', ...TAG_ICONS.warmth },
+                                { id: 'support', ...TAG_ICONS.support },
+                                { id: 'family', ...TAG_ICONS.family },
+                                { id: 'skills', ...TAG_ICONS.skills },
+                                { id: 'charity', ...TAG_ICONS.charity },
+                                { id: 'all', label: 'More Hubs', icon: 'grid' }
+                            ].map(cat => (
                                 <button
-                                    key={cat}
-                                    onClick={() => handleSearch({ ...filters, category: cat })}
+                                    key={cat.id || cat.label}
+                                    onClick={() => handleSearch({ ...filters, category: cat.id || 'all' })}
                                     className="flex flex-col items-center gap-2 group"
                                 >
-                                    <div className={`w-14 h-14 rounded-[20px] flex items-center justify-center text-xl shadow-sm transition-all group-active:scale-90 ${cat === 'all' ? 'bg-slate-100 text-slate-400' : filters.category === cat ? 'bg-slate-900 text-white' : 'bg-white text-slate-600 border border-slate-100'}`}>
-                                        <Icon name={cat === 'all' ? 'grid' : cat === 'support' ? 'lifebuoy' : cat === 'skills' ? 'briefcase' : TAG_ICONS[cat]?.icon || 'circle'} size={20} />
+                                    <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shadow-sm transition-all group-active:scale-90 ${filters.category === cat.id ? 'bg-slate-900 text-white' : 'bg-white text-slate-500 border-2 border-slate-50 group-hover:border-indigo-100'}`}>
+                                        <Icon name={cat.icon} size={20} />
                                     </div>
-                                    <span className="text-[9px] font-bold text-slate-500 uppercase tracking-tight">{cat === 'all' ? 'More' : cat === 'support' ? 'Health' : cat}</span>
+                                    <span className="text-[9px] font-black text-slate-400 uppercase tracking-tight group-hover:text-slate-600 truncate w-full px-1">{cat.label.replace(' Support', '').replace(' Hub', '').replace(' Space', '')}</span>
                                 </button>
                             ))}
                         </div>
@@ -469,33 +460,49 @@ const App = () => {
                             </div>
                         </button>
 
-                        {/* Secondary Tools */}
-                        <div className="flex gap-3 mb-8 overflow-x-auto pb-4 scrollbar-hide snap-x">
-                            <button onClick={() => setView('planner')} className="snap-start min-w-[140px] bg-white border border-slate-100 p-4 rounded-[24px] shadow-sm flex flex-col gap-2 hover:border-indigo-200 transition-all text-left">
-                                <div className="w-8 h-8 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center">
-                                    <Icon name="calendar" size={14} />
+                        {/* Secondary Support Tools (Quick Actions) */}
+                        <div className="flex gap-3 mb-8 overflow-x-auto pb-4 scrollbar-hide snap-x px-1">
+                            {/* My Planning Tool */}
+                            <button onClick={() => setView('planner')} className="snap-start min-w-[140px] bg-white border border-slate-100 p-4 rounded-[24px] shadow-sm flex flex-col gap-2 hover:border-indigo-200 transition-all text-left group">
+                                <div className="w-10 h-10 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center group-hover:scale-110 transition-transform">
+                                    <Icon name="calendar" size={18} />
                                 </div>
                                 <div>
                                     <h4 className="text-xs font-black text-slate-800">My Journey</h4>
-                                    <p className="text-[9px] text-slate-400 font-bold">{savedIds.length} Saved Items</p>
+                                    <p className="text-[9px] text-slate-400 font-bold uppercase tracking-wider">{savedIds.length} Trusted Hubs</p>
                                 </div>
                             </button>
-                            <button onClick={() => setView('food-calendar')} className="snap-start min-w-[140px] bg-white border border-slate-100 p-4 rounded-[24px] shadow-sm flex flex-col gap-2 hover:border-emerald-200 transition-all text-left">
-                                <div className="w-8 h-8 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center">
-                                    <Icon name="utensils" size={14} />
+
+                            {/* Food Support Calendar */}
+                            <button onClick={() => setView('community-plan')} className="snap-start min-w-[140px] bg-white border border-slate-100 p-4 rounded-[24px] shadow-sm flex flex-col gap-2 hover:border-emerald-200 transition-all text-left group">
+                                <div className="w-10 h-10 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center group-hover:scale-110 transition-transform">
+                                    <Icon name="utensils" size={18} />
                                 </div>
                                 <div>
-                                    <h4 className="text-xs font-black text-slate-800">Food Cal.</h4>
-                                    <p className="text-[9px] text-slate-400 font-bold">Weekly Schedule</p>
+                                    <h4 className="text-xs font-black text-slate-800">Shared Meals</h4>
+                                    <p className="text-[9px] text-slate-400 font-bold uppercase tracking-wider">Food & Pantries</p>
                                 </div>
                             </button>
-                            <button onClick={() => setShowTips(true)} className="snap-start min-w-[140px] bg-white border border-slate-100 p-4 rounded-[24px] shadow-sm flex flex-col gap-2 hover:border-amber-200 transition-all text-left">
-                                <div className="w-8 h-8 rounded-full bg-amber-50 text-amber-600 flex items-center justify-center">
-                                    <Icon name="info" size={14} />
+
+                            {/* Shelter Support Calendar */}
+                            <button onClick={() => setView('safe-sleep-plan')} className="snap-start min-w-[140px] bg-white border border-slate-100 p-4 rounded-[24px] shadow-sm flex flex-col gap-2 hover:border-indigo-200 transition-all text-left group">
+                                <div className="w-10 h-10 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center group-hover:scale-110 transition-transform">
+                                    <Icon name="home" size={18} />
                                 </div>
                                 <div>
-                                    <h4 className="text-xs font-black text-slate-800">Guide</h4>
-                                    <p className="text-[9px] text-slate-400 font-bold">How to use</p>
+                                    <h4 className="text-xs font-black text-slate-800">Safe Sleep</h4>
+                                    <p className="text-[9px] text-slate-400 font-bold uppercase tracking-wider">Housing Support</p>
+                                </div>
+                            </button>
+
+                            {/* Warm Spaces Calendar */}
+                            <button onClick={() => setView('warm-spaces-plan')} className="snap-start min-w-[140px] bg-white border border-slate-100 p-4 rounded-[24px] shadow-sm flex flex-col gap-2 hover:border-orange-200 transition-all text-left group">
+                                <div className="w-10 h-10 rounded-2xl bg-orange-50 text-orange-600 flex items-center justify-center group-hover:scale-110 transition-transform">
+                                    <Icon name="flame" size={18} />
+                                </div>
+                                <div>
+                                    <h4 className="text-xs font-black text-slate-800">Warm Hubs</h4>
+                                    <p className="text-[9px] text-slate-400 font-bold uppercase tracking-wider">Safe Warm Spaces</p>
                                 </div>
                             </button>
                         </div>
@@ -570,21 +577,81 @@ const App = () => {
                     </div>
                 )}
 
-                {view === 'food-calendar' && (
+                {/* Community Food Plan */}
+                {view === 'community-plan' && (
                     <div className="animate-fade-in-up">
                         <div className="mb-6 flex items-center justify-between">
                             <div>
-                                <h2 className="text-2xl font-black text-slate-900 tracking-tight">Food Calendar</h2>
-                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Weekly Meal & Pantry Schedule</p>
+                                <h2 className="text-2xl font-black text-slate-900 tracking-tight">Food Support</h2>
+                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Shared Meals & Community Pantries</p>
                             </div>
                             <button onClick={() => setView('home')} className="p-3 bg-slate-100 text-slate-400 rounded-2xl hover:bg-slate-200 transition-all"><Icon name="x" size={20} /></button>
                         </div>
-                        <FoodSchedule
+                        <UnifiedSchedule
+                            category="food"
+                            title="Weekly Food Support"
+                            subtitle="Sustaining the community together"
                             data={ALL_DATA}
                             onNavigate={(id) => {
                                 const item = ALL_DATA.find(i => i.id === id);
                                 if (item) {
-                                    setMapFocus({ lat: item.lat, lng: item.lng, label: item.name });
+                                    setMapFocus({ lat: item.lat, lng: item.lng, label: item.name, id: item.id });
+                                    setView('map');
+                                }
+                            }}
+                            onSave={toggleSaved}
+                            savedIds={savedIds}
+                        />
+                    </div>
+                )}
+
+                {/* Safe Sleep Plan */}
+                {view === 'safe-sleep-plan' && (
+                    <div className="animate-fade-in-up">
+                        <div className="mb-6 flex items-center justify-between">
+                            <div>
+                                <h2 className="text-2xl font-black text-slate-900 tracking-tight">Safe Sleep</h2>
+                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Housing & Emergency Night Support</p>
+                            </div>
+                            <button onClick={() => setView('home')} className="p-3 bg-slate-100 text-slate-400 rounded-2xl hover:bg-slate-200 transition-all"><Icon name="x" size={20} /></button>
+                        </div>
+                        <UnifiedSchedule
+                            category="shelter"
+                            title="Safe Sleep & Housing"
+                            subtitle="Support for finding a safe place"
+                            data={ALL_DATA}
+                            onNavigate={(id) => {
+                                const item = ALL_DATA.find(i => i.id === id);
+                                if (item) {
+                                    setMapFocus({ lat: item.lat, lng: item.lng, label: item.name, id: item.id });
+                                    setView('map');
+                                }
+                            }}
+                            onSave={toggleSaved}
+                            savedIds={savedIds}
+                        />
+                    </div>
+                )}
+
+                {/* Warm Hubs Plan */}
+                {view === 'warm-spaces-plan' && (
+                    <div className="animate-fade-in-up">
+                        <div className="mb-6 flex items-center justify-between">
+                            <div>
+                                <h2 className="text-2xl font-black text-slate-900 tracking-tight">Warm Hubs</h2>
+                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Community Spaces & Warmth</p>
+                            </div>
+                            <button onClick={() => setView('home')} className="p-3 bg-slate-100 text-slate-400 rounded-2xl hover:bg-slate-200 transition-all"><Icon name="x" size={20} /></button>
+                        </div>
+                        <UnifiedSchedule
+                            category="warmth"
+                            title="Warm Spaces Calendar"
+                            subtitle="Friendly places to stay warm"
+                            data={ALL_DATA}
+                            onNavigate={(id) => {
+                                const item = ALL_DATA.find(i => i.id === id);
+                                if (item) {
+                                    setMapFocus({ lat: item.lat, lng: item.lng, label: item.name, id: item.id });
                                     setView('map');
                                 }
                             }}
@@ -711,11 +778,11 @@ const App = () => {
                             </div>
                             <div className="flex gap-2">
                                 <button
-                                    onClick={() => setView('food-calendar')}
+                                    onClick={() => setView('community-plan')}
                                     className="p-3 bg-emerald-50 text-emerald-600 rounded-2xl hover:bg-emerald-100 transition-all flex items-center gap-2"
-                                    title="Food Calendar"
+                                    title="Community Support Plans"
                                 >
-                                    <Icon name="utensils" size={20} />
+                                    <Icon name="calendar" size={20} />
                                 </button>
                                 <button
                                     onClick={() => setView('map')}
