@@ -356,6 +356,28 @@ export const ALL_DATA: Resource[] = [
         entranceMeta: { idRequired: false, isWheelchairAccessible: true },
         eligibility: 'open'
     },
+    {
+        id: 'sh4',
+        name: "Two Saints Locksway",
+        category: "shelter",
+        type: "Supported Housing",
+        area: "PO4",
+        address: "400-402 Locksway Road, Southsea, PO4 8LB",
+        description: "High-support accommodation for vulnerable adults. Referral only via Housing Options.",
+        requirements: "Referral required.",
+        tags: ["referral", "support", "accommodation"],
+        schedule: { 0: "24/7", 1: "24/7", 2: "24/7", 3: "24/7", 4: "24/7", 5: "24/7", 6: "24/7" },
+        lat: 50.7965,
+        lng: -1.0485,
+        phone: "023 9282 3890",
+        trustScore: 98,
+        capacityLevel: 'medium',
+        entranceMeta: {
+            idRequired: true,
+            queueStatus: 'empty'
+        },
+        eligibility: 'referral'
+    },
 
     // --- 🔥 WARMTH (WARM & SAFE) ---
     {

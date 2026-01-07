@@ -19,7 +19,7 @@ interface SimpleMapProps {
 }
 
 // Utility to create a custom marker icon
-const createCustomIcon = (item: Resource, isSelected: boolean, stealthMode?: boolean) => {
+const createCustomIcon = (item: Resource, isSelected: boolean, stealthMode?: boolean, isSaved?: boolean) => {
     const status = checkStatus(item.schedule);
 
     // PB: Safe Mode (Privacy Protection)
@@ -51,8 +51,14 @@ const createCustomIcon = (item: Resource, isSelected: boolean, stealthMode?: boo
                     <div class="absolute -top-1 -right-1 w-4 h-4 bg-amber-500 rounded-full border-2 border-white z-50 shadow-lg"></div>
                 ` : ''}
                 
+                ${isSaved ? `
+                    <div class="absolute -top-2 -left-2 w-5 h-5 bg-amber-400 rounded-full border-2 border-white z-50 shadow-md flex items-center justify-center text-white">
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                    </div>
+                ` : ''}
+
                 <div class="absolute inset-0 bg-black/20 blur-md rounded-full translate-y-1"></div>
-                <div class="w-10 h-10 rounded-full border-[3px] border-white shadow-2xl flex items-center justify-center transition-all ${isSelected ? 'scale-125 z-50 ring-4 ring-indigo-500/40 translate-y-[-4px]' : 'hover:scale-110'}" style="background-color: ${color}">
+                <div class="w-10 h-10 rounded-full border-[3px] border-white shadow-2xl flex items-center justify-center transition-all ${isSelected ? 'scale-125 z-50 ring-4 ring-indigo-500/40 translate-y-[-4px]' : 'hover:scale-110'} ${isSaved ? 'ring-2 ring-amber-400' : ''}" style="background-color: ${color}">
                     <div class="text-white drop-shadow-[0_1px_1px_rgba(0,0,0,0.5)]">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
                             <circle cx="12" cy="12" r="10"></circle>
@@ -114,28 +120,27 @@ interface SimpleMapProps {
     onToggleSave: (id: string) => void;
     stealthMode?: boolean;
     externalFocus?: { lat: number; lng: number; label?: string } | null;
+    onCategoryChange: (category: string) => void;
 }
 
-const SimpleMap = ({ data, category, statusFilter, savedIds, onToggleSave, stealthMode, externalFocus }: SimpleMapProps) => {
+const SimpleMap = ({ data, category, statusFilter, savedIds, onToggleSave, stealthMode, externalFocus, onCategoryChange }: SimpleMapProps) => {
     const [selectedItem, setSelectedItem] = useState<Resource | null>(null);
-    const [localCategory, setLocalCategory] = useState<string>(category);
     const [locateTrigger, setLocateTrigger] = useState(0);
     const [showHours, setShowHours] = useState(false);
 
-    // ... (filteredPoints useMemo remains same, not including it in replacement to save tokens if possible, but for safety I will include the start of the component to ensure props update works)
-
+    // Filter points based on category (passed from parent) and status
     const filteredPoints = useMemo(() => {
         return data.filter(item => {
-            const matchCat = localCategory === 'all' || item.category === localCategory;
+            // If data is already filtered by parent, this check might be redundant but safe.
+            // If parent passes ALL_DATA, this is needed. If parent passes filtered data, this is a no-op if logic matches.
+            // However, the issue is 'App' passes filtered data.
+            // So if 'category' prop matches 'filters.category', we are good.
+            const matchCat = category === 'all' || item.category === category;
             const status = checkStatus(item.schedule).status;
             const matchStatus = statusFilter === 'all' || (status === 'open' || status === 'closing');
-            return matchCat && matchStatus;
+            return matchStatus;
         });
-    }, [data, localCategory, statusFilter]);
-
-    // ... categories array ...
-
-    // ... JSX ...
+    }, [data, category, statusFilter]);
 
     const categories = [
         { id: 'all', label: 'All', icon: 'search' },
@@ -156,8 +161,8 @@ const SimpleMap = ({ data, category, statusFilter, savedIds, onToggleSave, steal
                     {categories.map(cat => (
                         <button
                             key={cat.id}
-                            onClick={() => setLocalCategory(cat.id)}
-                            className={`flex flex-col items-center justify-center gap-1 py-2 rounded-xl transition-all ${localCategory === cat.id
+                            onClick={() => onCategoryChange(cat.id)}
+                            className={`flex flex-col items-center justify-center gap-1 py-2 rounded-xl transition-all ${category === cat.id
                                 ? 'bg-slate-900 text-white scale-100 shadow-lg'
                                 : 'text-slate-500 hover:bg-slate-50'
                                 }`}
@@ -184,7 +189,7 @@ const SimpleMap = ({ data, category, statusFilter, savedIds, onToggleSave, steal
                     <Marker
                         key={item.id}
                         position={[item.lat, item.lng]}
-                        icon={createCustomIcon(item, selectedItem?.id === item.id, stealthMode)}
+                        icon={createCustomIcon(item, selectedItem?.id === item.id, stealthMode, savedIds.includes(item.id))}
                         eventHandlers={{
                             click: () => {
                                 setSelectedItem(item);

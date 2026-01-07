@@ -772,6 +772,7 @@ const App = () => {
                             onToggleSave={toggleSaved}
                             stealthMode={stealthMode}
                             externalFocus={mapFocus}
+                            onCategoryChange={(cat) => setFilters(prev => ({ ...prev, category: cat }))}
                         />
                     </div>
                 )}
