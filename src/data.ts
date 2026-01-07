@@ -313,7 +313,7 @@ export const ALL_DATA: Resource[] = [
         description: "First point of contact for homelessness prevention and emergency accommodation. Drop-in for urgent help.",
         requirements: "Local connection usually required.",
         tags: ["emergency", "support"],
-        schedule: { 0: "Closed", 1: "09:00-17:00", 2: "09:00-17:00", 3: "09:00-17:00", 4: "09:00-17:00", 5: "09:00-16:00", 6: "Closed" },
+        schedule: { 0: "Closed", 1: "08:30-17:00", 2: "08:30-17:00", 3: "08:30-17:00", 4: "08:30-17:00", 5: "08:30-16:00", 6: "Closed" }, // Verified: PCC Website
         lat: 50.7997,
         lng: -1.0934,
         phone: "023 9283 4989",
@@ -342,16 +342,16 @@ export const ALL_DATA: Resource[] = [
         name: "Portsmouth Rough Sleeping Hub",
         category: "shelter",
         type: "Day Service",
-        area: "PO5",
-        address: "Kingsway House, 130 Elm Grove, Southsea, PO5 1LR",
-        description: "Support for rough sleepers: showers, laundry, breakfast (8-11am), and housing advice.",
+        area: "PO1",
+        address: "6 Queen Street, Portsmouth, PO1 3HL",
+        description: "Practical help for rough sleepers: Breakfast (8am-12pm), showers, and housing advice. Closed 12-1pm daily.",
         requirements: "For rough sleepers.",
         tags: ["shower", "laundry", "hot_meal", "support"],
-        schedule: { 0: "08:00-16:00", 1: "08:00-16:00", 2: "08:00-16:00", 3: "08:00-16:00", 4: "08:00-16:00", 5: "08:00-16:00", 6: "08:00-16:00" },
-        lat: 50.7890,
-        lng: -1.0875,
+        schedule: { 0: "08:00-16:00", 1: "08:00-16:00", 2: "08:00-16:00", 3: "08:00-16:00", 4: "08:00-16:00", 5: "08:00-16:00", 6: "08:00-16:00" }, // Closed 12-1pm
+        lat: 50.7997,
+        lng: -1.1025, // Updated: Queen Street Location
         phone: "023 9288 2689",
-        transport: "Bus 1, 13",
+        transport: "Bus 1, 3, The Hard",
         trustScore: 100,
         entranceMeta: { idRequired: false, isWheelchairAccessible: true },
         eligibility: 'open'
