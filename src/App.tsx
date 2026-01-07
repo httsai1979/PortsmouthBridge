@@ -348,14 +348,14 @@ const App = () => {
     if (showPrint) return <PrintView data={ALL_DATA} onClose={() => setShowPrint(false)} />;
 
     return (
-        <div className={`app - container min - h - screen font - sans text - slate - 900 selection: bg - indigo - 200 selection: text - indigo - 900 ${highContrast ? 'high-contrast' : ''} `}>
+        <div className={`app-container min-h-screen font-sans text-slate-900 selection:bg-indigo-200 selection:text-indigo-900 ${highContrast ? 'high-contrast' : ''}`}>
             <style>{`
-    .app - container { max - width: 500px; margin: 0 auto; background - color: #ffffff; min - height: 100vh; box - shadow: 0 0 50px rgba(0, 0, 0, 0.08); position: relative; padding - bottom: 140px; }
-                .animate - fade -in -up { animation: fadeInUp 0.4s cubic - bezier(0.16, 1, 0.3, 1) forwards; }
-@keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); scale: 0.98; } to { opacity: 1; transform: translateY(0); scale: 1; } }
-                .scrollbar - hide:: -webkit - scrollbar { display: none; }
-                .scrollbar - hide { -ms - overflow - style: none; scrollbar - width: none; }
-`}</style>
+                .app-container { max-width: 500px; margin: 0 auto; background-color: #ffffff; min-height: 100vh; box-shadow: 0 0 50px rgba(0, 0, 0, 0.08); position: relative; padding-bottom: 140px; }
+                .animate-fade-in-up { animation: fadeInUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+                @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); scale: 0.98; } to { opacity: 1; transform: translateY(0); scale: 1; } }
+                .scrollbar-hide::-webkit-scrollbar { display: none; }
+                .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+            `}</style>
 
             {/* Scroll To Top Button */}
             {showScrollTop && (
@@ -368,25 +368,25 @@ const App = () => {
                 </button>
             )}
 
-            <header className={`sticky top - 0 z - 50 ${stealthMode ? 'bg-slate-50 border-none' : 'bg-white/95 backdrop-blur-md border-b border-slate-100'} pt - 4 pb - 3 transition - all`}>
+            <header className={`sticky top-0 z-50 ${stealthMode ? 'bg-slate-50 border-none' : 'bg-white/95 backdrop-blur-md border-b border-slate-100'} pt-4 pb-3 transition-all`}>
                 <div className="px-5 flex justify-between items-center max-w-lg mx-auto">
                     <div className="flex items-center gap-3">
-                        <img src={logo} alt="Logo" className={`w - 10 h - 10 transition - all ${stealthMode ? 'grayscale opacity-50' : ''} `} />
+                        <img src={logo} alt="Logo" className={`w-10 h-10 transition-all ${stealthMode ? 'grayscale opacity-50' : ''}`} />
                         <div>
-                            <h1 className={`text - xl font - black ${stealthMode ? 'text-slate-400' : 'text-slate-900'} tracking - tighter leading - none mb - 1`}>
+                            <h1 className={`text-xl font-black ${stealthMode ? 'text-slate-400' : 'text-slate-900'} tracking-tighter leading-none mb-1`}>
                                 {stealthMode ? 'Safe Compass' : 'Portsmouth Bridge'}
                             </h1>
                             {!stealthMode && <p className="text-[8px] font-black text-slate-400 tracking-widest uppercase">Community Support Network</p>}
                         </div>
                     </div>
                     <div className="flex gap-2">
-                        <button onClick={() => setStealthMode(!stealthMode)} className={`p - 2 rounded - xl transition - all ${stealthMode ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-600'} `} title="Stealth Mode"><Icon name="eye" size={20} /></button>
+                        <button onClick={() => setStealthMode(!stealthMode)} className={`p-2 rounded-xl transition-all ${stealthMode ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-600'}`} title="Stealth Mode"><Icon name="eye" size={20} /></button>
                         <button onClick={() => setHighContrast(!highContrast)} className="p-2 bg-slate-100 rounded-xl text-slate-600 hover:bg-slate-200 transition-colors" title="High Contrast"><Icon name="zap" size={20} /></button>
 
                         {isPartner && (
                             <button
                                 onClick={() => setView(view === 'partner-dashboard' ? 'home' : 'partner-dashboard')}
-                                className={`p - 2 rounded - xl transition - all ${view === 'partner-dashboard' ? 'bg-indigo-600 text-white shadow-lg' : 'bg-emerald-50 text-emerald-600'} `}
+                                className={`p-2 rounded-xl transition-all ${view === 'partner-dashboard' ? 'bg-indigo-600 text-white shadow-lg' : 'bg-emerald-50 text-emerald-600'}`}
                                 title="Agency Dashboard"
                             >
                                 <Icon name="briefcase" size={20} />
@@ -395,7 +395,7 @@ const App = () => {
 
                         <button
                             onClick={() => setShowPartnerLogin(true)}
-                            className={`p - 2 rounded - xl transition - all ${currentUser ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-600'} `}
+                            className={`p-2 rounded-xl transition-all ${currentUser ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-600'}`}
                             title="Partner Access"
                         >
                             <Icon name="users" size={20} />
@@ -408,7 +408,7 @@ const App = () => {
 
             <AIAssistant onIntent={handleSearch} currentArea={filters.area} />
 
-            <div className={`px - 5 mt - 4 relative z - 20 transition - all ${stealthMode ? 'opacity-90 grayscale-[0.3]' : ''} `}>
+            <div className={`px-5 mt-4 relative z-20 transition-all ${stealthMode ? 'opacity-90 grayscale-[0.3]' : ''}`}>
 
                 {view === 'home' && (
                     <div className="animate-fade-in-up">
@@ -470,7 +470,7 @@ const App = () => {
                                     }}
                                     className="flex flex-col items-center gap-2 group"
                                 >
-                                    <div className={`w - 14 h - 14 rounded - 2xl flex items - center justify - center shadow - sm transition - all group - active: scale - 90 ${filters.category === cat.id ? 'bg-slate-900 text-white' : 'bg-white text-slate-500 border-2 border-slate-50 group-hover:border-indigo-100'} `}>
+                                    <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shadow-sm transition-all group-active:scale-90 ${filters.category === cat.id ? 'bg-slate-900 text-white' : 'bg-white text-slate-500 border-2 border-slate-50 group-hover:border-indigo-100'}`}>
                                         <Icon name={cat.icon} size={20} />
                                     </div>
                                     <span className="text-[9px] font-black text-slate-400 uppercase tracking-tight group-hover:text-slate-600 truncate w-full px-1">{cat.label.replace(' Support', '').replace(' Hub', '').replace(' Space', '')}</span>

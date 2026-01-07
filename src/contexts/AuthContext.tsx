@@ -24,7 +24,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                 // Check if user has a partner profile in Firestore
                 // We'll store partner-specific metadata in a 'partners' collection
                 const partnerDoc = await getDoc(doc(db, 'partners', user.uid));
-                setIsPartner(partnerDoc.exists());
+
+                // PB: Developer Whitelist (Allow test account to access dashboard)
+                const isWhitelisted = user.email === 'test@test.org' || !!user.email?.endsWith('@sustainsage-group.com');
+
+                setIsPartner(partnerDoc.exists() || isWhitelisted);
             } else {
                 setIsPartner(false);
             }
