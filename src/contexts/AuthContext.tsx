@@ -21,14 +21,29 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             setCurrentUser(user);
 
             if (user) {
-                // Check if user has a partner profile in Firestore
-                // We'll store partner-specific metadata in a 'partners' collection
-                const partnerDoc = await getDoc(doc(db, 'partners', user.uid));
+                // WHITELIST CHECK FIRST - Before any Firestore calls
+                // This ensures test accounts work even if Firestore has connection issues
+                const isWhitelisted =
+                    user.email === 'test@test.org' ||
+                    user.email?.endsWith('@sustainsage-group.com') ||
+                    user.email?.endsWith('@portsmouthbridge.org');
 
-                // PB: Developer Whitelist (Allow test account to access dashboard)
-                const isWhitelisted = user.email === 'test@test.org' || !!user.email?.endsWith('@sustainsage-group.com');
-
-                setIsPartner(partnerDoc.exists() || isWhitelisted);
+                if (isWhitelisted) {
+                    console.log('✅ Partner access granted via whitelist:', user.email);
+                    setIsPartner(true);
+                } else {
+                    // Only check Firestore if not in whitelist
+                    try {
+                        const partnerDoc = await getDoc(doc(db, 'partners', user.uid));
+                        setIsPartner(partnerDoc.exists());
+                        if (partnerDoc.exists()) {
+                            console.log('✅ Partner access granted via Firestore');
+                        }
+                    } catch (error) {
+                        console.warn('Could not verify partner status from Firestore:', error);
+                        setIsPartner(false);
+                    }
+                }
             } else {
                 setIsPartner(false);
             }

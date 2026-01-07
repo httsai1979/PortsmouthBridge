@@ -2,16 +2,16 @@ import { initializeApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
 import { getFirestore, enableIndexedDbPersistence } from 'firebase/firestore';
 
-// Firebase configuration using environment variables for security
-// Values are loaded from .env file (see .env.example for template)
+// Firebase configuration
+// For production, consider using environment variables via a build system
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-  appId: import.meta.env.VITE_FIREBASE_APP_ID,
-  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID
+  apiKey: "AIzaSyBn65frWFbl1tKGFA0kliY7Btj9QtG2-7c",
+  authDomain: "portsmouthbridge.firebaseapp.com",
+  projectId: "portsmouthbridge",
+  storageBucket: "portsmouthbridge.firebasestorage.app",
+  messagingSenderId: "488637125012",
+  appId: "1:488637125012:web:d964265b4d7241f9aeff81",
+  measurementId: "G-LPBHXSSYP9"
 };
 
 const app = initializeApp(firebaseConfig);
