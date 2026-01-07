@@ -233,17 +233,6 @@ const App = () => {
         });
     };
 
-    const handleNavigateJourney = () => {
-        if (journeyItems.length === 0) return;
-
-        const journeyResources = ALL_DATA.filter(r => journeyItems.includes(r.id));
-        if (journeyResources.length > 0) {
-            // Create Google Maps URL with multiple waypoints
-            const waypoints = journeyResources.map(r => `${r.lat},${r.lng}`).join('|');
-            const url = `https://www.google.com/maps/dir/?api=1&destination=${journeyResources[journeyResources.length - 1].lat},${journeyResources[journeyResources.length - 1].lng}&waypoints=${waypoints}`;
-            window.open(url, '_blank');
-        }
-    };
 
     const handleSearch = (newFilters: any) => {
         setFilters(newFilters);
@@ -1075,7 +1064,6 @@ const App = () => {
                                     setJourneyItems([]);
                                     setView('home');
                                 }}
-                                onNavigate={handleNavigateJourney}
                             />
                         </div>
                     </div>

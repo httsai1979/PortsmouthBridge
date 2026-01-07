@@ -1,6 +1,4 @@
-import { useMemo, useState } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from 'react-leaflet';
-import L from 'leaflet';
+import { useMemo } from 'react';
 import Icon from './Icon';
 import { getDistance } from '../utils';
 import type { Resource } from '../data';
@@ -10,26 +8,9 @@ interface JourneyPlannerProps {
     userLocation: { lat: number; lng: number } | null;
     onRemove: (id: string) => void;
     onClear: () => void;
-    onNavigate: () => void;
 }
 
-// Map controller to fit bounds
-const MapController = ({ items }: { items: Resource[] }) => {
-    const map = useMap();
-
-    useMemo(() => {
-        if (items.length > 0) {
-            const bounds = L.latLngBounds(items.map(item => [item.lat, item.lng]));
-            map.fitBounds(bounds, { padding: [50, 50], maxZoom: 14 });
-        }
-    }, [items, map]);
-
-    return null;
-};
-
-const JourneyPlanner = ({ items, userLocation, onRemove, onClear, onNavigate }: JourneyPlannerProps) => {
-    const [selectedStop, setSelectedStop] = useState<string | null>(null);
-
+const JourneyPlanner = ({ items, userLocation, onRemove, onClear }: JourneyPlannerProps) => {
     // Optimize route using nearest-neighbor algorithm
     const optimizedRoute = useMemo(() => {
         if (items.length === 0 || !userLocation) return items;
@@ -79,170 +60,121 @@ const JourneyPlanner = ({ items, userLocation, onRemove, onClear, onNavigate }: 
         return Math.round(walkingTime + stopTime);
     }, [totalDistance, optimizedRoute.length]);
 
-    // Create custom numbered markers
-    const createNumberedIcon = (number: number, isSelected: boolean) => {
-        return L.divIcon({
-            html: `
-                <div class="relative">
-                    <div class="${isSelected ? 'w-12 h-12' : 'w-10 h-10'} rounded-full ${isSelected ? 'bg-indigo-600 ring-4 ring-indigo-200' : 'bg-indigo-500'} shadow-2xl flex items-center justify-center transition-all duration-300 animate-bounce">
-                        <span class="text-white font-black text-lg">${number}</span>
-                    </div>
-                </div>
-            `,
-            className: '',
-            iconSize: isSelected ? [48, 48] : [40, 40],
-            iconAnchor: isSelected ? [24, 24] : [20, 20]
-        });
-    };
+    const startRealNavigation = () => {
+        if (optimizedRoute.length === 0) return;
 
-    // Create route polyline
-    const routeCoordinates: [number, number][] = optimizedRoute.map(item => [item.lat, item.lng]);
+        const lastStop = optimizedRoute[optimizedRoute.length - 1];
+        const waypoints = optimizedRoute.slice(0, -1).map(r => `${r.lat},${r.lng}`).join('|');
+
+        // Deep Link: Current Location -> Optimized Waypoints -> Final Destination
+        const url = `https://www.google.com/maps/dir/?api=1&origin=Current+Location&destination=${lastStop.lat},${lastStop.lng}&waypoints=${waypoints}&travelmode=walking`;
+
+        window.open(url, '_blank');
+    };
 
     if (items.length === 0) {
         return (
-            <div className="p-8 text-center bg-white rounded-[32px] border-2 border-dashed border-slate-200">
-                <Icon name="mapPin" size={48} className="mx-auto text-slate-300 mb-3" />
-                <p className="text-sm font-black text-slate-400 uppercase tracking-widest">No stops added yet</p>
-                <p className="text-xs text-slate-400 mt-2">Add resources from the directory</p>
+            <div className="p-12 text-center bg-white rounded-[40px] border-2 border-dashed border-slate-100 animate-fade-in-up">
+                <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <Icon name="mapPin" size={32} className="text-slate-300" />
+                </div>
+                <h4 className="text-lg font-black text-slate-900 mb-2">Build Your Journey</h4>
+                <p className="text-xs text-slate-400 font-medium mb-8">Add resources from the map or list to create a one-stop support path.</p>
+                <div className="p-4 bg-indigo-50 rounded-2xl border border-indigo-100 text-indigo-600 text-[10px] font-black uppercase tracking-widest inline-block">
+                    Optimized Routing Included
+                </div>
             </div>
         );
     }
 
     return (
-        <div className="bg-white rounded-t-[32px] shadow-2xl overflow-hidden h-[90vh] flex flex-col">
+        <div className="bg-white rounded-[40px] shadow-2xl overflow-hidden animate-fade-in-up flex flex-col border border-slate-100">
             {/* Header */}
-            <div className="bg-gradient-to-r from-indigo-600 to-indigo-700 p-6 text-white relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16 blur-2xl"></div>
+            <div className="bg-slate-900 p-8 text-white relative">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -mr-16 -mt-16"></div>
                 <div className="relative z-10">
-                    <div className="flex items-center justify-between mb-2">
-                        <h3 className="text-2xl font-black">Your Optimized Journey</h3>
+                    <div className="flex items-center justify-between mb-6">
+                        <div>
+                            <h3 className="text-2xl font-black tracking-tight">Optimized Path</h3>
+                            <p className="text-[10px] font-black text-white/40 uppercase tracking-[0.2em] mt-1">Ready for Real-World Navigation</p>
+                        </div>
                         <button
                             onClick={onClear}
-                            className="p-2 text-white/80 hover:text-white hover:bg-white/20 rounded-xl transition-all"
-                            title="Clear all"
+                            className="p-3 bg-white/10 hover:bg-white/20 rounded-2xl transition-all"
                         >
-                            <Icon name="trash" size={20} />
+                            <Icon name="trash" size={18} />
                         </button>
                     </div>
-                    <div className="flex items-center gap-4 text-sm font-bold">
-                        <div className="flex items-center gap-2">
-                            <Icon name="mapPin" size={16} />
-                            <span>{optimizedRoute.length} stops</span>
+
+                    <div className="grid grid-cols-3 gap-4">
+                        <div className="bg-white/5 p-4 rounded-2xl border border-white/5">
+                            <Icon name="list" size={16} className="text-indigo-400 mb-2" />
+                            <p className="text-xl font-black leading-none">{optimizedRoute.length}</p>
+                            <p className="text-[9px] font-bold text-white/40 uppercase tracking-widest mt-1">Stops</p>
                         </div>
-                        <div className="flex items-center gap-2">
-                            <Icon name="navigation" size={16} />
-                            <span>{totalDistance.toFixed(1)}km</span>
+                        <div className="bg-white/5 p-4 rounded-2xl border border-white/5">
+                            <Icon name="map" size={16} className="text-emerald-400 mb-2" />
+                            <p className="text-xl font-black leading-none">{totalDistance.toFixed(1)}k</p>
+                            <p className="text-[9px] font-bold text-white/40 uppercase tracking-widest mt-1">Range</p>
                         </div>
-                        <div className="flex items-center gap-2">
-                            <Icon name="clock" size={16} />
-                            <span>~{estimatedTime}min</span>
+                        <div className="bg-white/5 p-4 rounded-2xl border border-white/5">
+                            <Icon name="clock" size={16} className="text-amber-400 mb-2" />
+                            <p className="text-xl font-black leading-none">~{estimatedTime}m</p>
+                            <p className="text-[9px] font-bold text-white/40 uppercase tracking-widest mt-1">Total</p>
                         </div>
                     </div>
                 </div>
             </div>
 
-            {/* Map View */}
-            <div className="flex-1 relative">
-                <MapContainer
-                    center={[optimizedRoute[0].lat, optimizedRoute[0].lng]}
-                    zoom={13}
-                    style={{ height: '100%', width: '100%' }}
-                    zoomControl={false}
-                >
-                    <TileLayer
-                        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-                        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                    />
+            {/* Timeline Style Stop List */}
+            <div className="p-8 flex-1 overflow-y-auto max-h-[400px]">
+                <div className="space-y-0 relative">
+                    {/* Timeline Line */}
+                    <div className="absolute left-[15px] top-4 bottom-4 w-1 bg-slate-50"></div>
 
-                    <MapController items={optimizedRoute} />
-
-                    {/* Route Line */}
-                    {routeCoordinates.length > 1 && (
-                        <Polyline
-                            positions={routeCoordinates}
-                            pathOptions={{
-                                color: '#4f46e5',
-                                weight: 4,
-                                opacity: 0.7,
-                                dashArray: '10, 10'
-                            }}
-                        />
-                    )}
-
-                    {/* Markers with numbers */}
                     {optimizedRoute.map((item, index) => (
-                        <Marker
-                            key={item.id}
-                            position={[item.lat, item.lng]}
-                            icon={createNumberedIcon(index + 1, selectedStop === item.id)}
-                            eventHandlers={{
-                                click: () => setSelectedStop(item.id)
-                            }}
-                        >
-                            <Popup>
-                                <div className="p-2">
-                                    <div className="flex items-center justify-between mb-2">
-                                        <h4 className="font-black text-sm">Stop {index + 1}</h4>
-                                        <button
-                                            onClick={() => onRemove(item.id)}
-                                            className="text-rose-500 hover:text-rose-700"
-                                        >
-                                            <Icon name="x" size={14} />
-                                        </button>
-                                    </div>
-                                    <p className="text-xs font-bold text-slate-900 mb-1">{item.name}</p>
-                                    <p className="text-xs text-slate-500">{item.area} • {item.type}</p>
-                                </div>
-                            </Popup>
-                        </Marker>
-                    ))}
-                </MapContainer>
-            </div>
-
-            {/* Bottom Stop List */}
-            <div className="bg-white border-t-2 border-slate-100 p-4 max-h-48 overflow-y-auto">
-                <div className="space-y-2">
-                    {optimizedRoute.map((item, index) => (
-                        <button
-                            key={item.id}
-                            onClick={() => setSelectedStop(item.id)}
-                            className={`w-full flex items-center gap-3 p-3 rounded-2xl border-2 transition-all ${selectedStop === item.id
-                                    ? 'bg-indigo-50 border-indigo-300'
-                                    : 'bg-white border-slate-100 hover:border-indigo-200'
-                                }`}
-                        >
-                            <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${selectedStop === item.id ? 'bg-indigo-600' : 'bg-slate-200'
+                        <div key={item.id} className="relative pl-12 pb-10 last:pb-0">
+                            {/* Dot */}
+                            <div className={`absolute left-0 top-1 w-8 h-8 rounded-full border-4 border-white flex items-center justify-center text-[10px] font-black shadow-lg z-10 ${index === 0 ? 'bg-emerald-500 text-white' :
+                                index === optimizedRoute.length - 1 ? 'bg-indigo-600 text-white' :
+                                    'bg-slate-900 text-white'
                                 }`}>
-                                <span className={`text-sm font-black ${selectedStop === item.id ? 'text-white' : 'text-slate-600'
-                                    }`}>{index + 1}</span>
+                                {index + 1}
                             </div>
-                            <div className="flex-1 text-left min-w-0">
-                                <p className="text-sm font-black text-slate-900 truncate">{item.name}</p>
-                                <p className="text-xs text-slate-400 font-bold">{item.area} • {item.type}</p>
+
+                            <div className="bg-slate-50 p-5 rounded-[24px] border border-slate-100 flex items-center justify-between group hover:bg-white hover:border-indigo-100 hover:shadow-xl hover:shadow-slate-200/50 transition-all">
+                                <div className="min-w-0 flex-1">
+                                    <h5 className="text-sm font-black text-slate-900 truncate leading-tight uppercase tracking-tight">{item.name}</h5>
+                                    <div className="flex items-center gap-2 mt-1">
+                                        <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">{item.area}</span>
+                                        <span className="w-1 h-1 bg-slate-200 rounded-full"></span>
+                                        <span className="text-[9px] font-bold text-indigo-500 uppercase tracking-widest">{item.category}</span>
+                                    </div>
+                                </div>
+                                <button
+                                    onClick={() => onRemove(item.id)}
+                                    className="p-2 text-slate-300 hover:text-rose-500 transition-colors"
+                                >
+                                    <Icon name="x" size={16} />
+                                </button>
                             </div>
-                            <button
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    onRemove(item.id);
-                                }}
-                                className="p-2 text-slate-400 hover:text-rose-500 transition-colors"
-                            >
-                                <Icon name="x" size={14} />
-                            </button>
-                        </button>
+                        </div>
                     ))}
                 </div>
             </div>
 
-            {/* Navigate Button */}
-            <div className="p-4 bg-slate-50 border-t border-slate-200">
+            {/* Action Bar */}
+            <div className="p-8 bg-slate-50 border-t border-slate-100">
                 <button
-                    onClick={onNavigate}
-                    className="w-full bg-gradient-to-r from-indigo-600 to-indigo-700 text-white py-4 rounded-2xl font-black text-sm uppercase tracking-widest flex items-center justify-center gap-2 hover:from-indigo-700 hover:to-indigo-800 transition-all shadow-xl shadow-indigo-200 active:scale-[0.98]"
+                    onClick={startRealNavigation}
+                    className="w-full bg-indigo-600 text-white py-5 rounded-[24px] font-black text-[11px] uppercase tracking-[0.2em] flex items-center justify-center gap-3 hover:bg-indigo-700 hover:scale-[1.02] transition-all shadow-xl shadow-indigo-100 active:scale-[0.98]"
                 >
                     <Icon name="navigation" size={20} />
-                    Start Navigation in Google Maps
+                    Start Real Navigation
                 </button>
+                <p className="text-[9px] text-center text-slate-400 font-bold uppercase tracking-widest mt-4">
+                    Opens Google Maps with Walking Directions
+                </p>
             </div>
         </div>
     );
