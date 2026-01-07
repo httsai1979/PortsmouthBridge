@@ -27,6 +27,7 @@ import { fetchLiveStatus, type LiveStatus } from './services/LiveStatusService';
 import { useAuth } from './contexts/AuthContext';
 import PartnerLogin from './components/PartnerLogin';
 import PartnerDashboard from './components/PartnerDashboard';
+import { logSearchEvent } from './services/AnalyticsService';
 
 const App = () => {
     // Branding & Accessibility State
@@ -303,6 +304,16 @@ const App = () => {
         });
     }, [filters, userLocation, searchQuery, smartFilters]);
     // Added searchQuery and smartFilters to deps
+
+    // Phase 4: The City Brain (Analytics Engine)
+    useEffect(() => {
+        if (searchQuery.length > 2) {
+            const timer = setTimeout(() => {
+                logSearchEvent(searchQuery, filteredData.length, filters.area, filters.category);
+            }, 1000); // Debounce logging
+            return () => clearTimeout(timer);
+        }
+    }, [searchQuery, filteredData.length, filters.area, filters.category]);
 
     const savedResources = useMemo(() => {
         return ALL_DATA.filter(item => savedIds.includes(item.id));
