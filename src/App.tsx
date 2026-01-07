@@ -9,13 +9,14 @@ import ResourceCard from './components/ResourceCard';
 import { TipsModal, CrisisModal } from './components/Modals';
 import PrintView from './components/PrintView';
 import { AreaScheduleView } from './components/Schedule';
+import FoodSchedule from './components/FoodSchedule';
 import AIAssistant from './components/AIAssistant';
 import PrivacyShield from './components/PrivacyShield';
 import JourneyPlanner from './components/JourneyPlanner';
 import SmartCompare from './components/SmartCompare';
 import SmartNotifications from './components/SmartNotifications';
 import ProgressTimeline from './components/ProgressTimeline';
-import FoodSchedule from './components/FoodSchedule'; // Phase 27: Food Calendar
+
 import CrisisWizard from './components/CrisisWizard'; // Phase 28: Decision Wizard
 
 const App = () => {
@@ -574,7 +575,18 @@ const App = () => {
                             </div>
                             <button onClick={() => setView('home')} className="p-3 bg-slate-100 text-slate-400 rounded-2xl hover:bg-slate-200 transition-all"><Icon name="x" size={20} /></button>
                         </div>
-                        <FoodSchedule data={filteredData.length > 0 && filters.category === 'food' ? filteredData : ALL_DATA.filter(i => i.category === 'food')} />
+                        <FoodSchedule
+                            data={ALL_DATA}
+                            onNavigate={(id) => {
+                                const item = ALL_DATA.find(i => i.id === id);
+                                if (item) {
+                                    setMapFocus({ lat: item.lat, lng: item.lng, label: item.name });
+                                    setView('map');
+                                }
+                            }}
+                            onSave={toggleSaved}
+                            savedIds={savedIds}
+                        />
                     </div>
                 )}
 
