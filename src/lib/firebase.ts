@@ -1,21 +1,33 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
-import { getFirestore } from 'firebase/firestore';
+import { getFirestore, enableIndexedDbPersistence } from 'firebase/firestore';
 
-// TODO: Replace with your actual Firebase project configuration from the Firebase Console
+// Firebase configuration using environment variables for security
+// Values are loaded from .env file (see .env.example for template)
 const firebaseConfig = {
-  apiKey: "AIzaSyBn65frWFbl1tKGFA0kliY7Btj9QtG2-7c",
-  authDomain: "portsmouthbridge.firebaseapp.com",
-  projectId: "portsmouthbridge",
-  storageBucket: "portsmouthbridge.firebasestorage.app",
-  messagingSenderId: "488637125012",
-  appId: "1:488637125012:web:d964265b4d7241f9aeff81",
-  measurementId: "G-LPBHXSSYP9"
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID
 };
 
 const app = initializeApp(firebaseConfig);
 
 export const auth = getAuth(app);
 export const db = getFirestore(app);
+
+// Enable offline persistence for PWA support
+enableIndexedDbPersistence(db).catch((err) => {
+  if (err.code === 'failed-precondition') {
+    // Multiple tabs open, persistence can only be enabled in one tab at a time
+    console.warn('Firestore persistence failed: Multiple tabs open');
+  } else if (err.code === 'unimplemented') {
+    // The current browser does not support all features required
+    console.warn('Firestore persistence not available in this browser');
+  }
+});
 
 export default app;

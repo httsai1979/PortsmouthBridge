@@ -12,6 +12,16 @@ dist
 dist-ssr
 *.local
 
+# Environment Variables (IMPORTANT: Contains API keys)
+.env
+.env.local
+.env.*.local
+
+# Firebase
+.firebase/
+firebase-debug.log
+firestore-debug.log
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
@@ -22,3 +32,6 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# PWA
+dev-dist/

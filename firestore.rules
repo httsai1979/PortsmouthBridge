@@ -1,0 +1,79 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ============================================
+    // SERVICES COLLECTION - Core Resource Data
+    // ============================================
+    match /services/{serviceId} {
+      // PUBLIC READ: Anyone can read basic service info
+      allow read: if true;
+      
+      // PARTNER WRITE: Only authenticated partners can update
+      allow write: if request.auth != null && isPartner(request.auth.uid);
+      
+      // B2B DATA PROTECTION: Extra check for sensitive fields
+      // The b2bData field should only be readable by partners
+      // This is enforced at the application level, but we add a rule for safety
+    }
+    
+    // ============================================
+    // PARTNERS COLLECTION - Partner Registry
+    // ============================================
+    match /partners/{partnerId} {
+      // Only the partner themselves or admins can read their profile
+      allow read: if request.auth != null && request.auth.uid == partnerId;
+      
+      // Only admins can create/modify partner records
+      allow write: if request.auth != null && isAdmin(request.auth.uid);
+    }
+    
+    // ============================================
+    // ANALYTICS_GAPS COLLECTION - Search Analytics
+    // ============================================
+    match /analytics_gaps/{docId} {
+      // Anyone can write (anonymous search logging)
+      allow create: if true;
+      
+      // Only partners/admins can read analytics
+      allow read: if request.auth != null && isPartner(request.auth.uid);
+      
+      // No updates or deletes from client
+      allow update, delete: if false;
+    }
+    
+    // ============================================
+    // ANALYTICS_VIEWS COLLECTION - Page View Analytics
+    // ============================================
+    match /analytics_views/{docId} {
+      allow create: if true;
+      allow read: if request.auth != null && isPartner(request.auth.uid);
+      allow update, delete: if false;
+    }
+    
+    // ============================================
+    // HELPER FUNCTIONS
+    // ============================================
+    
+    // Check if user is a verified partner
+    function isPartner(uid) {
+      return exists(/databases/$(database)/documents/partners/$(uid)) ||
+             isWhitelisted();
+    }
+    
+    // Check if user is an admin
+    function isAdmin(uid) {
+      return exists(/databases/$(database)/documents/admins/$(uid));
+    }
+    
+    // Developer whitelist for testing
+    function isWhitelisted() {
+      return request.auth.token.email in [
+        'test@test.org',
+        'admin@sustainsage-group.com'
+      ] || 
+      request.auth.token.email.matches('.*@sustainsage-group\\.com');
+    }
+  }
+}

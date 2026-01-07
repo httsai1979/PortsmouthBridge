@@ -29,6 +29,8 @@ import CrisisWizard from './components/CrisisWizard'; // Phase 28: Decision Wiza
 import { useAuth } from './contexts/AuthContext';
 import PartnerLogin from './components/PartnerLogin';
 import PartnerDashboard from './components/PartnerDashboard';
+import PulseMap from './components/PulseMap';
+import DataMigration from './components/DataMigration';
 
 import type { Resource } from './data';
 import type { ServiceDocument } from './types/schema';
@@ -43,7 +45,7 @@ const App = () => {
     const [loading, setLoading] = useState(true);
 
     // Navigation & Modals
-    const [view, setView] = useState<'home' | 'map' | 'list' | 'planner' | 'compare' | 'community-plan' | 'safe-sleep-plan' | 'warm-spaces-plan' | 'faq' | 'partner-dashboard'>('home');
+    const [view, setView] = useState<'home' | 'map' | 'list' | 'planner' | 'compare' | 'community-plan' | 'safe-sleep-plan' | 'warm-spaces-plan' | 'faq' | 'partner-dashboard' | 'analytics' | 'data-migration'>('home');
     const [showTips, setShowTips] = useState(false);
     const [showCrisis, setShowCrisis] = useState(false);
     const [showPrint, setShowPrint] = useState(false);
@@ -384,13 +386,29 @@ const App = () => {
                         <button onClick={() => setHighContrast(!highContrast)} className="p-2 bg-slate-100 rounded-xl text-slate-600 hover:bg-slate-200 transition-colors" title="High Contrast"><Icon name="zap" size={20} /></button>
 
                         {isPartner && (
-                            <button
-                                onClick={() => setView(view === 'partner-dashboard' ? 'home' : 'partner-dashboard')}
-                                className={`p-2 rounded-xl transition-all ${view === 'partner-dashboard' ? 'bg-indigo-600 text-white shadow-lg' : 'bg-emerald-50 text-emerald-600'}`}
-                                title="Agency Dashboard"
-                            >
-                                <Icon name="briefcase" size={20} />
-                            </button>
+                            <>
+                                <button
+                                    onClick={() => setView(view === 'partner-dashboard' ? 'home' : 'partner-dashboard')}
+                                    className={`p-2 rounded-xl transition-all ${view === 'partner-dashboard' ? 'bg-indigo-600 text-white shadow-lg' : 'bg-emerald-50 text-emerald-600'}`}
+                                    title="Agency Dashboard"
+                                >
+                                    <Icon name="briefcase" size={20} />
+                                </button>
+                                <button
+                                    onClick={() => setView(view === 'analytics' ? 'home' : 'analytics')}
+                                    className={`p-2 rounded-xl transition-all ${view === 'analytics' ? 'bg-indigo-600 text-white shadow-lg' : 'bg-slate-100 text-slate-600'}`}
+                                    title="Analytics Pulse"
+                                >
+                                    <Icon name="activity" size={20} />
+                                </button>
+                                <button
+                                    onClick={() => setView(view === 'data-migration' ? 'home' : 'data-migration')}
+                                    className={`p-2 rounded-xl transition-all ${view === 'data-migration' ? 'bg-indigo-600 text-white shadow-lg' : 'bg-slate-100 text-slate-600'}`}
+                                    title="Data Migration"
+                                >
+                                    <Icon name="database" size={20} />
+                                </button>
+                            </>
                         )}
 
                         <button
@@ -713,6 +731,36 @@ const App = () => {
                 {
                     view === 'partner-dashboard' && (
                         <PartnerDashboard />
+                    )
+                }
+
+                {
+                    view === 'analytics' && (
+                        <div className="animate-fade-in-up">
+                            <div className="mb-6 flex items-center justify-between">
+                                <div>
+                                    <h2 className="text-2xl font-black text-slate-900 tracking-tight">Analytics</h2>
+                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Community Demand Insights</p>
+                                </div>
+                                <button onClick={() => setView('home')} className="p-3 bg-slate-100 text-slate-400 rounded-2xl hover:bg-slate-200 transition-all"><Icon name="x" size={20} /></button>
+                            </div>
+                            <PulseMap />
+                        </div>
+                    )
+                }
+
+                {
+                    view === 'data-migration' && (
+                        <div className="animate-fade-in-up">
+                            <div className="mb-6 flex items-center justify-between">
+                                <div>
+                                    <h2 className="text-2xl font-black text-slate-900 tracking-tight">Data Migration</h2>
+                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Firebase Sync Tools</p>
+                                </div>
+                                <button onClick={() => setView('home')} className="p-3 bg-slate-100 text-slate-400 rounded-2xl hover:bg-slate-200 transition-all"><Icon name="x" size={20} /></button>
+                            </div>
+                            <DataMigration />
+                        </div>
                     )
                 }
 
