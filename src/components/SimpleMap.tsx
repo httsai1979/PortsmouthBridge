@@ -71,18 +71,29 @@ const createCustomIcon = (item: Resource, isSelected: boolean, stealthMode?: boo
 };
 
 // Component to handle map center/zoom updates
-const MapController = ({ selectedPos, locateTrigger, externalPos }: { selectedPos: [number, number] | null, locateTrigger: number, externalPos?: [number, number] | null }) => {
-    const map = useMap(); // Get map instance here inside the component that is child of MapContainer
+// Component to handle map center/zoom updates
+const MapController = ({ selectedPos, locateTrigger, externalPos, data }: { selectedPos: [number, number] | null, locateTrigger: number, externalPos?: [number, number] | null, data: Resource[] }) => {
+    const map = useMap();
+
+    // Auto-fit to results when filters change
+    useEffect(() => {
+        if (data.length > 0) {
+            const bounds = L.latLngBounds(data.map(item => [item.lat, item.lng]));
+            if (bounds.isValid()) {
+                map.flyToBounds(bounds, { padding: [50, 50], maxZoom: 16, animate: true });
+            }
+        }
+    }, [data, map]);
 
     useEffect(() => {
         if (selectedPos) {
-            map.setView(selectedPos, 16, { animate: true });
+            map.flyTo(selectedPos, 16, { animate: true });
         }
     }, [selectedPos, map]);
 
     useEffect(() => {
         if (externalPos) {
-            map.setView(externalPos, 18, { animate: true });
+            map.flyTo(externalPos, 18, { animate: true });
         }
     }, [externalPos, map]);
 
@@ -213,6 +224,7 @@ const SimpleMap = ({ data, category, statusFilter, savedIds, onToggleSave, steal
                     selectedPos={selectedItem ? [selectedItem.lat, selectedItem.lng] : null}
                     externalPos={externalFocus ? [externalFocus.lat, externalFocus.lng] : null}
                     locateTrigger={locateTrigger}
+                    data={filteredPoints}
                 />
             </MapContainer>
 
