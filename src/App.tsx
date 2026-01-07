@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
+import Fuse from 'fuse.js';
 import { ALL_DATA, AREAS, PROGRESS_TIPS, COMMUNITY_DEALS, GIFT_EXCHANGE, TAG_ICONS } from './data';
 import { checkStatus, getDistance, playSuccessSound } from './utils';
 
@@ -247,17 +248,24 @@ const App = () => {
     };
 
     const filteredData = useMemo(() => {
-        const data = ALL_DATA.filter(item => {
+        let baseData = ALL_DATA;
+
+        if (searchQuery) {
+            const fuse = new Fuse(ALL_DATA, {
+                keys: [
+                    { name: 'name', weight: 0.3 },
+                    { name: 'tags', weight: 0.2 },
+                    { name: 'description', weight: 0.4 },
+                    { name: 'category', weight: 0.1 }
+                ],
+                threshold: 0.3
+            });
+            baseData = fuse.search(searchQuery).map(result => result.item);
+        }
+
+        const data = baseData.filter(item => {
             const matchesArea = filters.area === 'All' || item.area === filters.area;
             const matchesCategory = filters.category === 'all' || item.category === filters.category;
-
-            // Universal Search (Name, Address, Tags)
-            const searchLower = searchQuery.toLowerCase();
-            const matchesSearch = !searchQuery ||
-                item.name.toLowerCase().includes(searchLower) ||
-                item.address.toLowerCase().includes(searchLower) ||
-                item.description.toLowerCase().includes(searchLower) ||
-                item.tags.some(t => t.toLowerCase().includes(searchLower));
 
             // Smart Tokens
             const status = checkStatus(item.schedule);
@@ -270,8 +278,12 @@ const App = () => {
                 matchesNearMe = dist < 2; // Within 2km for walking hub
             }
 
-            return matchesArea && matchesCategory && matchesSearch && matchesOpenNow && matchesVerified && matchesNearMe;
+            return matchesArea && matchesCategory && matchesOpenNow && matchesVerified && matchesNearMe;
         });
+
+        // If searching, keep Fuse.js order, otherwise sort by status/distance
+        if (searchQuery) return data;
+
         return data.sort((a, b) => {
             const statusA = checkStatus(a.schedule);
             const statusB = checkStatus(b.schedule);
@@ -284,7 +296,8 @@ const App = () => {
             }
             return 0;
         });
-    }, [filters, userLocation, searchQuery, smartFilters]); // Added searchQuery and smartFilters to deps
+    }, [filters, userLocation, searchQuery, smartFilters]);
+    // Added searchQuery and smartFilters to deps
 
     const savedResources = useMemo(() => {
         return ALL_DATA.filter(item => savedIds.includes(item.id));
