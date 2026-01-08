@@ -6,7 +6,7 @@ import { ALL_DATA } from './data';
 import { checkStatus, playSuccessSound, getDistance } from './utils';
 import { logSearchEvent } from './services/AnalyticsService';
 
-// Components
+// 核心元件 (首頁立刻要用的，保持直接 import)
 import Icon from './components/Icon';
 import ResourceCard from './components/ResourceCard';
 import { TipsModal, CrisisModal, ReportModal, PartnerRequestModal } from './components/Modals';
@@ -17,10 +17,10 @@ import PrivacyShield from './components/PrivacyShield';
 import SmartNotifications from './components/SmartNotifications';
 import ProgressTimeline from './components/ProgressTimeline';
 
-// Images
+// 圖片
 import logo from './assets/images/logo.png';
 
-// Authentication
+// 認證
 import { useAuth } from './contexts/AuthContext';
 import PartnerLogin from './components/PartnerLogin';
 
@@ -28,11 +28,13 @@ import type { Resource } from './data';
 import type { ServiceDocument } from './types/schema';
 import { AREAS, TAG_ICONS, COMMUNITY_DEALS, GIFT_EXCHANGE, PROGRESS_TIPS } from './data';
 
-// [PERFORMANCE] Lazy Load Heavy Components to reduce Main Thread Work
+// [PERFORMANCE] Lazy Load Heavy Components (重型元件延遲載入)
+// 這會大幅減少首頁載入時的 JS 體積，釋放主執行緒
 const SimpleMap = lazy(() => import('./components/SimpleMap'));
 const JourneyPlanner = lazy(() => import('./components/JourneyPlanner'));
 const SmartCompare = lazy(() => import('./components/SmartCompare'));
 const UnifiedSchedule = lazy(() => import('./components/UnifiedSchedule'));
+// 處理 Named Export 的特殊寫法
 const AreaScheduleView = lazy(() => import('./components/Schedule').then(module => ({ default: module.AreaScheduleView })));
 const CrisisWizard = lazy(() => import('./components/CrisisWizard'));
 const PartnerDashboard = lazy(() => import('./components/PartnerDashboard'));
@@ -40,9 +42,9 @@ const PulseMap = lazy(() => import('./components/PulseMap'));
 const DataMigration = lazy(() => import('./components/DataMigration'));
 const PrintView = lazy(() => import('./components/PrintView'));
 
-// Loading Fallback Component
+// Loading Fallback (載入時顯示的轉圈圈)
 const PageLoader = () => (
-    <div className="flex items-center justify-center py-20">
+    <div className="flex items-center justify-center py-20 animate-fade-in">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
     </div>
 );
@@ -67,7 +69,7 @@ const App = () => {
     const [showPartnerLogin, setShowPartnerLogin] = useState(false);
     const { currentUser, isPartner, loading: authLoading } = useAuth();
 
-    // Modal States for Reporting and Partner Requests
+    // Modal States
     const [reportTarget, setReportTarget] = useState<{name: string, id: string} | null>(null);
     const [showPartnerRequest, setShowPartnerRequest] = useState(false);
 
@@ -135,7 +137,14 @@ const App = () => {
         }
     }, [currentUser, authLoading, view]);
 
-     useEffect(() => {
+    // Font Size Effect
+    useEffect(() => {
+        const root = document.documentElement;
+        root.classList.remove('fs-0', 'fs-1', 'fs-2');
+        root.classList.add(`fs-${fontSize}`);
+    }, [fontSize]);
+
+    useEffect(() => {
         setTimeout(() => setLoading(false), 800);
 
         const servicesRef = collection(db, 'services');
@@ -346,7 +355,8 @@ const App = () => {
         );
     }
 
-    // Wrap Suspense around Lazy Components
+    // [PERFORMANCE] 關鍵輔助函數：渲染 Lazy Load 元件
+    // 這會用 Suspense 包裹元件，在下載程式碼時顯示 PageLoader
     const renderLazyView = (Component: any, props = {}) => (
         <Suspense fallback={<PageLoader />}>
             <Component {...props} />
@@ -636,6 +646,7 @@ const App = () => {
 
                 {/* Other Views... */}
                 {view === 'faq' && <FAQSection onClose={() => setView('home')} />}
+                
                 {view === 'community-plan' && (
                     <div className="animate-fade-in-up">
                         <div className="mb-6 flex items-center justify-between">
@@ -648,6 +659,7 @@ const App = () => {
                         {renderLazyView(UnifiedSchedule, { category: "food", title: "Weekly Food Support", subtitle: "Sustaining the community together", data: ALL_DATA, onNavigate: (id: string) => { const item = ALL_DATA.find(i => i.id === id); if (item) { setMapFocus({ lat: item.lat, lng: item.lng, label: item.name, id: item.id }); setView('map'); } }, onSave: toggleSaved, savedIds: savedIds })}
                     </div>
                 )}
+                
                 {view === 'safe-sleep-plan' && (
                     <div className="animate-fade-in-up">
                         <div className="mb-6 flex items-center justify-between">
@@ -660,6 +672,7 @@ const App = () => {
                         {renderLazyView(UnifiedSchedule, { category: "shelter", title: "Safe Sleep & Housing", subtitle: "Support for finding a safe place", data: ALL_DATA, onNavigate: (id: string) => { const item = ALL_DATA.find(i => i.id === id); if (item) { setMapFocus({ lat: item.lat, lng: item.lng, label: item.name, id: item.id }); setView('map'); } }, onSave: toggleSaved, savedIds: savedIds })}
                     </div>
                 )}
+                
                 {view === 'warm-spaces-plan' && (
                     <div className="animate-fade-in-up">
                         <div className="mb-6 flex items-center justify-between">
@@ -672,7 +685,9 @@ const App = () => {
                         {renderLazyView(UnifiedSchedule, { category: "warmth", title: "Warm Spaces Calendar", subtitle: "Friendly places to stay warm", data: ALL_DATA, onNavigate: (id: string) => { const item = ALL_DATA.find(i => i.id === id); if (item) { setMapFocus({ lat: item.lat, lng: item.lng, label: item.name, id: item.id }); setView('map'); } }, onSave: toggleSaved, savedIds: savedIds })}
                     </div>
                 )}
+                
                 {view === 'partner-dashboard' && renderLazyView(PartnerDashboard)}
+                
                 {view === 'analytics' && (
                     <div className="animate-fade-in-up">
                         <div className="mb-6 flex items-center justify-between">
@@ -685,6 +700,7 @@ const App = () => {
                         {renderLazyView(PulseMap)}
                     </div>
                 )}
+                
                 {view === 'data-migration' && (
                     <div className="animate-fade-in-up">
                         <div className="mb-6 flex items-center justify-between">
@@ -797,7 +813,7 @@ const App = () => {
                 {view === 'planner' && <div className="animate-fade-in-up"><div className="mb-6 flex items-center justify-between"><div><h2 className="text-2xl font-black text-slate-900 tracking-tight">Journey Planner</h2><p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Organizing your success</p></div><button onClick={() => setView('home')} className="p-3 bg-slate-100 text-slate-400 rounded-2xl hover:bg-slate-200 transition-all"><Icon name="x" size={20} /></button></div>{savedIds.length > 0 && (<div className="space-y-4 mb-8"><div className="flex gap-2 overflow-x-auto no-scrollbar pb-2">{AREAS.map((area: string) => (<button key={area} onClick={() => setFilters({ ...filters, area })} className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest border-2 transition-all whitespace-nowrap ${filters.area === area ? 'bg-indigo-600 border-indigo-600 text-white shadow-lg' : 'bg-white border-slate-100 text-slate-400'}`}>{area}</button>))}</div><div className="flex gap-2 overflow-x-auto no-scrollbar pb-2">{['all', 'food', 'shelter', 'warmth', 'support', 'family', 'charity'].map(cat => (<button key={cat} onClick={() => setFilters({ ...filters, category: cat })} className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest border-2 transition-all whitespace-nowrap ${filters.category === cat ? 'bg-slate-900 border-slate-900 text-white shadow-lg' : 'bg-white border-slate-100 text-slate-400'}`}>{cat === 'all' ? 'All Needs' : cat}</button>))}</div></div>)}{savedIds.length > 0 ? renderLazyView(AreaScheduleView, { data: savedResources as ServiceDocument[], area: filters.area, category: filters.category }) : (<div className="py-20 text-center bg-white rounded-[40px] border-2 border-dashed border-slate-200 p-8 shadow-sm"><div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-6"><Icon name="star" size={40} className="text-slate-200" /></div><h3 className="text-xl font-black text-slate-800 mb-2">No Pins Yet</h3><p className="text-xs font-bold text-slate-400 uppercase tracking-widest leading-relaxed mb-8">Add resources to "My Bridge" to build your personalized daily journey.</p><button onClick={() => setView('list')} className="w-full py-5 bg-indigo-600 text-white rounded-[24px] text-[11px] font-black uppercase tracking-widest shadow-xl shadow-indigo-100 hover:scale-[1.02] transition-all">Browse Resources</button></div>)}</div>}
                 
                 {view === 'compare' && <div className="animate-fade-in-up bg-slate-100 min-h-[90vh] rounded-t-[40px] shadow-[0_-10px_40px_rgba(0,0,0,0.1)] p-1"><div className="flex justify-between items-center px-6 py-6"><div><h2 className="text-2xl font-black text-slate-900 tracking-tight">Smart Compare</h2><p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Decision Support Engine</p></div><button onClick={() => setView('home')} className="p-3 bg-white text-slate-400 rounded-2xl hover:bg-slate-50 transition-all shadow-sm"><Icon name="x" size={20} /></button></div>
-                {renderLazyView(SmartCompare, { items: services.filter(i => compareItems.includes(i.id)), userLocation: userLocation, onRemove: toggleCompareItem, onNavigate: (id: string) => { const resource = services.find(r => r.id === id); if (resource) { const lat = (resource as any).location?.lat || (resource as any).lat; const lng = (resource as any).location?.lng || (resource as any).lng; window.open(`https://www.google.com/maps/dir/?api=1&destination=$${lat},${lng}`, '_blank'); } }, onCall: (phone: string) => window.open(`tel:${phone}`) })}
+                {renderLazyView(SmartCompare, { items: services.filter(i => compareItems.includes(i.id)) as any[], userLocation: userLocation, onRemove: toggleCompareItem, onNavigate: (id: string) => { const resource = services.find(r => r.id === id); if (resource) { const lat = (resource as any).location?.lat || (resource as any).lat; const lng = (resource as any).location?.lng || (resource as any).lng; window.open(`https://www.google.com/maps/dir/?api=1&destination=$${lat},${lng}`, '_blank'); } }, onCall: (phone: string) => window.open(`tel:${phone}`) })}
                 </div>}
 
             </div>
@@ -842,18 +858,6 @@ const App = () => {
                     </div>
                 </div>
             )}
-
-            {/* [NEW] Render the new Modals */}
-            <ReportModal 
-                isOpen={!!reportTarget} 
-                onClose={() => setReportTarget(null)} 
-                resourceName={reportTarget?.name || ''}
-                resourceId={reportTarget?.id || ''}
-            />
-            <PartnerRequestModal 
-                isOpen={showPartnerRequest} 
-                onClose={() => setShowPartnerRequest(false)} 
-            />
 
             {/* [Restored] Crisis Wizard Modal */}
             {showWizard && renderLazyView(CrisisWizard, { userLocation: userLocation, onClose: () => setShowWizard(false), savedIds: savedIds, onToggleSave: (id: string) => { if (savedIds.includes(id)) { setSavedIds(prev => prev.filter(i => i !== id)); } else { setSavedIds(prev => [...prev, id]); playSuccessSound(); } } })}
