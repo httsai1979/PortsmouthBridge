@@ -120,4 +120,13 @@ export default defineConfig({
       }
     })
   ],
+  // [FIX] 解決 Rollup 無法解析 Firebase 內部依賴的問題
+  optimizeDeps: {
+    include: ['firebase/app', 'firebase/firestore', 'firebase/auth', '@firebase/firestore']
+  },
+  build: {
+    commonjsOptions: {
+      include: [/firebase/, /node_modules/]
+    }
+  }
 })
