@@ -13,54 +13,44 @@ export default defineConfig({
       injectRegister: 'auto',
       includeAssets: ['icon.png', 'manifest.json'],
       workbox: {
-        // Cache all navigation requests
         navigateFallback: '/index.html',
-        // Runtime caching strategies
         runtimeCaching: [
           {
-            // Cache Google Fonts
             urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
             handler: 'CacheFirst',
             options: {
               cacheName: 'google-fonts-cache',
               expiration: {
                 maxEntries: 10,
-                maxAgeSeconds: 60 * 60 * 24 * 365 // 1 year
+                maxAgeSeconds: 60 * 60 * 24 * 365
               },
-              cacheableResponse: {
-                statuses: [0, 200]
-              }
+              cacheableResponse: { statuses: [0, 200] }
             }
           },
           {
-            // Cache OpenStreetMap tiles for offline maps
             urlPattern: /^https:\/\/.*\.tile\.openstreetmap\.org\/.*/i,
             handler: 'CacheFirst',
             options: {
               cacheName: 'osm-tiles-cache',
               expiration: {
                 maxEntries: 500,
-                maxAgeSeconds: 60 * 60 * 24 * 30 // 30 days
+                maxAgeSeconds: 60 * 60 * 24 * 30
               },
-              cacheableResponse: {
-                statuses: [0, 200]
-              }
+              cacheableResponse: { statuses: [0, 200] }
             }
           },
           {
-            // Cache images
             urlPattern: /\.(?:png|jpg|jpeg|svg|gif|webp)$/i,
             handler: 'CacheFirst',
             options: {
               cacheName: 'images-cache',
               expiration: {
                 maxEntries: 100,
-                maxAgeSeconds: 60 * 60 * 24 * 30 // 30 days
+                maxAgeSeconds: 60 * 60 * 24 * 30
               }
             }
           },
           {
-            // Network-first for API calls (Firebase)
             urlPattern: /^https:\/\/firestore\.googleapis\.com\/.*/i,
             handler: 'NetworkFirst',
             options: {
@@ -68,7 +58,7 @@ export default defineConfig({
               networkTimeoutSeconds: 10,
               expiration: {
                 maxEntries: 50,
-                maxAgeSeconds: 60 * 60 // 1 hour
+                maxAgeSeconds: 60 * 60
               }
             }
           }
@@ -77,60 +67,34 @@ export default defineConfig({
       manifest: {
         name: 'Portsmouth Bridge',
         short_name: 'Bridge',
-        description: 'Connecting Community • Restoring Hope - Your guide to food, shelter, and community support in Portsmouth',
+        description: 'Connecting Community • Restoring Hope',
         theme_color: '#4f46e5',
         background_color: '#ffffff',
         display: 'standalone',
         orientation: 'portrait',
         start_url: '/',
         scope: '/',
-        categories: ['health', 'lifestyle', 'social'],
         icons: [
-          {
-            src: 'icon.png',
-            sizes: '192x192',
-            type: 'image/png'
-          },
-          {
-            src: 'icon.png',
-            sizes: '512x512',
-            type: 'image/png',
-            purpose: 'any maskable'
-          }
-        ],
-        shortcuts: [
-          {
-            name: 'Find Food',
-            short_name: 'Food',
-            description: 'Find nearby food banks and community meals',
-            url: '/?category=food',
-            icons: [{ src: 'icon.png', sizes: '96x96' }]
-          },
-          {
-            name: 'Find Shelter',
-            short_name: 'Shelter',
-            description: 'Find emergency shelter and housing support',
-            url: '/?category=shelter',
-            icons: [{ src: 'icon.png', sizes: '96x96' }]
-          }
+          { src: 'icon.png', sizes: '192x192', type: 'image/png' },
+          { src: 'icon.png', sizes: '512x512', type: 'image/png', purpose: 'any maskable' }
         ]
       },
-      devOptions: {
-        enabled: false // Disable in development to avoid caching issues
-      }
+      devOptions: { enabled: false }
     })
   ],
-  // [FIX] 解決 Rollup 無法解析 Firebase 內部依賴的問題
+  resolve: {
+    // 強制 Vite 使用單一版本的 Firebase 模組，避免版本衝突
+    dedupe: ['firebase', '@firebase/app', '@firebase/auth', '@firebase/firestore']
+  },
   optimizeDeps: {
+    // 預先打包這些模組，解決 Rollup 解析問題
     include: [
       'firebase/app', 
       'firebase/firestore', 
       'firebase/auth', 
       '@firebase/app',
       '@firebase/firestore', 
-      '@firebase/auth', // 這次錯誤的主角
-      '@firebase/component', 
-      '@firebase/util'
+      '@firebase/auth'
     ]
   },
   build: {
