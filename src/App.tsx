@@ -53,7 +53,7 @@ const App = () => {
     const [mapFocus, setMapFocus] = useState<{ lat: number, lng: number, label: string, id?: string } | null>(null);
     const [showWizard, setShowWizard] = useState(false);
     const [showPartnerLogin, setShowPartnerLogin] = useState(false);
-    const { currentUser, isPartner, loading: authLoading } = useAuth(); // Destructure auth loading
+    const { currentUser, isPartner, loading: authLoading } = useAuth();
 
     // Modal States for Reporting and Partner Requests
     const [reportTarget, setReportTarget] = useState<{name: string, id: string} | null>(null);
@@ -113,12 +113,10 @@ const App = () => {
         date: 'today'
     });
 
-    // 🛡️ [NEW] Route Guard: Auto-redirect to home on logout if in restricted area
+    // 🛡️ Route Guard
     useEffect(() => {
-        // If auth is finished loading AND user is NOT logged in
         if (!authLoading && !currentUser) {
             const restrictedViews = ['partner-dashboard', 'analytics', 'data-migration'];
-            // If currently on a restricted page, kick back to home
             if (restrictedViews.includes(view)) {
                 setView('home');
             }
@@ -823,6 +821,23 @@ const App = () => {
                 isOpen={showPartnerRequest} 
                 onClose={() => setShowPartnerRequest(false)} 
             />
+
+            {/* [Restored] Crisis Wizard Modal */}
+            {showWizard && (
+                <CrisisWizard 
+                    userLocation={userLocation} 
+                    onClose={() => setShowWizard(false)} 
+                    savedIds={savedIds} 
+                    onToggleSave={(id) => { 
+                        if (savedIds.includes(id)) { 
+                            setSavedIds(prev => prev.filter(i => i !== id)); 
+                        } else { 
+                            setSavedIds(prev => [...prev, id]); 
+                            playSuccessSound(); 
+                        } 
+                    }} 
+                />
+            )}
         </div>
     );
 };
