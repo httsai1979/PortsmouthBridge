@@ -1,14 +1,22 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { 
     Home, MapPin, Search, Menu, X, Heart, Coffee, Bed, Flame, 
-    LifeBuoy, Users, Zap, Briefcase, Database, Activity, 
-    Calendar, ChevronRight, Share2, Star, Navigation, 
-    CheckCircle, Tag, Info, Phone, ExternalLink, Filter,
-    Leaf, Music, ShoppingBag, BookOpen, Smile, Monitor, Clock
+    LifeBuoy, Users, Briefcase, BookOpen, Smile, 
+    Navigation, Phone, Tag, Info, Calendar, Cloud, RefreshCw
 } from 'lucide-react';
+import { initializeApp } from "firebase/app";
+import { getFirestore, collection, onSnapshot } from "firebase/firestore";
+import { getAuth, signInWithCustomToken, signInAnonymously, onAuthStateChanged } from "firebase/auth";
 
-// --- 1. FULL EXTENDED DATA (LOCAL SOURCE OF TRUTH) ---
-// 包含所有擴充後的 60+ 個地點數據
+// --- 1. FIREBASE CONFIG & INIT ---
+// 使用您的環境配置
+const firebaseConfig = JSON.parse(__firebase_config);
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+// --- 2. LOCAL DATA (FALLBACK) ---
+// 當網路斷線或資料庫為空時使用的本地備份 (51筆)
 export interface Resource {
     id: string;
     name: string;
@@ -36,14 +44,15 @@ export const TAG_ICONS: Record<string, { icon: any; label: string; color: string
     warmth: { icon: Flame, label: 'Warm Spaces', color: 'text-orange-600', bg: 'bg-orange-50' },
     support: { icon: LifeBuoy, label: 'Community Hub', color: 'text-blue-600', bg: 'bg-blue-50' },
     family: { icon: Users, label: 'Family & Play', color: 'text-pink-600', bg: 'bg-pink-50' },
-    charity: { icon: ShoppingBag, label: 'Charity Shop', color: 'text-rose-600', bg: 'bg-rose-50' },
+    charity: { icon: Tag, label: 'Charity Shop', color: 'text-rose-600', bg: 'bg-rose-50' },
     mental_health: { icon: Smile, label: 'Wellbeing', color: 'text-purple-600', bg: 'bg-purple-50' },
     skills: { icon: Briefcase, label: 'Jobs & Skills', color: 'text-cyan-600', bg: 'bg-cyan-50' },
     learning: { icon: BookOpen, label: 'Library', color: 'text-amber-600', bg: 'bg-amber-50' },
     default: { icon: Info, label: 'General', color: 'text-slate-600', bg: 'bg-slate-50' }
 };
 
-export const ALL_DATA: Resource[] = [
+// 本地數據 (Local Data) - 51 筆 (作為備用)
+export const LOCAL_DATA: Resource[] = [
     // --- 🟢 FOOD (EAT) ---
     {
         id: 'f1',
@@ -847,7 +856,7 @@ export const ALL_DATA: Resource[] = [
     }
 ];
 
-// --- 2. HELPERS ---
+// --- 3. HELPERS ---
 const checkStatus = (schedule: Record<number, string>) => {
     const now = new Date();
     const day = now.getDay();
@@ -874,7 +883,7 @@ const checkStatus = (schedule: Record<number, string>) => {
     };
 };
 
-// --- 3. SUB-COMPONENTS ---
+// --- 4. SUB-COMPONENTS ---
 const ResourceCard = ({ item, isSaved, onToggleSave, onNavigate }: any) => {
     const status = checkStatus(item.schedule);
     const TagIcon = TAG_ICONS[item.category]?.icon || TAG_ICONS.default.icon;
@@ -947,17 +956,74 @@ const SimpleMap = ({ data }: any) => {
     );
 };
 
-// --- 4. MAIN APP COMPONENT ---
+// --- 5. MAIN APP COMPONENT ---
 const App = () => {
     const [view, setView] = useState<'home' | 'list' | 'map'>('home');
     const [searchQuery, setSearchQuery] = useState('');
     const [filterCategory, setFilterCategory] = useState('all');
     const [savedIds, setSavedIds] = useState<string[]>([]);
+    const [appId, setAppId] = useState(typeof __app_id !== 'undefined' ? __app_id : 'default-app-id');
+    const [currentUser, setCurrentUser] = useState<any>(null);
+    const [firebaseData, setFirebaseData] = useState<Resource[]>([]);
+    const [isSyncing, setIsSyncing] = useState(true);
+    const [syncError, setSyncError] = useState<string | null>(null);
     
-    const [filteredData, setFilteredData] = useState(ALL_DATA);
+    // Auth & Data Sync
+    useEffect(() => {
+        const initAuth = async () => {
+            try {
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                    await signInAnonymously(auth);
+                }
+            } catch (error) {
+                console.error("Auth Error:", error);
+                setSyncError("Auth Failed");
+                setIsSyncing(false);
+            }
+        };
+        initAuth();
+        
+        const unsubscribeAuth = onAuthStateChanged(auth, (user) => {
+            setCurrentUser(user);
+        });
+
+        return () => unsubscribeAuth();
+    }, []);
+
+    // Sync Data (Cloud Priority) - Wait for User
+    useEffect(() => {
+        if (!currentUser) return;
+
+        // 優先監聽雲端資料 (Firestore)
+        const collectionRef = collection(db, 'artifacts', appId, 'public', 'data', 'resources');
+        const unsubscribeData = onSnapshot(collectionRef, (snapshot) => {
+            if (!snapshot.empty) {
+                const cloudResources = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Resource));
+                setFirebaseData(cloudResources);
+                console.log(`☁️ Synced ${cloudResources.length} resources from Cloud`);
+                setSyncError(null);
+            } else {
+                console.log("⚠️ Cloud empty, using Local Fallback");
+            }
+            setIsSyncing(false);
+        }, (error) => {
+            console.error("Sync Error:", error);
+            setSyncError("Permission Denied");
+            setIsSyncing(false);
+        });
+
+        return () => unsubscribeData();
+    }, [appId, currentUser]);
+
+    // Decide which data source to use
+    // 如果雲端有資料，就用雲端的 (58筆)；否則用本地備份 (51筆)
+    const activeData = firebaseData.length > 0 ? firebaseData : LOCAL_DATA;
+    const [filteredData, setFilteredData] = useState(activeData);
 
     useEffect(() => {
-        let res = ALL_DATA;
+        let res = activeData;
         
         if (filterCategory !== 'all') {
             res = res.filter(item => item.category === filterCategory);
@@ -973,7 +1039,7 @@ const App = () => {
         }
 
         setFilteredData(res);
-    }, [searchQuery, filterCategory]);
+    }, [searchQuery, filterCategory, activeData]);
 
     const toggleSaved = (id: string) => {
         setSavedIds(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]);
@@ -994,7 +1060,16 @@ const App = () => {
                     </div>
                     <div>
                         <h1 className="text-xl font-black text-slate-900 tracking-tighter leading-none mb-1">Portsmouth Bridge</h1>
-                        <p className="text-[8px] font-black text-slate-400 tracking-widest uppercase">Community Network</p>
+                        <p className="text-[8px] font-black text-slate-400 tracking-widest uppercase flex items-center gap-1">
+                            {isSyncing ? (
+                                <><RefreshCw size={8} className="animate-spin" /> Syncing...</>
+                            ) : (
+                                <><Cloud size={8} className={firebaseData.length > 0 ? "text-emerald-500" : "text-slate-400"} /> 
+                                {firebaseData.length > 0 ? 'Cloud Data' : 'Local Mode'}
+                                {syncError && <span className="text-rose-500 ml-1">({syncError})</span>}
+                                </>
+                            )}
+                        </p>
                     </div>
                 </div>
                 <button className="p-2 bg-slate-50 rounded-xl text-slate-400 hover:text-indigo-600 transition-colors">
@@ -1039,8 +1114,10 @@ const App = () => {
                         {/* Stats Card */}
                         <div className="p-6 bg-slate-900 rounded-[32px] text-white relative overflow-hidden mb-8 shadow-xl shadow-slate-200">
                             <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500 rounded-full -mr-16 -mt-16 blur-3xl opacity-50"></div>
-                            <h3 className="text-2xl font-black mb-1 relative z-10">{ALL_DATA.length} Locations</h3>
-                            <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mb-4 relative z-10">Verified & Active Now</p>
+                            <h3 className="text-2xl font-black mb-1 relative z-10">{activeData.length} Locations</h3>
+                            <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mb-4 relative z-10">
+                                {firebaseData.length > 0 ? 'Live Cloud Data Verified' : 'Local Database Active'}
+                            </p>
                             <button onClick={() => setView('list')} className="px-6 py-3 bg-white text-slate-900 rounded-xl text-xs font-black uppercase tracking-widest hover:scale-105 transition-transform">
                                 Browse All
                             </button>
