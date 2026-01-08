@@ -1,22 +1,26 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
     Home, MapPin, Search, Menu, X, Heart, Coffee, Bed, Flame, 
     LifeBuoy, Users, Briefcase, BookOpen, Smile, 
-    Navigation, Phone, Tag, Info, Calendar, Cloud, RefreshCw
+    Navigation, Phone, Tag, Info, Cloud, RefreshCw, AlertCircle
 } from 'lucide-react';
 import { initializeApp } from "firebase/app";
 import { getFirestore, collection, onSnapshot } from "firebase/firestore";
 import { getAuth, signInWithCustomToken, signInAnonymously, onAuthStateChanged } from "firebase/auth";
 
+// --- 0. GLOBAL DECLARATIONS ---
+// Declare globals injected by the build system to satisfy TypeScript
+declare const __firebase_config: string;
+declare const __app_id: string;
+declare const __initial_auth_token: string;
+
 // --- 1. FIREBASE CONFIG & INIT ---
-// 使用您的環境配置
 const firebaseConfig = JSON.parse(__firebase_config);
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-// --- 2. LOCAL DATA (FALLBACK) ---
-// 當網路斷線或資料庫為空時使用的本地備份 (51筆)
+// --- 2. DATA STRUCTURES ---
 export interface Resource {
     id: string;
     name: string;
@@ -51,8 +55,8 @@ export const TAG_ICONS: Record<string, { icon: any; label: string; color: string
     default: { icon: Info, label: 'General', color: 'text-slate-600', bg: 'bg-slate-50' }
 };
 
-// 本地數據 (Local Data) - 51 筆 (作為備用)
-export const LOCAL_DATA: Resource[] = [
+// 本地備份數據 (51筆) - 僅在雲端斷線時使用
+export const LOCAL_BACKUP_DATA: Resource[] = [
     // --- 🟢 FOOD (EAT) ---
     {
         id: 'f1',
@@ -962,11 +966,15 @@ const App = () => {
     const [searchQuery, setSearchQuery] = useState('');
     const [filterCategory, setFilterCategory] = useState('all');
     const [savedIds, setSavedIds] = useState<string[]>([]);
-    const [appId, setAppId] = useState(typeof __app_id !== 'undefined' ? __app_id : 'default-app-id');
+    
+    // Auth & Data Sync Variables
+    // Using global declarations to avoid TS errors
+    const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+    
     const [currentUser, setCurrentUser] = useState<any>(null);
     const [firebaseData, setFirebaseData] = useState<Resource[]>([]);
     const [isSyncing, setIsSyncing] = useState(true);
-    const [syncError, setSyncError] = useState<string | null>(null);
+    const [syncStatus, setSyncStatus] = useState<'cloud' | 'local' | 'error'>('local');
     
     // Auth & Data Sync
     useEffect(() => {
@@ -979,7 +987,7 @@ const App = () => {
                 }
             } catch (error) {
                 console.error("Auth Error:", error);
-                setSyncError("Auth Failed");
+                setSyncStatus('error');
                 setIsSyncing(false);
             }
         };
@@ -992,25 +1000,30 @@ const App = () => {
         return () => unsubscribeAuth();
     }, []);
 
-    // Sync Data (Cloud Priority) - Wait for User
+    // Sync Data Strategy: Cloud Priority, Local Fallback
     useEffect(() => {
         if (!currentUser) return;
 
+        setIsSyncing(true);
         // 優先監聽雲端資料 (Firestore)
         const collectionRef = collection(db, 'artifacts', appId, 'public', 'data', 'resources');
         const unsubscribeData = onSnapshot(collectionRef, (snapshot) => {
             if (!snapshot.empty) {
+                // 成功抓到雲端資料 -> 使用雲端 (58筆)
                 const cloudResources = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Resource));
                 setFirebaseData(cloudResources);
+                setSyncStatus('cloud');
                 console.log(`☁️ Synced ${cloudResources.length} resources from Cloud`);
-                setSyncError(null);
             } else {
-                console.log("⚠️ Cloud empty, using Local Fallback");
+                // 雲端是空的 -> 使用本地備份
+                console.log("⚠️ Cloud empty, falling back to Local Data");
+                setSyncStatus('local');
             }
             setIsSyncing(false);
         }, (error) => {
-            console.error("Sync Error:", error);
-            setSyncError("Permission Denied");
+            // 連線失敗/權限錯誤 -> 使用本地備份
+            console.error("Sync Error (using fallback):", error);
+            setSyncStatus('local');
             setIsSyncing(false);
         });
 
@@ -1018,8 +1031,8 @@ const App = () => {
     }, [appId, currentUser]);
 
     // Decide which data source to use
-    // 如果雲端有資料，就用雲端的 (58筆)；否則用本地備份 (51筆)
-    const activeData = firebaseData.length > 0 ? firebaseData : LOCAL_DATA;
+    // 如果 syncStatus 是 cloud，就用 firebaseData；否則用 LOCAL_BACKUP_DATA
+    const activeData = syncStatus === 'cloud' && firebaseData.length > 0 ? firebaseData : LOCAL_BACKUP_DATA;
     const [filteredData, setFilteredData] = useState(activeData);
 
     useEffect(() => {
@@ -1063,11 +1076,10 @@ const App = () => {
                         <p className="text-[8px] font-black text-slate-400 tracking-widest uppercase flex items-center gap-1">
                             {isSyncing ? (
                                 <><RefreshCw size={8} className="animate-spin" /> Syncing...</>
+                            ) : syncStatus === 'cloud' ? (
+                                <><Cloud size={8} className="text-emerald-500" /> Live Cloud Data</>
                             ) : (
-                                <><Cloud size={8} className={firebaseData.length > 0 ? "text-emerald-500" : "text-slate-400"} /> 
-                                {firebaseData.length > 0 ? 'Cloud Data' : 'Local Mode'}
-                                {syncError && <span className="text-rose-500 ml-1">({syncError})</span>}
-                                </>
+                                <><AlertCircle size={8} className="text-amber-500" /> Local Backup Mode</>
                             )}
                         </p>
                     </div>
@@ -1116,7 +1128,7 @@ const App = () => {
                             <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500 rounded-full -mr-16 -mt-16 blur-3xl opacity-50"></div>
                             <h3 className="text-2xl font-black mb-1 relative z-10">{activeData.length} Locations</h3>
                             <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mb-4 relative z-10">
-                                {firebaseData.length > 0 ? 'Live Cloud Data Verified' : 'Local Database Active'}
+                                {syncStatus === 'cloud' ? 'Synced with Cloud' : 'Using Local Database'}
                             </p>
                             <button onClick={() => setView('list')} className="px-6 py-3 bg-white text-slate-900 rounded-xl text-xs font-black uppercase tracking-widest hover:scale-105 transition-transform">
                                 Browse All
