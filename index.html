@@ -1,31 +1,15 @@
-# [PERFORMANCE STRATEGY] Netlify Server Configuration
-
-[build]
-  command = "npm run build"
-  publish = "dist"
-
-# 1. 啟用 Asset 優化 (自動壓縮圖片與文字檔案)
-[build.processing]
-  skip_processing = false
-[build.processing.css]
-  bundle = true
-  minify = true
-[build.processing.js]
-  bundle = true
-  minify = true
-[build.processing.html]
-  pretty_urls = true
-
-# 2. 設定快取策略 (Caching Headers)
-# 對於 index.html，我們不快取，確保使用者永遠看到最新版本
-[[headers]]
-  for = "/*"
-  [headers.values]
-    Cache-Control = "public, max-age=0, must-revalidate"
-
-# 對於 assets (JS/CSS/Images)，我們設定「長效快取」 (Immutable)
-# 因為 Vite 會產生 hash 檔名 (e.g., index-XyZ.js)，內容變了檔名就會變，所以可以放心永久快取
-[[headers]]
-  for = "/assets/*"
-  [headers.values]
-    Cache-Control = "public, max-age=31536000, immutable"
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/png" href="/icon.png" />
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="theme-color" content="#4f46e5" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Portsmouth Bridge | Your Community Partner</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
