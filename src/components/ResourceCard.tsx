@@ -15,9 +15,10 @@ interface ResourceCardProps {
     onTagClick?: (tag: string) => void;
     isInJourney?: boolean;
     isInCompare?: boolean;
+    onReport?: () => void; // [NEW] Optional report handler
 }
 
-const ResourceCard = ({ item, isSaved, isPartner, onToggleSave, highContrast, onAddToJourney, onAddToCompare, onTagClick, isInJourney, isInCompare }: ResourceCardProps) => {
+const ResourceCard = ({ item, isSaved, isPartner, onToggleSave, highContrast, onAddToJourney, onAddToCompare, onTagClick, isInJourney, isInCompare, onReport }: ResourceCardProps) => {
     const [expanded, setExpanded] = useState(false);
 
     // Type guards/casting for specific fields
@@ -234,6 +235,15 @@ const ResourceCard = ({ item, isSaved, isPartner, onToggleSave, highContrast, on
                                 ))}
                             </div>
                         </div>
+
+                        {/* [NEW] Report Button (Only if onReport prop is provided) */}
+                        {onReport && (
+                            <div className="pt-4 flex justify-center border-t border-slate-100 mt-4">
+                                <button onClick={onReport} className="text-[10px] font-bold text-slate-300 hover:text-rose-500 flex items-center gap-1.5 transition-colors uppercase tracking-widest">
+                                    <Icon name="alert" size={12} /> Report Issue
+                                </button>
+                            </div>
+                        )}
                     </div>
                 )}
             </div>

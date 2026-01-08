@@ -4,7 +4,12 @@ import { signInWithEmailAndPassword, signOut } from 'firebase/auth';
 import { useAuth } from '../contexts/AuthContext';
 import Icon from './Icon';
 
-const PartnerLogin = ({ onClose }: { onClose: () => void }) => {
+interface PartnerLoginProps {
+    onClose: () => void;
+    onRequestAccess?: () => void; // [NEW] Added prop
+}
+
+const PartnerLogin = ({ onClose, onRequestAccess }: PartnerLoginProps) => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
@@ -108,9 +113,17 @@ const PartnerLogin = ({ onClose }: { onClose: () => void }) => {
                 </button>
             </form>
 
+            {/* [NEW] Request Access Button */}
             <div className="mt-8 text-center">
                 <p className="text-[9px] font-bold text-slate-400 uppercase tracking-[0.2em]">Registered Partners Only</p>
-                <p className="text-[9px] text-slate-300 mt-1">To register your agency, contact the City Council Hub.</p>
+                {onRequestAccess && (
+                    <button 
+                        onClick={onRequestAccess}
+                        className="text-[10px] font-bold text-indigo-500 mt-2 hover:text-indigo-700 underline transition-colors"
+                    >
+                        Request access for your charity
+                    </button>
+                )}
             </div>
         </div>
     );
