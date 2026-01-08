@@ -9,6 +9,8 @@ interface IconProps {
 const Icon: React.FC<IconProps> = ({ name, size = 18, className = "" }) => {
     const icons: Record<string, React.ReactNode> = {
         search: <><circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /></>,
+// 在 icons 物件內加入這一行：
+type: <><polyline points="4 7 4 4 20 4 20 7" /><line x1="9" x2="15" y1="20" y2="20" /><line x1="12" x2="12" y1="4" y2="20" /></>,
         home: <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />,
         utensils: <path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2M7 2v20M21 15V2v0a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7" />,
         bed: <path d="M2 4v16M2 8h18a2 2 0 0 1 2 2v10M2 17h20M6 8v9" />,

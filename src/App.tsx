@@ -40,6 +40,8 @@ const App = () => {
     // Branding & Accessibility State
     const [highContrast, setHighContrast] = useState(false);
     const [stealthMode, setStealthMode] = useState(false);
+    // [NEW] Font Size State: 0 (Normal), 1 (Large), 2 (Extra Large)
+    const [fontSize, setFontSize] = useState(0); 
     const [isOffline, setIsOffline] = useState(!navigator.onLine);
 
     const [loading, setLoading] = useState(true);
@@ -122,6 +124,15 @@ const App = () => {
             }
         }
     }, [currentUser, authLoading, view]);
+
+    // [NEW] Font Size Effect
+    useEffect(() => {
+        const root = document.documentElement;
+        // Remove old classes
+        root.classList.remove('fs-0', 'fs-1', 'fs-2');
+        // Add current class
+        root.classList.add(`fs-${fontSize}`);
+    }, [fontSize]);
 
     useEffect(() => {
         setTimeout(() => setLoading(false), 800);
@@ -368,6 +379,15 @@ const App = () => {
                         </div>
                     </div>
                     <div className="flex gap-2">
+                         {/* [NEW] Font Size Toggle Button */}
+                        <button 
+                            onClick={() => setFontSize(prev => (prev + 1) % 3)} 
+                            className={`p-2 rounded-xl transition-all border-2 ${fontSize > 0 ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-slate-100 text-slate-600 border-slate-100 hover:bg-slate-200'}`} 
+                            title="Text Size"
+                        >
+                            <Icon name="type" size={20} />
+                        </button>
+                        
                         <button onClick={() => setStealthMode(!stealthMode)} className={`p-2 rounded-xl transition-all ${stealthMode ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-600'}`} title="Stealth Mode"><Icon name="eye" size={20} /></button>
                         <button onClick={() => setHighContrast(!highContrast)} className="p-2 bg-slate-100 rounded-xl text-slate-600 hover:bg-slate-200 transition-colors" title="High Contrast"><Icon name="zap" size={20} /></button>
 
@@ -821,23 +841,9 @@ const App = () => {
                 isOpen={showPartnerRequest} 
                 onClose={() => setShowPartnerRequest(false)} 
             />
-
-            {/* [Restored] Crisis Wizard Modal */}
-            {showWizard && (
-                <CrisisWizard 
-                    userLocation={userLocation} 
-                    onClose={() => setShowWizard(false)} 
-                    savedIds={savedIds} 
-                    onToggleSave={(id) => { 
-                        if (savedIds.includes(id)) { 
-                            setSavedIds(prev => prev.filter(i => i !== id)); 
-                        } else { 
-                            setSavedIds(prev => [...prev, id]); 
-                            playSuccessSound(); 
-                        } 
-                    }} 
-                />
-            )}
+            <div className="mt-12 mb-12 p-6 bg-slate-50 rounded-[32px] border border-slate-100/50"><h3 className="text-sm font-black text-slate-800 uppercase tracking-widest mb-6 border-b border-slate-200 pb-2">Frequently Asked Questions</h3><div className="space-y-6"><div><p className="font-bold text-slate-700 text-sm mb-1">Is this service free?</p><p className="text-xs text-slate-500 leading-relaxed">Yes. Portsmouth Bridge is 100% free to use. Most resources listed are also free or low-cost (like community pantries).</p></div><div><p className="font-bold text-slate-700 text-sm mb-1">Do I need internet?</p><p className="text-xs text-slate-500 leading-relaxed">The app works offline once loaded. You can "Install App" to your home screen to keep it available without data.</p></div><div><p className="font-bold text-slate-700 text-sm mb-1">Is my data private?</p><p className="text-xs text-slate-500 leading-relaxed">Absolutely. We track nothing. Your location stays on your phone. No logins, no cookies.</p></div><div className="pt-4 border-t border-slate-200"><p className="font-bold text-indigo-900 text-sm mb-1">Developer Contact</p><p className="text-xs text-slate-500 mb-2">For feedback, corrections, or technical support:</p><a href="mailto:ht.tsai@sustainsage-group.com" className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-lg text-xs font-bold text-indigo-600 hover:bg-indigo-50 transition-colors"><Icon name="mail" size={14} /> ht.tsai@sustainsage-group.com</a></div></div></div>
+            <div className="mb-8 text-center opacity-30 hover:opacity-100 transition-opacity"><button onClick={() => alert("Partner Portal: Please sign in with your organization ID to access the Resource Exchange Market.")} className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-400 border-b border-transparent hover:border-slate-400 pb-1">Partner Portal Access</button></div>
+            {showWizard && (<CrisisWizard userLocation={userLocation} onClose={() => setShowWizard(false)} savedIds={savedIds} onToggleSave={(id) => { if (savedIds.includes(id)) { setSavedIds(prev => prev.filter(i => i !== id)); } else { setSavedIds(prev => [...prev, id]); playSuccessSound(); } }} />)}
         </div>
     );
 };

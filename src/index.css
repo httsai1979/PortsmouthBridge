@@ -31,4 +31,32 @@ body {
   /* IE and Edge */
   scrollbar-width: none;
   /* Firefox */
+/* 動態字體控制系統 */
+
+/* 等級 0: 預設 (16px) */
+html.fs-0 {
+  font-size: 16px;
+}
+
+/* 等級 1: 加大 (約 19px) - 適合輕度視力退化 */
+html.fs-1 {
+  font-size: 19px;
+}
+
+/* 等級 2: 特大 (約 22px) - 適合重度需求，確保易讀性 */
+html.fs-2 {
+  font-size: 22px;
+}
+
+/* 讓所有文字在放大時保持清晰對比 */
+html.fs-1 p, html.fs-1 span, html.fs-1 div,
+html.fs-2 p, html.fs-2 span, html.fs-2 div {
+  --tw-text-opacity: 1 !important;
+}
+
+/* 確保按鈕在字體放大時不會破版，自動長高 */
+button {
+  height: auto;
+  min-height: 44px;
+}
 }
