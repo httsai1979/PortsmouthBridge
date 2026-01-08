@@ -2,12 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-/* [CRITICAL FIX] 
-   1. 確保 Tailwind 的預設樣式優先載入 (@tailwind base)。
-   2. 移除所有對 html/body 的強制 font-size 設定，避免破壞 rem 計算。
-   3. 只在 .fs-1 和 .fs-2 類別下，針對「純文字元素」進行縮放，絕不影響容器 (div/section)。
-*/
-
 :root {
   font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
@@ -26,52 +20,30 @@ body {
   background-color: #ffffff;
 }
 
-/* [SAFE FONT SCALING]
-   策略：使用 transform: scale() 或 zoom 是危險的。
-   我們改用對文字內容的精確控制。
-   注意：這裡不使用 !important，以免覆蓋 Tailwind 的工具類 (utility classes)。
+/* [SAFE FONT SIZE SYSTEM]
+   策略：只在需要的時候放大字體，但不強制改變全域容器大小。
+   避免使用 !important 在會影響佈局的屬性上。
 */
 
-/* Level 1: Large (放大約 10%) */
-.fs-1 p, .fs-1 span, .fs-1 h1, .fs-1 h2, .fs-1 h3, .fs-1 h4, .fs-1 h5, .fs-1 h6, .fs-1 li, .fs-1 a, .fs-1 button {
-  font-size: 1.1em; 
-  line-height: 1.6;
+/* Level 1: Large Text */
+.fs-1 p, .fs-1 span, .fs-1 a, .fs-1 li, .fs-1 button {
+  font-size: 1.1em; /* 相對放大 10% */
 }
 
-/* Level 2: Extra Large (放大約 20%) */
-.fs-2 p, .fs-2 span, .fs-2 h1, .fs-2 h2, .fs-2 h3, .fs-2 h4, .fs-2 h5, .fs-2 h6, .fs-2 li, .fs-2 a, .fs-2 button {
-  font-size: 1.2em;
-  line-height: 1.7;
-  font-weight: 600; /* 加粗以增加辨識度 */
+/* Level 2: Extra Large Text */
+.fs-2 p, .fs-2 span, .fs-2 a, .fs-2 li, .fs-2 button {
+  font-size: 1.25em; /* 相對放大 25% */
+  font-weight: 600; /* 加粗 */
 }
 
-/* [VISIBILITY FIX] 
-   當字體放大時，強制加深文字顏色，確保老人能看清楚。
-   這不會影響版面，只影響顏色。
-*/
-.fs-1 .text-slate-400, .fs-2 .text-slate-400,
-.fs-1 .text-slate-500, .fs-2 .text-slate-500,
-.fs-1 .text-gray-400, .fs-2 .text-gray-400 {
-  color: #334155 !important; /* 強制變深灰 */
-  opacity: 1 !important;
-}
-
-/* [LAYOUT PROTECTION]
-   保護按鈕和圖示不被撐壞 
-*/
+/* 針對按鈕的特別保護：允許文字換行，避免按鈕被撐壞 */
 button {
-  height: auto; /* 讓按鈕高度隨文字長高 */
-  min-height: 44px; /* 保持最小觸控區域 */
+  white-space: normal;
+  height: auto;
+  min-height: 44px; /* 確保最小點擊區域 */
 }
 
-/* 確保圖示大小固定，不會跟著文字無限變大 */
-svg {
-  flex-shrink: 0; /* 防止圖示被擠壓 */
-}
-
-/* [UTILITIES] 
-   保留原本的美觀設定 
-*/
+/* 隱藏捲軸但保持功能 */
 .no-scrollbar::-webkit-scrollbar {
   display: none;
 }
@@ -80,21 +52,20 @@ svg {
   scrollbar-width: none;
 }
 
-.animate-fade-in-up {
-  animation: fadeInUp 0.5s ease-out forwards;
-}
-
+/* 基礎動畫 */
 @keyframes fadeInUp {
   from { opacity: 0; transform: translateY(20px); }
   to { opacity: 1; transform: translateY(0); }
 }
-
-.animate-bounce-in {
-  animation: bounceIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+.animate-fade-in-up {
+  animation: fadeInUp 0.5s ease-out forwards;
 }
 
 @keyframes bounceIn {
   0% { transform: scale(0.1); opacity: 0; }
   60% { transform: scale(1.2); opacity: 1; }
   100% { transform: scale(1); }
+}
+.animate-bounce-in {
+  animation: bounceIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
