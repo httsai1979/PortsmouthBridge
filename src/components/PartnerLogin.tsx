@@ -6,7 +6,7 @@ import Icon from './Icon';
 
 interface PartnerLoginProps {
     onClose: () => void;
-    onRequestAccess?: () => void; // [NEW] Added prop
+    onRequestAccess?: () => void;
 }
 
 const PartnerLogin = ({ onClose, onRequestAccess }: PartnerLoginProps) => {
@@ -23,7 +23,7 @@ const PartnerLogin = ({ onClose, onRequestAccess }: PartnerLoginProps) => {
 
         try {
             await signInWithEmailAndPassword(auth, email, password);
-            onClose();
+            // Login successful - we don't auto-close, user sees the success screen
         } catch (err: any) {
             setError(err.message || 'Failed to login');
         } finally {
@@ -36,9 +36,18 @@ const PartnerLogin = ({ onClose, onRequestAccess }: PartnerLoginProps) => {
         onClose();
     };
 
+    // 🔴 修正重點：登入成功的畫面
     if (currentUser) {
         return (
-            <div className="p-8 text-center bg-white rounded-[40px] shadow-2xl animate-fade-in-up">
+            <div className="p-8 text-center bg-white rounded-[40px] shadow-2xl animate-fade-in-up relative">
+                {/* [NEW] 新增：右上角的關閉按鈕 */}
+                <button 
+                    onClick={onClose} 
+                    className="absolute top-6 right-6 p-2 text-slate-300 hover:text-slate-500 transition-colors"
+                >
+                    <Icon name="x" size={24} />
+                </button>
+
                 <div className="w-20 h-20 bg-emerald-50 rounded-full flex items-center justify-center mx-auto mb-6">
                     <Icon name="check_circle" size={40} className="text-emerald-600" />
                 </div>
@@ -57,18 +66,29 @@ const PartnerLogin = ({ onClose, onRequestAccess }: PartnerLoginProps) => {
                     </div>
                 )}
 
-                <button
-                    onClick={handleLogout}
-                    className="w-full py-5 bg-slate-900 text-white rounded-[24px] text-[11px] font-black uppercase tracking-widest hover:scale-[1.02] transition-all"
-                >
-                    Disconnect
-                </button>
+                <div className="space-y-3">
+                    {/* [NEW] 新增：關閉視窗按鈕 (讓您可以繼續使用 App) */}
+                    <button
+                        onClick={onClose}
+                        className="w-full py-4 bg-indigo-600 text-white rounded-[24px] text-[11px] font-black uppercase tracking-widest hover:scale-[1.02] transition-all shadow-xl shadow-indigo-100"
+                    >
+                        Continue to App
+                    </button>
+
+                    <button
+                        onClick={handleLogout}
+                        className="w-full py-4 bg-slate-100 text-slate-500 rounded-[24px] text-[11px] font-black uppercase tracking-widest hover:bg-slate-200 transition-all"
+                    >
+                        Disconnect
+                    </button>
+                </div>
             </div>
         );
     }
 
+    // 未登入的畫面 (保持不變)
     return (
-        <div className="p-8 bg-white rounded-[40px] shadow-2xl animate-fade-in-up">
+        <div className="p-8 bg-white rounded-[40px] shadow-2xl animate-fade-in-up relative">
             <div className="flex justify-between items-center mb-8">
                 <div>
                     <h2 className="text-2xl font-black text-slate-900 tracking-tight">Partner Login</h2>
@@ -113,7 +133,6 @@ const PartnerLogin = ({ onClose, onRequestAccess }: PartnerLoginProps) => {
                 </button>
             </form>
 
-            {/* [NEW] Request Access Button */}
             <div className="mt-8 text-center">
                 <p className="text-[9px] font-bold text-slate-400 uppercase tracking-[0.2em]">Registered Partners Only</p>
                 {onRequestAccess && (
