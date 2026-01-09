@@ -897,6 +897,23 @@ export const ALL_DATA: Resource[] = [
         lng: -1.0680,
         trustScore: 93
     },
+{
+        id: 'sup_ca',
+        name: "Citizens Advice Portsmouth",
+        category: "support",
+        type: "Advice Center",
+        area: "PO1",
+        address: "Ark Royal House, Winston Churchill Ave, Portsmouth PO1 2GF",
+        description: "Free, confidential and impartial advice on debt, benefits, housing, legal and more.",
+        requirements: "Drop-in or appointment.",
+        tags: ["support", "advice", "legal", "debt", "free"],
+        schedule: { 0: "Closed", 1: "09:00-16:00", 2: "09:00-16:00", 3: "09:00-16:00", 4: "09:00-16:00", 5: "09:00-16:00", 6: "Closed" },
+        lat: 50.7965, 
+        lng: -1.0915,
+        phone: "0800 144 8848",
+        trustScore: 98,
+        eligibility: "open"
+    },
     {
         id: 'c12',
         name: "Naomi House (Cosham)",
