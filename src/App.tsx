@@ -3,6 +3,7 @@ import Fuse from 'fuse.js';
 import { ALL_DATA, AREAS, TAG_ICONS, COMMUNITY_DEALS, GIFT_EXCHANGE, PROGRESS_TIPS } from './data';
 import { checkStatus, playSuccessSound, getDistance } from './utils';
 import { logSearchEvent } from './services/AnalyticsService';
+// [核心修改] 引入 Google Sheets 服務，取代 Firebase onSnapshot
 import { fetchLiveStatus, type LiveStatus } from './services/LiveStatusService';
 
 // Components
@@ -48,6 +49,7 @@ const App = () => {
     const [stealthMode, setStealthMode] = useState(false);
     const [fontSize, setFontSize] = useState(0); 
     const [isOffline, setIsOffline] = useState(!navigator.onLine);
+
     const [loading, setLoading] = useState(true);
 
     // Navigation & Modals
@@ -69,10 +71,9 @@ const App = () => {
     const [visibleCount, setVisibleCount] = useState(10);
     const [showScrollTop, setShowScrollTop] = useState(false);
 
-    // Data State: 使用 LiveStatus 取代原本的 services state
+    // [修改] 使用 liveStatus 取代原本的 Firestore services state
     const [liveStatus, setLiveStatus] = useState<Record<string, LiveStatus>>({});
     
-    // Feature State
     const [journeyItems, setJourneyItems] = useState<string[]>([]);
     const [compareItems, setCompareItems] = useState<string[]>([]);
     const [notifications, setNotifications] = useState<Array<{ id: string; type: 'opening_soon' | 'favorite' | 'weather' | 'info'; message: string; timestamp: number; resourceId?: string }>>([]);
@@ -95,7 +96,7 @@ const App = () => {
             try {
                 await navigator.share({
                     title: 'Portsmouth Bridge',
-                    text: 'Find food, shelter, and community support in Portsmouth.',
+                    text: 'Find food, shelter, and community support in Portsmouth. Check out Portsmouth Bridge!',
                     url: window.location.href,
                 });
             } catch (err) {
@@ -103,7 +104,7 @@ const App = () => {
             }
         } else {
             navigator.clipboard.writeText(window.location.href);
-            alert('Link copied to clipboard!');
+            alert('Link copied to clipboard! Share it with your friends.');
         }
     };
 
@@ -141,10 +142,10 @@ const App = () => {
     useEffect(() => {
         setTimeout(() => setLoading(false), 800);
 
-        // Fetch Live Status from Google Sheets
+        // [核心修改] 改為從 Google Sheets 獲取即時狀態
         fetchLiveStatus().then(statusMap => {
             setLiveStatus(statusMap);
-            console.log("📊 Google Sheets Live Status Synced");
+            console.log("📊 Live Status Synced (Google Sheets)");
         });
 
         if (navigator.geolocation) {
@@ -266,9 +267,9 @@ const App = () => {
         }
     };
 
-    // --- 核心邏輯：資料合併 & 模糊搜尋 ---
+    // [核心邏輯] 資料合併與搜尋
     const filteredData = useMemo(() => {
-        // 1. 合併靜態資料與 Google Sheets 即時狀態
+        // 1. 合併靜態資料與 Live Status
         let mergedData = ALL_DATA.map(item => {
             const status = liveStatus[item.id];
             if (status) {
@@ -296,7 +297,7 @@ const App = () => {
             mergedData = fuse.search(searchQuery).map(result => result.item);
         }
 
-        // 3. 一般過濾
+        // 3. 過濾
         const data = mergedData.filter(item => {
             const matchesArea = filters.area === 'All' || item.area === filters.area;
             const matchesCategory = filters.category === 'all' || item.category === filters.category;
@@ -314,7 +315,7 @@ const App = () => {
             return matchesArea && matchesCategory && matchesOpenNow && matchesVerified && matchesNearMe;
         });
 
-        // 4. 排序結果
+        // 4. 排序
         return data.sort((a, b) => {
             const urgencyA = liveStatus[a.id]?.urgency === 'High' ? 1 : 0;
             const urgencyB = liveStatus[b.id]?.urgency === 'High' ? 1 : 0;
@@ -351,7 +352,7 @@ const App = () => {
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
-    // Use Suspense for Lazy Components
+    // Helper for Suspense
     const renderLazyView = (Component: any, props = {}) => (
         <Suspense fallback={<PageLoader />}>
             <Component {...props} />
@@ -371,7 +372,6 @@ const App = () => {
                 .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
             `}</style>
 
-            {/* Scroll To Top */}
             {showScrollTop && (
                 <button
                     onClick={scrollToTop}
@@ -382,7 +382,6 @@ const App = () => {
                 </button>
             )}
 
-            {/* Header */}
             <header className={`sticky top-0 z-50 ${stealthMode ? 'bg-slate-50 border-none' : 'bg-white/95 backdrop-blur-md border-b border-slate-100'} pt-4 pb-3 transition-all`}>
                 <div className="px-5 flex justify-between items-center max-w-lg mx-auto">
                     <div className="flex items-center gap-3">
@@ -395,6 +394,7 @@ const App = () => {
                         </div>
                     </div>
                     <div className="flex gap-2">
+                        {/* Font Size Toggle Button */}
                         <button 
                             onClick={() => setFontSize(prev => (prev + 1) % 3)} 
                             className={`p-2 rounded-xl transition-all border-2 ${fontSize > 0 ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-slate-100 text-slate-600 border-slate-100 hover:bg-slate-200'}`} 
@@ -402,26 +402,30 @@ const App = () => {
                         >
                             <Icon name="type" size={20} />
                         </button>
-                        <button onClick={() => setStealthMode(!stealthMode)} className={`p-2 rounded-xl transition-all ${stealthMode ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-600'}`}><Icon name="eye" size={20} /></button>
-                        <button onClick={() => setHighContrast(!highContrast)} className="p-2 bg-slate-100 rounded-xl text-slate-600 hover:bg-slate-200 transition-colors"><Icon name="zap" size={20} /></button>
+                        
+                        <button onClick={() => setStealthMode(!stealthMode)} className={`p-2 rounded-xl transition-all ${stealthMode ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-600'}`} title="Stealth Mode"><Icon name="eye" size={20} /></button>
+                        <button onClick={() => setHighContrast(!highContrast)} className="p-2 bg-slate-100 rounded-xl text-slate-600 hover:bg-slate-200 transition-colors" title="High Contrast"><Icon name="zap" size={20} /></button>
 
                         {isPartner && (
                             <>
                                 <button
                                     onClick={() => setView(view === 'partner-dashboard' ? 'home' : 'partner-dashboard')}
                                     className={`p-2 rounded-xl transition-all ${view === 'partner-dashboard' ? 'bg-indigo-600 text-white shadow-lg' : 'bg-emerald-50 text-emerald-600'}`}
+                                    title="Agency Dashboard"
                                 >
                                     <Icon name="briefcase" size={20} />
                                 </button>
                                 <button
                                     onClick={() => setView(view === 'analytics' ? 'home' : 'analytics')}
                                     className={`p-2 rounded-xl transition-all ${view === 'analytics' ? 'bg-indigo-600 text-white shadow-lg' : 'bg-slate-100 text-slate-600'}`}
+                                    title="Analytics Pulse"
                                 >
                                     <Icon name="activity" size={20} />
                                 </button>
                                 <button
                                     onClick={() => setView(view === 'data-migration' ? 'home' : 'data-migration')}
                                     className={`p-2 rounded-xl transition-all ${view === 'data-migration' ? 'bg-indigo-600 text-white shadow-lg' : 'bg-slate-100 text-slate-600'}`}
+                                    title="Data Migration"
                                 >
                                     <Icon name="database" size={20} />
                                 </button>
@@ -431,6 +435,7 @@ const App = () => {
                         <button
                             onClick={() => setShowPartnerLogin(true)}
                             className={`p-2 rounded-xl transition-all ${currentUser ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-600'}`}
+                            title="Partner Access"
                         >
                             <Icon name="users" size={20} />
                         </button>
@@ -444,7 +449,6 @@ const App = () => {
 
             <div className={`px-5 mt-4 relative z-20 transition-all ${stealthMode ? 'opacity-90 grayscale-[0.3]' : ''}`}>
 
-                {/* --- [HOME VIEW] 保留 UI --- */}
                 {view === 'home' && (
                     <div className="animate-fade-in-up">
                         <CommunityBulletin onCTAClick={(id) => {

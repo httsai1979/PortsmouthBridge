@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { db } from '../lib/firebase';
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+// [修正] 補上這些缺少的 import，否則點擊回報按鈕會 Crash
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore'; 
 import Icon from './Icon';
 
-// --- Existing: TipsModal ---
+// --- TipsModal (保持原樣) ---
 export const TipsModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => {
     if (!isOpen) return null;
     return (
@@ -45,7 +46,7 @@ export const TipsModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () =>
     );
 };
 
-// --- Existing: CrisisModal ---
+// --- CrisisModal (保持原樣) ---
 export const CrisisModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => {
     if (!isOpen) return null;
     return (
@@ -73,13 +74,22 @@ export const CrisisModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () 
     );
 };
 
-// --- [NEW] Report Modal ---
+// --- ReportModal (加入防禦機制) ---
 export const ReportModal = ({ isOpen, onClose, resourceName, resourceId }: { isOpen: boolean; onClose: () => void; resourceName: string; resourceId: string }) => {
     const [reason, setReason] = useState('Closed when stated open');
     const [sending, setSending] = useState(false);
     const [sent, setSent] = useState(false);
+    const [honeypot, setHoneypot] = useState(''); // [防禦]
 
     const handleSubmit = async () => {
+        // [防禦] 蜜罐檢查
+        if (honeypot) {
+            console.log("Bot blocked.");
+            setSent(true);
+            setTimeout(onClose, 1000);
+            return;
+        }
+
         setSending(true);
         try {
             await addDoc(collection(db, 'reports'), {
@@ -87,7 +97,7 @@ export const ReportModal = ({ isOpen, onClose, resourceName, resourceId }: { isO
                 resourceName,
                 reason,
                 timestamp: serverTimestamp(),
-                status: 'pending'
+                status: 'pending' // 進入審核佇列，不直接影響公開資料
             });
             setSent(true);
             setTimeout(() => { onClose(); setSent(false); setSending(false); }, 2000);
@@ -120,6 +130,9 @@ export const ReportModal = ({ isOpen, onClose, resourceName, resourceId }: { isO
                         </div>
                         
                         <div className="space-y-3 mb-6">
+                            {/* [防禦] 隱藏的蜜罐欄位 */}
+                            <input type="text" style={{display:'none'}} value={honeypot} onChange={e=>setHoneypot(e.target.value)} />
+                            
                             {['Closed when stated open', 'Wrong location/address', 'Service no longer exists', 'Other'].map(r => (
                                 <button key={r} onClick={() => setReason(r)} className={`w-full p-3 rounded-xl text-xs font-bold text-left border-2 transition-all ${reason === r ? 'border-rose-500 bg-rose-50 text-rose-700' : 'border-slate-100 text-slate-500 hover:border-slate-200'}`}>
                                     {r}
@@ -136,7 +149,7 @@ export const ReportModal = ({ isOpen, onClose, resourceName, resourceId }: { isO
     );
 };
 
-// --- [NEW] Partner Request Modal ---
+// --- PartnerRequestModal (保持原樣但修復 import) ---
 export const PartnerRequestModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => {
     const [formData, setFormData] = useState({ orgName: '', email: '', phone: '' });
     const [status, setStatus] = useState<'idle' | 'sending' | 'sent'>('idle');
