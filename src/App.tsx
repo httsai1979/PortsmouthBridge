@@ -63,7 +63,7 @@ const App = () => {
     const [showPartnerLogin, setShowPartnerLogin] = useState(false);
     const { currentUser, isPartner, loading: authLoading } = useAuth();
     
-    // [NEW] Tutorial State
+    // Tutorial State
     const [showTutorial, setShowTutorial] = useState(false);
 
     // Modal States
@@ -153,7 +153,6 @@ const App = () => {
     useEffect(() => {
         setTimeout(() => setLoading(false), 800);
         
-        // [MODIFIED] 只檢查是否已讀，不自動標記
         const seenTutorial = localStorage.getItem('seen_tutorial');
         if (!seenTutorial) {
             setShowTutorial(true);
@@ -237,17 +236,42 @@ const App = () => {
         setVisibleCount(10);
     }, [filters, searchQuery, smartFilters]);
 
-    // [NEW] FAQ Navigation Handler
+    // [核心更新] 智能 FAQ 導航處理器 - 支援新的 FAQ 行動指令
     const handleFAQNavigate = (action: string) => {
-        if (action === 'food' || action === 'support' || action === 'warmth') {
-            setFilters({ ...filters, category: action });
+        // 1. 功能導航 (Planner, Map, List)
+        if (action === 'planner') {
+            setView('planner');
+            return;
+        }
+        if (action === 'map') {
             setView('map');
-        } else if (action === 'no_referral') {
+            return;
+        }
+        if (action === 'list') {
+            setView('list');
+            return;
+        }
+
+        // 2. 類別篩選 (新增 shelter, family 等支援)
+        if (['food', 'support', 'warmth', 'shelter', 'family'].includes(action)) {
+            setFilters({ ...filters, category: action });
+            setView('map'); // 切換到地圖模式顯示結果
+            return;
+        }
+
+        // 3. 特殊標籤篩選
+        if (action === 'no_referral') {
             setSearchQuery('no_referral');
             setView('list');
-        } else if (action === 'all') {
+            return;
+        }
+
+        // 4. 重置/顯示全部
+        if (action === 'all') {
             setFilters({ area: 'All', category: 'all', date: 'today' });
+            setSearchQuery('');
             setView('list');
+            return;
         }
     };
 
@@ -694,9 +718,9 @@ const App = () => {
                 {/* [UPDATE] FAQ View rendered with new handler */}
                 {view === 'faq' && renderLazyView(FAQSection, { onClose: () => setView('home'), onNavigate: handleFAQNavigate })}
                 
-                {view === 'community-plan' && renderLazyView(UnifiedSchedule, { category: "food", title: "Weekly Food Support", data: ALL_DATA, onNavigate: (id: string) => { const item = ALL_DATA.find(i => i.id === id); if (item) { setMapFocus({ lat: item.lat, lng: item.lng, label: item.name, id: item.id }); setView('map'); } }, onSave: toggleSaved, savedIds })}
-                {view === 'safe-sleep-plan' && renderLazyView(UnifiedSchedule, { category: "shelter", title: "Safe Sleep", data: ALL_DATA, onNavigate: (id: string) => { const item = ALL_DATA.find(i => i.id === id); if (item) { setMapFocus({ lat: item.lat, lng: item.lng, label: item.name, id: item.id }); setView('map'); } }, onSave: toggleSaved, savedIds })}
-                {view === 'warm-spaces-plan' && renderLazyView(UnifiedSchedule, { category: "warmth", title: "Warm Spaces", data: ALL_DATA, onNavigate: (id: string) => { const item = ALL_DATA.find(i => i.id === id); if (item) { setMapFocus({ lat: item.lat, lng: item.lng, label: item.name, id: item.id }); setView('map'); } }, onSave: toggleSaved, savedIds })}
+                {view === 'community-plan' && renderLazyView(UnifiedSchedule, { category: "food", title: "Weekly Food Support", data: ALL_DATA, onNavigate: (id: string) => { const item = ALL_DATA.find(i => i.id === id); if (item) { setMapFocus({ lat: item.lat, lng: item.lng, label: item.name, id: item.id }); setView('map'); } }, onSave: toggleSaved, savedIds: savedIds })}
+                {view === 'safe-sleep-plan' && renderLazyView(UnifiedSchedule, { category: "shelter", title: "Safe Sleep", data: ALL_DATA, onNavigate: (id: string) => { const item = ALL_DATA.find(i => i.id === id); if (item) { setMapFocus({ lat: item.lat, lng: item.lng, label: item.name, id: item.id }); setView('map'); } }, onSave: toggleSaved, savedIds: savedIds })}
+                {view === 'warm-spaces-plan' && renderLazyView(UnifiedSchedule, { category: "warmth", title: "Warm Spaces", data: ALL_DATA, onNavigate: (id: string) => { const item = ALL_DATA.find(i => i.id === id); if (item) { setMapFocus({ lat: item.lat, lng: item.lng, label: item.name, id: item.id }); setView('map'); } }, onSave: toggleSaved, savedIds: savedIds })}
                 {view === 'partner-dashboard' && renderLazyView(PartnerDashboard)}
                 {view === 'analytics' && renderLazyView(PulseMap)}
                 {view === 'data-migration' && renderLazyView(DataMigration)}

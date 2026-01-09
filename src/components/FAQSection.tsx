@@ -4,85 +4,180 @@ import Icon from './Icon';
 interface FAQItem {
     question: string;
     answer: string;
-    category: 'community' | 'access' | 'privacy' | 'essentials';
-    action: string;
-    actionLabel: string;
+    category: 'essentials' | 'access' | 'app_guide' | 'privacy';
+    action: string;      // 對應 App.tsx 的 handleFAQNavigate 邏輯
+    actionLabel: string; // 按鈕上的引導文字
 }
 
-// [文案重寫] 使用賦權 (Empowerment) 語言，避免 "Help" 或 "Crisis"
+// [內容擴充] 20 題完整問答庫，採用賦權 (Empowerment) 與去標籤化用語
 const FAQ_DATA: FAQItem[] = [
-    // --- Community (取代 Dignity) ---
+    // --- 1. Essentials (生活剛需 - 最優先顯示) ---
     {
-        category: 'community',
-        question: "Who are these services for?",
-        answer: "They are for everyone in Portsmouth. Whether you are managing rising costs, between jobs, or just want to reduce food waste, you are a welcome guest.",
-        action: "all",
-        actionLabel: "Explore All Spaces"
+        category: 'essentials',
+        question: "Where can I find a community pantry or food support?",
+        answer: "Portsmouth has many community pantries and kitchens. Some offer groceries for a small membership fee, while others serve free hot meals. You are welcome to use them to manage your budget.",
+        action: "food",
+        actionLabel: "Find Food Support"
     },
     {
-        category: 'community',
-        question: "Do I need to be 'in crisis' to visit?",
-        answer: "No. Many community pantries are open to all members to help weekly budgets stretch further. It is a smart way to manage your household.",
-        action: "food",
-        actionLabel: "Find Community Pantries"
+        category: 'essentials',
+        question: "I have nowhere safe to sleep tonight.",
+        answer: "You are not alone. There are specific services for emergency housing and safe sleep. Please use the button below to see available support immediately.",
+        action: "shelter",
+        actionLabel: "Find Safe Sleep"
+    },
+    {
+        category: 'essentials',
+        question: "I need a warm place to rest or charge my phone.",
+        answer: "Libraries and 'Warm Spaces' offer free electricity, WiFi, and a comfortable seat. You do not need to buy anything to stay there.",
+        action: "warmth",
+        actionLabel: "Find Warm Spaces"
+    },
+    {
+        category: 'essentials',
+        question: "Are there services for families with young children?",
+        answer: "Yes. Family Hubs provide support for parents and children (0-19), including play sessions, health advice, and baby supplies.",
+        action: "family",
+        actionLabel: "See Family Hubs"
+    },
+    {
+        category: 'essentials',
+        question: "Where can I wash my clothes or take a shower?",
+        answer: "Certain community hubs offer laundry and shower facilities for free or a nominal cost. Check the 'Support' section.",
+        action: "support",
+        actionLabel: "Find Facilities"
     },
 
-    // --- Access (取代 Rules) ---
+    // --- 2. Access & Dignity (心理建設與門檻) ---
     {
         category: 'access',
-        question: "Do I need a referral voucher?",
-        answer: "Most places marked with the green 'Open Access' tag welcome you without any paperwork. Just walk in.",
+        question: "Do I need a referral voucher to visit?",
+        answer: "Not always. Places marked with the green 'Open Access' tag welcome you without any paperwork. Food banks may require a voucher, but community pantries usually do not.",
         action: "no_referral",
         actionLabel: "Show Open Access Places"
     },
     {
         category: 'access',
-        question: "I'm worried about going alone.",
-        answer: "That is completely normal. Our 'Community Hubs' are known for their friendly, social atmosphere. You can just go for a coffee first to see how it feels.",
+        question: "I have a job, am I still allowed to use these services?",
+        answer: "Yes, absolutely. Many working people use community pantries to make their weekly budget stretch further. It is a smart way to maximize your resources.",
+        action: "food",
+        actionLabel: "Find Pantries"
+    },
+    {
+        category: 'access',
+        question: "I feel anxious about going alone.",
+        answer: "That is completely understandable. Our 'Community Hubs' are known for their friendly atmosphere. You can visit just for a coffee first to see how it feels.",
         action: "support",
         actionLabel: "Find a Friendly Hub"
     },
-
-    // --- Essentials (取代 Logistics) ---
     {
-        category: 'essentials',
-        question: "Where can I find a warm meal today?",
-        answer: "Several community kitchens serve hot, nutritious meals every day. It's a chance to sit down and eat with neighbors.",
-        action: "food",
-        actionLabel: "See Today's Meals"
+        category: 'access',
+        question: "Where can I get professional advice on debt or housing?",
+        answer: "Citizens Advice and HIVE Portsmouth offer free, confidential guidance on legal rights, tenancy, and finance. They are on your side.",
+        action: "support", // 導向支援列表，通常包含諮詢機構
+        actionLabel: "Find Advice Centers"
     },
     {
-        category: 'essentials',
-        question: "Is there somewhere safe to charge my phone?",
-        answer: "Yes. Libraries and Warm Spaces offer free power, WiFi, and a comfortable seat. No purchase necessary.",
-        action: "warmth",
-        actionLabel: "Find Warm Spaces"
+        category: 'access',
+        question: "Are pets allowed?",
+        answer: "Some community centers and shelters are pet-friendly. Look for the 'Pet Friendly' tag on the details card.",
+        action: "all",
+        actionLabel: "Browse All Listings"
     },
 
-    // --- Privacy (建立信任) ---
+    // --- 3. App Guide (功能教學 - 降低數位落差) ---
+    {
+        category: 'app_guide',
+        question: "How do I use the 'Journey Planner'?",
+        answer: "When you see a place you want to visit, tap the 'Plus (+)' icon on its card. Then, go to the Planner view to see your personal daily schedule on a map.",
+        action: "planner",
+        actionLabel: "Open My Planner"
+    },
+    {
+        category: 'app_guide',
+        question: "How do I save places for later?",
+        answer: "Tap the 'Plus (+)' icon on any resource card. This pins it to your device so you can find it quickly later, even without internet.",
+        action: "list",
+        actionLabel: "Browse to Save"
+    },
+    {
+        category: 'app_guide',
+        question: "I found incorrect information. How can I fix it?",
+        answer: "Community feedback is vital. Tap 'View Details' on any card, then tap the 'Report Issue' button (flag icon) to let us know if details have changed.",
+        action: "map",
+        actionLabel: "Go to Map"
+    },
+    {
+        category: 'app_guide',
+        question: "Does this app work without internet?",
+        answer: "Yes. Once you have opened the app once, it saves the information to your phone. You can search and view maps offline.",
+        action: "all",
+        actionLabel: "Start Using Offline"
+    },
+    {
+        category: 'app_guide',
+        question: "What do the colored tags mean?",
+        answer: "Green means 'Open Now'. Amber means 'Closing Soon'. We also use tags like 'No Referral' to help you find accessible places quickly.",
+        action: "map",
+        actionLabel: "See Map Tags"
+    },
+
+    // --- 4. Privacy (隱私與安全) ---
     {
         category: 'privacy',
-        question: "Will my visit be recorded?",
-        answer: "This app does not track you. Most open access places do not keep records of who visits. Your privacy is respected.",
+        question: "Is my search history tracked?",
+        answer: "No. We do not know who you are. We do not track your location history. Everything is stored privately on your own phone.",
         action: "privacy",
         actionLabel: "Read Privacy Promise"
+    },
+    {
+        category: 'privacy',
+        question: "Do I need to create an account?",
+        answer: "No. You can use all features of this tool without signing up or giving us your email address.",
+        action: "all",
+        actionLabel: "Start Browsing"
+    },
+    {
+        category: 'privacy',
+        question: "Will anyone know I used this service?",
+        answer: "This tool is discreet. It looks like a standard map or guide app. Your activity is private to you.",
+        action: "privacy",
+        actionLabel: "Your Safety Matters"
+    },
+    {
+        category: 'privacy',
+        question: "How is the data updated?",
+        answer: "We work with local partners to keep information real-time. 'Live Status' shows you stock levels and current capacity.",
+        action: "map",
+        actionLabel: "Check Live Status"
+    },
+    {
+        category: 'privacy',
+        question: "Can I delete my saved data?",
+        answer: "Yes. You can un-tap the 'Plus (+)' icon to remove items from your planner at any time.",
+        action: "planner",
+        actionLabel: "Manage Saved Items"
     }
 ];
 
-const FAQSection = ({ onClose, onNavigate }: { onClose: () => void; onNavigate: (category: string) => void }) => {
+const FAQSection = ({ onClose, onNavigate }: { onClose: () => void; onNavigate: (action: string) => void }) => {
     // 簡化狀態管理，避免 React Suspense 錯誤
     const [activeCategory, setActiveCategory] = useState<string>('all');
     const [openIndex, setOpenIndex] = useState<number | null>(null);
+    const [searchTerm, setSearchTerm] = useState('');
 
-    const filteredFAQ = FAQ_DATA.filter(item => 
-        activeCategory === 'all' || item.category === activeCategory
-    );
+    const filteredFAQ = FAQ_DATA.filter(item => {
+        const matchesSearch = item.question.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                              item.answer.toLowerCase().includes(searchTerm.toLowerCase());
+        const matchesCat = activeCategory === 'all' || item.category === activeCategory;
+        return matchesSearch && matchesCat;
+    });
 
     const categories = [
-        { id: 'all', label: 'All Topics' },
-        { id: 'community', label: 'Community' },
-        { id: 'access', label: 'How to Visit' },
-        { id: 'essentials', label: 'Essentials' },
+        { id: 'all', label: 'All' },
+        { id: 'essentials', label: 'Urgent Needs' },
+        { id: 'access', label: 'Access Rules' },
+        { id: 'app_guide', label: 'App Guide' },
         { id: 'privacy', label: 'Privacy' }
     ];
 
@@ -91,12 +186,26 @@ const FAQSection = ({ onClose, onNavigate }: { onClose: () => void; onNavigate: 
             {/* Header */}
             <div className="bg-white p-6 border-b border-slate-100 flex justify-between items-center sticky top-0 z-10 shadow-sm">
                 <div>
-                    <h2 className="text-2xl font-black text-slate-900 tracking-tight">Support Guide</h2>
-                    <p className="text-[11px] font-bold text-slate-500 uppercase tracking-widest mt-1">Common Questions</p>
+                    <h2 className="text-2xl font-black text-slate-900 tracking-tight">Smart Guide</h2>
+                    <p className="text-[11px] font-bold text-slate-500 uppercase tracking-widest mt-1">Answers & Tutorials</p>
                 </div>
                 <button onClick={onClose} className="p-4 bg-slate-100 text-slate-500 rounded-2xl hover:bg-slate-200 transition-all">
                     <Icon name="x" size={24} />
                 </button>
+            </div>
+
+            {/* Search Bar */}
+            <div className="p-5 bg-white border-b border-slate-50">
+                <div className="relative group">
+                    <div className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400"><Icon name="search" size={20} /></div>
+                    <input 
+                        type="text" 
+                        placeholder="Type to search (e.g. 'Food', 'Planner')..." 
+                        value={searchTerm} 
+                        onChange={(e) => setSearchTerm(e.target.value)} 
+                        className="w-full py-5 pl-14 pr-4 bg-slate-50 rounded-2xl border-2 border-slate-100 focus:border-indigo-600 focus:bg-white outline-none text-base font-bold text-slate-800 shadow-sm transition-all" 
+                    />
+                </div>
             </div>
 
             {/* Category Pills */}
@@ -118,53 +227,60 @@ const FAQSection = ({ onClose, onNavigate }: { onClose: () => void; onNavigate: 
 
             {/* FAQ List */}
             <div className="flex-1 overflow-y-auto px-5 py-6 space-y-4">
-                {filteredFAQ.map((item, idx) => (
-                    <div key={idx} className={`bg-white rounded-[24px] border-2 transition-all duration-300 overflow-hidden ${openIndex === idx ? 'border-indigo-600 shadow-xl scale-[1.01]' : 'border-slate-100'}`}>
-                        <button 
-                            onClick={() => setOpenIndex(openIndex === idx ? null : idx)} 
-                            className="w-full flex justify-between items-center p-5 text-left active:bg-slate-50"
-                        >
-                            <span className={`text-sm font-bold pr-4 leading-relaxed ${openIndex === idx ? 'text-indigo-900' : 'text-slate-700'}`}>
-                                {item.question}
-                            </span>
-                            <div className={`p-2 rounded-full transition-colors ${openIndex === idx ? 'bg-indigo-50 text-indigo-600' : 'bg-slate-50 text-slate-400'}`}>
-                                <Icon name={openIndex === idx ? "chevron-up" : "chevron-down"} size={16} />
-                            </div>
-                        </button>
-                        
-                        {openIndex === idx && (
-                            <div className="px-6 pb-6 pt-0 animate-fade-in">
-                                <p className="text-sm text-slate-600 leading-relaxed font-medium mb-6">
-                                    {item.answer}
-                                </p>
-                                
-                                {/* 智慧引導按鈕 (Action Button) */}
-                                {item.action !== 'privacy' && (
-                                    <button 
-                                        onClick={() => { onClose(); onNavigate(item.action); }}
-                                        className="w-full py-4 bg-indigo-50 text-indigo-700 rounded-2xl text-[11px] font-black uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-indigo-100 transition-colors border border-indigo-100"
-                                    >
-                                        {item.actionLabel} <Icon name="arrow-right" size={14} />
-                                    </button>
-                                )}
-                            </div>
-                        )}
+                {filteredFAQ.length > 0 ? (
+                    filteredFAQ.map((item, idx) => (
+                        <div key={idx} className={`bg-white rounded-[24px] border-2 transition-all duration-300 overflow-hidden ${openIndex === idx ? 'border-indigo-600 shadow-xl scale-[1.01]' : 'border-slate-100'}`}>
+                            <button 
+                                onClick={() => setOpenIndex(openIndex === idx ? null : idx)} 
+                                className="w-full flex justify-between items-center p-5 text-left active:bg-slate-50"
+                            >
+                                <span className={`text-sm font-bold pr-4 leading-relaxed ${openIndex === idx ? 'text-indigo-900' : 'text-slate-700'}`}>
+                                    {item.question}
+                                </span>
+                                <div className={`p-2 rounded-full transition-colors ${openIndex === idx ? 'bg-indigo-50 text-indigo-600' : 'bg-slate-50 text-slate-400'}`}>
+                                    <Icon name={openIndex === idx ? "chevron-up" : "chevron-down"} size={16} />
+                                </div>
+                            </button>
+                            
+                            {openIndex === idx && (
+                                <div className="px-6 pb-6 pt-0 animate-fade-in">
+                                    <p className="text-sm text-slate-600 leading-relaxed font-medium mb-6 border-l-4 border-indigo-100 pl-4">
+                                        {item.answer}
+                                    </p>
+                                    
+                                    {/* 智慧引導按鈕 (Action Button) - 只有非隱私類問題才顯示跳轉按鈕 */}
+                                    {item.action !== 'privacy' && (
+                                        <button 
+                                            onClick={() => { onClose(); onNavigate(item.action); }}
+                                            className="w-full py-4 bg-indigo-50 text-indigo-700 rounded-2xl text-[11px] font-black uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-indigo-100 transition-colors border border-indigo-100 shadow-sm"
+                                        >
+                                            {item.actionLabel} <Icon name="arrow-right" size={14} />
+                                        </button>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+                    ))
+                ) : (
+                    <div className="text-center py-20 text-slate-400 font-bold">
+                        <Icon name="search" size={48} className="mx-auto mb-4 opacity-20" />
+                        No answers found for "{searchTerm}".<br/>Try "Food", "Map", or "Plan".
                     </div>
-                ))}
+                )}
 
-                {/* Human Connection Box */}
+                {/* Human Connection Box (Footer) */}
                 <div className="mt-8 p-8 bg-gradient-to-br from-indigo-900 to-slate-900 rounded-[32px] text-white text-center relative overflow-hidden shadow-2xl">
                     <div className="absolute top-0 right-0 w-40 h-40 bg-white/5 rounded-full -mr-20 -mt-20 blur-3xl"></div>
                     <div className="relative z-10">
                         <div className="w-12 h-12 bg-white/10 rounded-full flex items-center justify-center mx-auto mb-4 backdrop-blur-sm">
                             <Icon name="heart" size={24} className="text-rose-300" />
                         </div>
-                        <h4 className="text-lg font-black mb-2">Prefer to talk to someone?</h4>
+                        <h4 className="text-lg font-black mb-2">Need to talk to a person?</h4>
                         <p className="text-sm text-indigo-200 mb-6 font-medium leading-relaxed max-w-xs mx-auto">
-                            Visit a "Community Hub". Volunteers are there to listen, not to judge.
+                            Sometimes technology isn't enough. Visit a Community Hub to speak with a friendly volunteer.
                         </p>
                         <button 
-                            onClick={() => { onClose(); onNavigate('support'); }} 
+                            onClick={() => { onClose(); onNavigate('support'); }}
                             className="px-8 py-4 bg-white text-slate-900 rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-xl active:scale-95 transition-all hover:bg-indigo-50"
                         >
                             Find a Local Hub
