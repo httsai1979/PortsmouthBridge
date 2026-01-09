@@ -5,17 +5,17 @@ interface FAQItem {
     question: string;
     answer: string;
     category: 'essentials' | 'access' | 'app_guide' | 'privacy';
-    action: string;      // 對應 App.tsx 的 handleFAQNavigate 邏輯
-    actionLabel: string; // 按鈕上的引導文字
+    action: string;      
+    actionLabel: string; 
 }
 
 // [內容擴充] 20 題完整問答庫，採用賦權 (Empowerment) 與去標籤化用語
 const FAQ_DATA: FAQItem[] = [
-    // --- 1. Essentials (生活剛需 - 最優先顯示) ---
+    // --- 1. Essentials (生活剛需) ---
     {
         category: 'essentials',
-        question: "Where can I find a community pantry or food support?",
-        answer: "Portsmouth has many community pantries and kitchens. Some offer groceries for a small membership fee, while others serve free hot meals. You are welcome to use them to manage your budget.",
+        question: "Where can I find a community pantry?",
+        answer: "Portsmouth has many community pantries. Some ask for a small membership fee for a weekly shop, others offer free items. They are open to help you manage your budget.",
         action: "food",
         actionLabel: "Find Food Support"
     },
@@ -48,7 +48,7 @@ const FAQ_DATA: FAQItem[] = [
         actionLabel: "Find Facilities"
     },
 
-    // --- 2. Access & Dignity (心理建設與門檻) ---
+    // --- 2. Access & Dignity (心理建設) ---
     {
         category: 'access',
         question: "Do I need a referral voucher to visit?",
@@ -74,22 +74,15 @@ const FAQ_DATA: FAQItem[] = [
         category: 'access',
         question: "Where can I get professional advice on debt or housing?",
         answer: "Citizens Advice and HIVE Portsmouth offer free, confidential guidance on legal rights, tenancy, and finance. They are on your side.",
-        action: "support", // 導向支援列表，通常包含諮詢機構
+        action: "support", 
         actionLabel: "Find Advice Centers"
     },
-    {
-        category: 'access',
-        question: "Are pets allowed?",
-        answer: "Some community centers and shelters are pet-friendly. Look for the 'Pet Friendly' tag on the details card.",
-        action: "all",
-        actionLabel: "Browse All Listings"
-    },
 
-    // --- 3. App Guide (功能教學 - 降低數位落差) ---
+    // --- 3. App Guide (功能教學 - 關鍵更新) ---
     {
         category: 'app_guide',
         question: "How do I use the 'Journey Planner'?",
-        answer: "When you see a place you want to visit, tap the 'Plus (+)' icon on its card. Then, go to the Planner view to see your personal daily schedule on a map.",
+        answer: "The Planner is like a shopping list for your day. When you see a place you want to visit, tap the 'Plus (+)' icon on its card. Then, tap 'My Journey' to see them all in one place.",
         action: "planner",
         actionLabel: "Open My Planner"
     },
@@ -122,7 +115,7 @@ const FAQ_DATA: FAQItem[] = [
         actionLabel: "See Map Tags"
     },
 
-    // --- 4. Privacy (隱私與安全) ---
+    // --- 4. Privacy (隱私) ---
     {
         category: 'privacy',
         question: "Is my search history tracked?",
@@ -161,7 +154,6 @@ const FAQ_DATA: FAQItem[] = [
 ];
 
 const FAQSection = ({ onClose, onNavigate }: { onClose: () => void; onNavigate: (action: string) => void }) => {
-    // 簡化狀態管理，避免 React Suspense 錯誤
     const [activeCategory, setActiveCategory] = useState<string>('all');
     const [openIndex, setOpenIndex] = useState<number | null>(null);
     const [searchTerm, setSearchTerm] = useState('');
