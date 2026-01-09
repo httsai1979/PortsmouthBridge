@@ -9,9 +9,9 @@ interface FAQItem {
     actionLabel: string; 
 }
 
-// [內容擴充] 20 題完整問答庫，採用賦權 (Empowerment) 與去標籤化用語
+// [內容維持] 20 題完整問答庫，採用賦權與溫暖語氣
 const FAQ_DATA: FAQItem[] = [
-    // --- 1. Essentials (生活剛需) ---
+    // --- 1. Essentials ---
     {
         category: 'essentials',
         question: "Where can I find a community pantry?",
@@ -48,7 +48,7 @@ const FAQ_DATA: FAQItem[] = [
         actionLabel: "Find Facilities"
     },
 
-    // --- 2. Access & Dignity (心理建設) ---
+    // --- 2. Access & Dignity ---
     {
         category: 'access',
         question: "Do I need a referral voucher to visit?",
@@ -77,8 +77,15 @@ const FAQ_DATA: FAQItem[] = [
         action: "support", 
         actionLabel: "Find Advice Centers"
     },
+    {
+        category: 'access',
+        question: "Are pets allowed?",
+        answer: "Some community centers and shelters are pet-friendly. Look for the 'Pet Friendly' tag on the details card.",
+        action: "all",
+        actionLabel: "Browse All Listings"
+    },
 
-    // --- 3. App Guide (功能教學 - 關鍵更新) ---
+    // --- 3. App Guide ---
     {
         category: 'app_guide',
         question: "How do I use the 'Journey Planner'?",
@@ -115,7 +122,7 @@ const FAQ_DATA: FAQItem[] = [
         actionLabel: "See Map Tags"
     },
 
-    // --- 4. Privacy (隱私) ---
+    // --- 4. Privacy ---
     {
         category: 'privacy',
         question: "Is my search history tracked?",
@@ -174,9 +181,9 @@ const FAQSection = ({ onClose, onNavigate }: { onClose: () => void; onNavigate: 
     ];
 
     return (
-        <div className="flex flex-col h-full bg-slate-50 animate-fade-in-up pb-32">
+        <div className="fixed inset-0 z-50 flex flex-col bg-slate-50 animate-fade-in-up pb-0 h-screen w-full">
             {/* Header */}
-            <div className="bg-white p-6 border-b border-slate-100 flex justify-between items-center sticky top-0 z-10 shadow-sm">
+            <div className="bg-white p-6 border-b border-slate-100 flex justify-between items-center sticky top-0 z-10 shadow-sm shrink-0">
                 <div>
                     <h2 className="text-2xl font-black text-slate-900 tracking-tight">Smart Guide</h2>
                     <p className="text-[11px] font-bold text-slate-500 uppercase tracking-widest mt-1">Answers & Tutorials</p>
@@ -187,7 +194,7 @@ const FAQSection = ({ onClose, onNavigate }: { onClose: () => void; onNavigate: 
             </div>
 
             {/* Search Bar */}
-            <div className="p-5 bg-white border-b border-slate-50">
+            <div className="p-5 bg-white border-b border-slate-50 shrink-0">
                 <div className="relative group">
                     <div className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400"><Icon name="search" size={20} /></div>
                     <input 
@@ -201,7 +208,7 @@ const FAQSection = ({ onClose, onNavigate }: { onClose: () => void; onNavigate: 
             </div>
 
             {/* Category Pills */}
-            <div className="px-5 py-4 bg-white border-b border-slate-50 flex gap-2 overflow-x-auto no-scrollbar">
+            <div className="px-5 py-4 bg-white border-b border-slate-50 flex gap-2 overflow-x-auto no-scrollbar shrink-0">
                 {categories.map(cat => (
                     <button 
                         key={cat.id} 
@@ -217,8 +224,11 @@ const FAQSection = ({ onClose, onNavigate }: { onClose: () => void; onNavigate: 
                 ))}
             </div>
 
-            {/* FAQ List */}
-            <div className="flex-1 overflow-y-auto px-5 py-6 space-y-4">
+            {/* FAQ List - 關鍵修復: 加入 onScroll 阻止冒泡 */}
+            <div 
+                className="flex-1 overflow-y-auto px-5 py-6 space-y-4 pb-32"
+                onScroll={(e) => e.stopPropagation()} // [CRITICAL FIX] 阻止捲動事件傳遞到 App 組件，避免觸發全域重繪
+            >
                 {filteredFAQ.length > 0 ? (
                     filteredFAQ.map((item, idx) => (
                         <div key={idx} className={`bg-white rounded-[24px] border-2 transition-all duration-300 overflow-hidden ${openIndex === idx ? 'border-indigo-600 shadow-xl scale-[1.01]' : 'border-slate-100'}`}>
@@ -240,7 +250,7 @@ const FAQSection = ({ onClose, onNavigate }: { onClose: () => void; onNavigate: 
                                         {item.answer}
                                     </p>
                                     
-                                    {/* 智慧引導按鈕 (Action Button) - 只有非隱私類問題才顯示跳轉按鈕 */}
+                                    {/* 智慧引導按鈕 - 只有非隱私類問題才顯示跳轉按鈕 */}
                                     {item.action !== 'privacy' && (
                                         <button 
                                             onClick={() => { onClose(); onNavigate(item.action); }}
