@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Resource, TAG_ICONS } from '../data';
 import Icon from './Icon';
 
@@ -13,9 +13,32 @@ interface UnifiedScheduleProps {
 
 const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
+// [FIX] Move styles OUTSIDE the component to prevent scroll crashing
+const PRINT_STYLES = `
+    @media print {
+        body * { visibility: hidden; }
+        .animate-fade-in-up, .animate-fade-in-up * { visibility: visible; }
+        .animate-fade-in-up { position: absolute; left: 0; top: 0; width: 100%; margin: 0; padding: 0; background: white; color: black; }
+        button, .sticky, header, .fixed { display: none !important; }
+        .border-2 { border-width: 1px !important; border-color: #000 !important; }
+        .text-slate-400 { color: #666 !important; }
+        .bg-slate-50 { background: white !important; }
+        .group { border: 1px solid #ddd; page-break-inside: avoid; }
+    }
+`;
+
 const UnifiedSchedule = ({ data, category, title, onNavigate, onSave, savedIds }: UnifiedScheduleProps) => {
     const [selectedDay, setSelectedDay] = useState(new Date().getDay());
-    const [showPrintMode, setShowPrintMode] = useState(false);
+
+    // [FIX] Inject styles ONCE on mount
+    useEffect(() => {
+        const style = document.createElement('style');
+        style.textContent = PRINT_STYLES;
+        document.head.appendChild(style);
+        return () => {
+            document.head.removeChild(style);
+        };
+    }, []);
 
     // 過濾並排序當天開放的機構
     const dailyResources = useMemo(() => {
@@ -25,7 +48,7 @@ const UnifiedSchedule = ({ data, category, title, onNavigate, onSave, savedIds }
             return isOpenToday && matchesCategory;
         });
 
-        // 依據開放時間排序 (簡單字串排序即可，例如 "09:00" < "10:00")
+        // 依據開放時間排序
         return filtered.sort((a, b) => {
             const timeA = a.schedule[selectedDay] || "99:99";
             const timeB = b.schedule[selectedDay] || "99:99";
@@ -45,7 +68,7 @@ const UnifiedSchedule = ({ data, category, title, onNavigate, onSave, savedIds }
                     {/* 列印/截圖按鈕 */}
                     <button 
                         onClick={() => window.print()}
-                        className="p-3 bg-indigo-50 text-indigo-600 rounded-xl hover:bg-indigo-100 transition-colors flex items-center gap-2"
+                        className="p-3 bg-indigo-50 text-indigo-600 rounded-xl hover:bg-indigo-100 transition-colors flex items-center gap-2 active:scale-95"
                         title="Print or Screenshot this view"
                     >
                         <Icon name="printer" size={20} />
@@ -102,7 +125,7 @@ const UnifiedSchedule = ({ data, category, title, onNavigate, onSave, savedIds }
                                         {/* Save Button */}
                                         <button 
                                             onClick={(e) => { e.stopPropagation(); onSave(item.id); }}
-                                            className={`transition-colors ${isSaved ? 'text-rose-500' : 'text-slate-300 hover:text-slate-400'}`}
+                                            className={`transition-colors p-2 -mr-2 -mt-2 ${isSaved ? 'text-rose-500' : 'text-slate-300 hover:text-slate-400'}`}
                                         >
                                             <Icon name="heart" size={20} fill={isSaved} />
                                         </button>
@@ -142,19 +165,8 @@ const UnifiedSchedule = ({ data, category, title, onNavigate, onSave, savedIds }
                     </div>
                 )}
             </div>
-
-            {/* Print Styles Injection */}
-            <style>{`
-                @media print {
-                    body * { visibility: hidden; }
-                    .animate-fade-in-up, .animate-fade-in-up * { visibility: visible; }
-                    .animate-fade-in-up { position: absolute; left: 0; top: 0; width: 100%; margin: 0; padding: 0; background: white; }
-                    button, .sticky, header, .fixed { display: none !important; }
-                    .border-2 { border-width: 1px !important; border-color: #000 !important; }
-                    .text-slate-400 { color: #666 !important; }
-                    .bg-slate-50 { background: white !important; }
-                }
-            `}</style>
+            
+            {/* NO STYLE TAG HERE */}
         </div>
     );
 };
