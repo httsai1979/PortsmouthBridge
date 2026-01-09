@@ -1,12 +1,9 @@
 import { useState, useEffect, useMemo, Suspense, lazy } from 'react';
-// [移除] 移除 Firebase Firestore 的即時監聽，節省成本
-// import { collection, onSnapshot } from 'firebase/firestore';
-import Fuse from 'fuse.js'; // [新增] 引入模糊搜尋
-import { db } from './lib/firebase'; // 保留 db 用於寫入 (Report/Partner)
-import { ALL_DATA } from './data';   // [核心] 靜態資料來源
+import Fuse from 'fuse.js';
+import { ALL_DATA, AREAS, TAG_ICONS, COMMUNITY_DEALS, GIFT_EXCHANGE, PROGRESS_TIPS } from './data';
 import { checkStatus, playSuccessSound, getDistance } from './utils';
 import { logSearchEvent } from './services/AnalyticsService';
-import { fetchLiveStatus, type LiveStatus } from './services/LiveStatusService'; // [新增] Google Sheets 服務
+import { fetchLiveStatus, type LiveStatus } from './services/LiveStatusService';
 
 // Components
 import Icon from './components/Icon';
@@ -25,8 +22,6 @@ import logo from './assets/images/logo.png';
 // Authentication
 import { useAuth } from './contexts/AuthContext';
 import PartnerLogin from './components/PartnerLogin';
-
-import { AREAS, TAG_ICONS, COMMUNITY_DEALS, GIFT_EXCHANGE, PROGRESS_TIPS } from './data';
 
 // [PERFORMANCE] Lazy Load Heavy Components
 const SimpleMap = lazy(() => import('./components/SimpleMap'));
@@ -53,7 +48,6 @@ const App = () => {
     const [stealthMode, setStealthMode] = useState(false);
     const [fontSize, setFontSize] = useState(0); 
     const [isOffline, setIsOffline] = useState(!navigator.onLine);
-
     const [loading, setLoading] = useState(true);
 
     // Navigation & Modals
@@ -75,10 +69,10 @@ const App = () => {
     const [visibleCount, setVisibleCount] = useState(10);
     const [showScrollTop, setShowScrollTop] = useState(false);
 
-    // Discovery & Data Flow
-    // [修改] 不再使用 services state 存 Firebase 資料，改用 liveStatus 存 Google Sheets 資料
+    // Data State: 使用 LiveStatus 取代原本的 services state
     const [liveStatus, setLiveStatus] = useState<Record<string, LiveStatus>>({});
     
+    // Feature State
     const [journeyItems, setJourneyItems] = useState<string[]>([]);
     const [compareItems, setCompareItems] = useState<string[]>([]);
     const [notifications, setNotifications] = useState<Array<{ id: string; type: 'opening_soon' | 'favorite' | 'weather' | 'info'; message: string; timestamp: number; resourceId?: string }>>([]);
@@ -101,7 +95,7 @@ const App = () => {
             try {
                 await navigator.share({
                     title: 'Portsmouth Bridge',
-                    text: 'Find food, shelter, and community support in Portsmouth. Check out Portsmouth Bridge!',
+                    text: 'Find food, shelter, and community support in Portsmouth.',
                     url: window.location.href,
                 });
             } catch (err) {
@@ -109,7 +103,7 @@ const App = () => {
             }
         } else {
             navigator.clipboard.writeText(window.location.href);
-            alert('Link copied to clipboard! Share it with your friends.');
+            alert('Link copied to clipboard!');
         }
     };
 
@@ -147,7 +141,7 @@ const App = () => {
     useEffect(() => {
         setTimeout(() => setLoading(false), 800);
 
-        // [核心修改] 讀取 Google Sheets CSV，完全取代 Firebase 讀取
+        // Fetch Live Status from Google Sheets
         fetchLiveStatus().then(statusMap => {
             setLiveStatus(statusMap);
             console.log("📊 Google Sheets Live Status Synced");
@@ -272,10 +266,9 @@ const App = () => {
         }
     };
 
-    // --- [核心邏輯] 資料合併 & Fuse.js 模糊搜尋 ---
+    // --- 核心邏輯：資料合併 & 模糊搜尋 ---
     const filteredData = useMemo(() => {
-        // 1. 合併靜態資料 (ALL_DATA) 與 Google Sheets (liveStatus)
-        // 這樣卡片就會依照你想要的顯示即時 "Low Stock" 或 "Emergency"
+        // 1. 合併靜態資料與 Google Sheets 即時狀態
         let mergedData = ALL_DATA.map(item => {
             const status = liveStatus[item.id];
             if (status) {
@@ -288,7 +281,7 @@ const App = () => {
             return item;
         });
 
-        // 2. Fuse.js 模糊搜尋 (取代原本的 includes 搜尋)
+        // 2. Fuse.js 模糊搜尋
         if (searchQuery) {
             const fuse = new Fuse(mergedData, {
                 keys: [
@@ -297,13 +290,13 @@ const App = () => {
                     { name: 'description', weight: 0.2 },
                     { name: 'category', weight: 0.1 }
                 ],
-                threshold: 0.3, // 容許度
+                threshold: 0.3,
                 ignoreLocation: true
             });
             mergedData = fuse.search(searchQuery).map(result => result.item);
         }
 
-        // 3. 過濾
+        // 3. 一般過濾
         const data = mergedData.filter(item => {
             const matchesArea = filters.area === 'All' || item.area === filters.area;
             const matchesCategory = filters.category === 'all' || item.category === filters.category;
@@ -321,7 +314,7 @@ const App = () => {
             return matchesArea && matchesCategory && matchesOpenNow && matchesVerified && matchesNearMe;
         });
 
-        // 4. 排序：優先顯示 Google Sheets 中標記為緊急的
+        // 4. 排序結果
         return data.sort((a, b) => {
             const urgencyA = liveStatus[a.id]?.urgency === 'High' ? 1 : 0;
             const urgencyB = liveStatus[b.id]?.urgency === 'High' ? 1 : 0;
@@ -339,7 +332,7 @@ const App = () => {
             }
             return 0;
         });
-    }, [filters, userLocation, searchQuery, smartFilters, liveStatus]); // 依賴 liveStatus
+    }, [filters, userLocation, searchQuery, smartFilters, liveStatus]);
 
     useEffect(() => {
         if (searchQuery.length > 2) {
@@ -358,25 +351,14 @@ const App = () => {
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
-    if (loading) {
-        return (
-            <div className="min-h-screen flex items-center justify-center bg-white">
-                <div className="text-center animate-pulse">
-                    <img src={logo} alt="Portsmouth Bridge" className="w-24 h-24 mx-auto mb-6" />
-                    <h1 className="text-2xl font-black text-slate-900 tracking-tighter">Portsmouth Bridge</h1>
-                    <p className="text-slate-400 font-bold uppercase tracking-widest text-[10px]">Connecting Community Support</p>
-                </div>
-            </div>
-        );
-    }
-
-    // Wrap Suspense around Lazy Components
+    // Use Suspense for Lazy Components
     const renderLazyView = (Component: any, props = {}) => (
         <Suspense fallback={<PageLoader />}>
             <Component {...props} />
         </Suspense>
     );
 
+    if (loading) return <PageLoader />;
     if (showPrint) return renderLazyView(PrintView, { data: ALL_DATA, onClose: () => setShowPrint(false) });
 
     return (
@@ -389,6 +371,7 @@ const App = () => {
                 .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
             `}</style>
 
+            {/* Scroll To Top */}
             {showScrollTop && (
                 <button
                     onClick={scrollToTop}
@@ -399,6 +382,7 @@ const App = () => {
                 </button>
             )}
 
+            {/* Header */}
             <header className={`sticky top-0 z-50 ${stealthMode ? 'bg-slate-50 border-none' : 'bg-white/95 backdrop-blur-md border-b border-slate-100'} pt-4 pb-3 transition-all`}>
                 <div className="px-5 flex justify-between items-center max-w-lg mx-auto">
                     <div className="flex items-center gap-3">
@@ -411,7 +395,6 @@ const App = () => {
                         </div>
                     </div>
                     <div className="flex gap-2">
-                        {/* Font Size Toggle Button */}
                         <button 
                             onClick={() => setFontSize(prev => (prev + 1) % 3)} 
                             className={`p-2 rounded-xl transition-all border-2 ${fontSize > 0 ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-slate-100 text-slate-600 border-slate-100 hover:bg-slate-200'}`} 
@@ -419,30 +402,26 @@ const App = () => {
                         >
                             <Icon name="type" size={20} />
                         </button>
-                        
-                        <button onClick={() => setStealthMode(!stealthMode)} className={`p-2 rounded-xl transition-all ${stealthMode ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-600'}`} title="Stealth Mode"><Icon name="eye" size={20} /></button>
-                        <button onClick={() => setHighContrast(!highContrast)} className="p-2 bg-slate-100 rounded-xl text-slate-600 hover:bg-slate-200 transition-colors" title="High Contrast"><Icon name="zap" size={20} /></button>
+                        <button onClick={() => setStealthMode(!stealthMode)} className={`p-2 rounded-xl transition-all ${stealthMode ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-600'}`}><Icon name="eye" size={20} /></button>
+                        <button onClick={() => setHighContrast(!highContrast)} className="p-2 bg-slate-100 rounded-xl text-slate-600 hover:bg-slate-200 transition-colors"><Icon name="zap" size={20} /></button>
 
                         {isPartner && (
                             <>
                                 <button
                                     onClick={() => setView(view === 'partner-dashboard' ? 'home' : 'partner-dashboard')}
                                     className={`p-2 rounded-xl transition-all ${view === 'partner-dashboard' ? 'bg-indigo-600 text-white shadow-lg' : 'bg-emerald-50 text-emerald-600'}`}
-                                    title="Agency Dashboard"
                                 >
                                     <Icon name="briefcase" size={20} />
                                 </button>
                                 <button
                                     onClick={() => setView(view === 'analytics' ? 'home' : 'analytics')}
                                     className={`p-2 rounded-xl transition-all ${view === 'analytics' ? 'bg-indigo-600 text-white shadow-lg' : 'bg-slate-100 text-slate-600'}`}
-                                    title="Analytics Pulse"
                                 >
                                     <Icon name="activity" size={20} />
                                 </button>
                                 <button
                                     onClick={() => setView(view === 'data-migration' ? 'home' : 'data-migration')}
                                     className={`p-2 rounded-xl transition-all ${view === 'data-migration' ? 'bg-indigo-600 text-white shadow-lg' : 'bg-slate-100 text-slate-600'}`}
-                                    title="Data Migration"
                                 >
                                     <Icon name="database" size={20} />
                                 </button>
@@ -452,7 +431,6 @@ const App = () => {
                         <button
                             onClick={() => setShowPartnerLogin(true)}
                             className={`p-2 rounded-xl transition-all ${currentUser ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-600'}`}
-                            title="Partner Access"
                         >
                             <Icon name="users" size={20} />
                         </button>
@@ -466,7 +444,7 @@ const App = () => {
 
             <div className={`px-5 mt-4 relative z-20 transition-all ${stealthMode ? 'opacity-90 grayscale-[0.3]' : ''}`}>
 
-                {/* --- [HOME VIEW] 保留你備份檔中的所有內容 --- */}
+                {/* --- [HOME VIEW] 保留 UI --- */}
                 {view === 'home' && (
                     <div className="animate-fade-in-up">
                         <CommunityBulletin onCTAClick={(id) => {
@@ -660,7 +638,7 @@ const App = () => {
                 )}
 
                 {/* Other Views... */}
-                {view === 'faq' && <FAQSection onClose={() => setView('home')} />}
+                {view === 'faq' && renderLazyView(FAQSection, { onClose: () => setView('home') })}
                 {view === 'community-plan' && (
                     <div className="animate-fade-in-up">
                         <div className="mb-6 flex items-center justify-between">
@@ -738,7 +716,7 @@ const App = () => {
                     </div>
                 )}
 
-                {/* Report Modals */}
+                {/* [NEW] Render the new Modals */}
                 <ReportModal 
                     isOpen={!!reportTarget} 
                     onClose={() => setReportTarget(null)} 
@@ -842,14 +820,24 @@ const App = () => {
                     </div>
                 )}
 
-                {/* View: Planner */}
-                {view === 'planner' && <div className="animate-fade-in-up"><div className="mb-6 flex items-center justify-between"><div><h2 className="text-2xl font-black text-slate-900 tracking-tight">Journey Planner</h2><p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Organizing your success</p></div><button onClick={() => setView('home')} className="p-3 bg-slate-100 text-slate-400 rounded-2xl hover:bg-slate-200 transition-all"><Icon name="x" size={20} /></button></div>{savedIds.length > 0 && (<div className="space-y-4 mb-8"><div className="flex gap-2 overflow-x-auto no-scrollbar pb-2">{AREAS.map((area: string) => (<button key={area} onClick={() => setFilters({ ...filters, area })} className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest border-2 transition-all whitespace-nowrap ${filters.area === area ? 'bg-indigo-600 border-indigo-600 text-white shadow-lg' : 'bg-white border-slate-100 text-slate-400'}`}>{area}</button>))}</div><div className="flex gap-2 overflow-x-auto no-scrollbar pb-2">{['all', 'food', 'shelter', 'warmth', 'support', 'family', 'charity'].map(cat => (<button key={cat} onClick={() => setFilters({ ...filters, category: cat })} className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest border-2 transition-all whitespace-nowrap ${filters.category === cat ? 'bg-slate-900 border-slate-900 text-white shadow-lg' : 'bg-white border-slate-100 text-slate-400'}`}>{cat === 'all' ? 'All Needs' : cat}</button>))}</div></div>)}{savedIds.length > 0 ? renderLazyView(AreaScheduleView, { data: savedResources, area: filters.area, category: filters.category }) : (<div className="py-20 text-center bg-white rounded-[40px] border-2 border-dashed border-slate-200 p-8 shadow-sm"><div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-6"><Icon name="star" size={40} className="text-slate-200" /></div><h3 className="text-xl font-black text-slate-800 mb-2">No Pins Yet</h3><p className="text-xs font-bold text-slate-400 uppercase tracking-widest leading-relaxed mb-8">Add resources to "My Bridge" to build your personalized daily journey.</p><button onClick={() => setView('list')} className="w-full py-5 bg-indigo-600 text-white rounded-[24px] text-[11px] font-black uppercase tracking-widest shadow-xl shadow-indigo-100 hover:scale-[1.02] transition-all">Browse Resources</button></div>)}</div>}
+                {/* Sub-Views (Rendered Lazily) */}
+                {view === 'partner-dashboard' && renderLazyView(PartnerDashboard)}
                 
-                {/* View: Compare */}
-                {view === 'compare' && <div className="animate-fade-in-up bg-slate-100 min-h-[90vh] rounded-t-[40px] shadow-[0_-10px_40px_rgba(0,0,0,0.1)] p-1"><div className="flex justify-between items-center px-6 py-6"><div><h2 className="text-2xl font-black text-slate-900 tracking-tight">Smart Compare</h2><p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Decision Support Engine</p></div><button onClick={() => setView('home')} className="p-3 bg-white text-slate-400 rounded-2xl hover:bg-slate-50 transition-all shadow-sm"><Icon name="x" size={20} /></button></div>
-                {renderLazyView(SmartCompare, { items: ALL_DATA.filter(i => compareItems.includes(i.id)), userLocation: userLocation, onRemove: toggleCompareItem, onNavigate: (id: string) => { const resource = ALL_DATA.find(r => r.id === id); if (resource) { window.open(`https://www.google.com/maps/dir/?api=1&destination=${resource.lat},${resource.lng}`, '_blank'); } }, onCall: (phone: string) => window.open(`tel:${phone}`) })}
-                </div>}
+                {view === 'planner' && <div className="animate-fade-in-up"><div className="mb-6 flex items-center justify-between"><div><h2 className="text-2xl font-black text-slate-900 tracking-tight">Journey Planner</h2></div><button onClick={() => setView('home')} className="p-3 bg-slate-100 rounded-2xl"><Icon name="x" size={20} /></button></div>{renderLazyView(AreaScheduleView, { data: savedResources, area: filters.area, category: filters.category })}</div>}
+                
+                {view === 'community-plan' && renderLazyView(UnifiedSchedule, { category: "food", title: "Weekly Food Support", data: ALL_DATA, onNavigate: (id: string) => { const item = ALL_DATA.find(i => i.id === id); if (item) { setMapFocus({ lat: item.lat, lng: item.lng, label: item.name, id: item.id }); setView('map'); } }, onSave: toggleSaved, savedIds: savedIds })}
+                
+                {view === 'safe-sleep-plan' && renderLazyView(UnifiedSchedule, { category: "shelter", title: "Safe Sleep", data: ALL_DATA, onNavigate: (id: string) => { const item = ALL_DATA.find(i => i.id === id); if (item) { setMapFocus({ lat: item.lat, lng: item.lng, label: item.name, id: item.id }); setView('map'); } }, onSave: toggleSaved, savedIds: savedIds })}
+                
+                {view === 'warm-spaces-plan' && renderLazyView(UnifiedSchedule, { category: "warmth", title: "Warm Spaces", data: ALL_DATA, onNavigate: (id: string) => { const item = ALL_DATA.find(i => i.id === id); if (item) { setMapFocus({ lat: item.lat, lng: item.lng, label: item.name, id: item.id }); setView('map'); } }, onSave: toggleSaved, savedIds: savedIds })}
 
+                {view === 'compare' && (
+                    <div className="fixed inset-0 z-50 bg-black/20 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setView('home')}>
+                        <div className="w-full max-w-4xl" onClick={e => e.stopPropagation()}>
+                            {renderLazyView(SmartCompare, { items: ALL_DATA.filter(i => compareItems.includes(i.id)), userLocation: userLocation, onRemove: toggleCompareItem, onNavigate: (id: string) => { const resource = ALL_DATA.find(r => r.id === id); if (resource) { window.open(`https://www.google.com/maps/dir/?api=1&destination=${resource.lat},${resource.lng}`, '_blank'); } }, onCall: (phone: string) => window.open(`tel:${phone}`) })}
+                        </div>
+                    </div>
+                )}
             </div>
 
             {/* Bottom Nav */}
@@ -861,12 +849,41 @@ const App = () => {
                 <button onClick={() => setShowCrisis(true)} className="text-rose-500 hover:text-rose-400 animate-pulse"><Icon name="lifebuoy" size={24} /></button>
             </div>
 
-            {/* Modals and Overlays */}
+            {/* Modals & Overlays */}
             <TipsModal isOpen={showTips} onClose={() => setShowTips(false)} />
             <CrisisModal isOpen={showCrisis} onClose={() => setShowCrisis(false)} />
             <PrivacyShield onAccept={() => console.log('Privacy accepted')} />
             <SmartNotifications notifications={notifications} onDismiss={(id) => setNotifications(prev => prev.filter(n => n.id !== id))} onClearAll={() => setNotifications([])} onAction={(resourceId) => { const resource = ALL_DATA.find(r => r.id === resourceId); if (resource) { setMapFocus({ lat: resource.lat, lng: resource.lng, label: resource.name }); setView('map'); } }} />
             
+            {showPartnerLogin && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-5 bg-slate-900/40 backdrop-blur-sm animate-fade-in">
+                    <div className="w-full max-w-md">
+                        <PartnerLogin 
+                            onClose={() => setShowPartnerLogin(false)}
+                            onRequestAccess={() => {
+                                setShowPartnerLogin(false);
+                                setShowPartnerRequest(true);
+                            }}
+                        />
+                    </div>
+                </div>
+            )}
+
+            {/* Firebase Reports & Requests Modals */}
+            <ReportModal 
+                isOpen={!!reportTarget} 
+                onClose={() => setReportTarget(null)} 
+                resourceName={reportTarget?.name || ''}
+                resourceId={reportTarget?.id || ''}
+            />
+            <PartnerRequestModal 
+                isOpen={showPartnerRequest} 
+                onClose={() => setShowPartnerRequest(false)} 
+            />
+
+            {showWizard && renderLazyView(CrisisWizard, { userLocation: userLocation, onClose: () => setShowWizard(false), savedIds: savedIds, onToggleSave: toggleSaved })}
+            
+            {/* Journey FAB */}
             {(journeyItems.length > 0 || compareItems.length > 0) && (
                 <div className="fixed bottom-24 left-5 z-[50] flex flex-col gap-3">
                     {journeyItems.length > 0 && (<button onClick={() => setView('planner')} className="bg-indigo-600 text-white p-4 rounded-full shadow-2xl hover:bg-indigo-700 transition-all active:scale-95 relative"><Icon name="mapPin" size={20} /><div className="absolute -top-1 -right-1 w-6 h-6 bg-emerald-500 rounded-full border-2 border-white flex items-center justify-center"><span className="text-xs font-black">{journeyItems.length}</span></div></button>)}
@@ -875,9 +892,6 @@ const App = () => {
             )}
 
             {view === 'planner' && journeyItems.length > 0 && (<div className="fixed inset-0 z-50 bg-black/20 backdrop-blur-sm flex items-end" onClick={() => setView('home')}><div className="w-full max-w-lg mx-auto animate-slide-up" onClick={(e) => e.stopPropagation()}>{renderLazyView(JourneyPlanner, { items: ALL_DATA.filter(r => journeyItems.includes(r.id)), userLocation: userLocation, onRemove: (id: string) => setJourneyItems(prev => prev.filter(i => i !== id)), onClear: () => { setJourneyItems([]); setView('home'); }, onNavigate: () => { if (journeyItems.length > 0) { const points = ALL_DATA.filter(r => journeyItems.includes(r.id)).map(r => `${r.lat},${r.lng}`).join('|'); window.open(`https://www.google.com/maps/dir/?api=1&destination=${points.split('|').pop()}&waypoints=${points}`, '_blank'); } } })}</div></div>)}
-            
-            {/* [Restored] Crisis Wizard Modal */}
-            {showWizard && renderLazyView(CrisisWizard, { userLocation: userLocation, onClose: () => setShowWizard(false), savedIds: savedIds, onToggleSave: (id: string) => { if (savedIds.includes(id)) { setSavedIds(prev => prev.filter(i => i !== id)); } else { setSavedIds(prev => [...prev, id]); playSuccessSound(); } } })}
         </div>
     );
 };
