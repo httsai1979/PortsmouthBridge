@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, Suspense, lazy } from 'react';
+import { useState, useEffect, useMemo, Suspense, lazy, useCallback } from 'react';
 import Fuse from 'fuse.js';
 import { collection, onSnapshot } from 'firebase/firestore'; 
 import { db } from './lib/firebase'; 
@@ -11,7 +11,7 @@ import { fetchLiveStatus, type LiveStatus } from './services/LiveStatusService';
 import Icon from './components/Icon';
 import ResourceCard from './components/ResourceCard';
 import { TipsModal, CrisisModal, ReportModal, PartnerRequestModal, TutorialModal } from './components/Modals';
-// [注意] FAQSection 是同步引入的，不需要 Lazy Load
+// [注意] FAQSection 是同步引入的，直接渲染以避免當機
 import FAQSection from './components/FAQSection';
 import CommunityBulletin from './components/CommunityBulletin';
 import AIAssistant from './components/AIAssistant';
@@ -26,7 +26,7 @@ import logo from './assets/images/logo.png';
 import { useAuth } from './contexts/AuthContext';
 import PartnerLogin from './components/PartnerLogin';
 
-// [PERFORMANCE] Lazy Load Heavy Components
+// [PERFORMANCE] Lazy Load Heavy Components Only
 const SimpleMap = lazy(() => import('./components/SimpleMap'));
 const JourneyPlanner = lazy(() => import('./components/JourneyPlanner'));
 const SmartCompare = lazy(() => import('./components/SmartCompare'));
@@ -214,8 +214,21 @@ const App = () => {
         window.addEventListener('online', handleStatus);
         window.addEventListener('offline', handleStatus);
 
+        // [CRITICAL FIX] 使用 requestAnimationFrame 防止捲動當機
+        let ticking = false;
         const handleScroll = () => {
-            setShowScrollTop(window.scrollY > 300);
+            if (!ticking) {
+                window.requestAnimationFrame(() => {
+                    const shouldShow = window.scrollY > 300;
+                    // 只有當狀態真正改變時才更新，避免無限重繪
+                    setShowScrollTop(prev => {
+                        if (prev !== shouldShow) return shouldShow;
+                        return prev;
+                    });
+                    ticking = false;
+                });
+                ticking = true;
+            }
         };
         window.addEventListener('scroll', handleScroll);
 
@@ -420,12 +433,12 @@ const App = () => {
         });
     }, [filters, userLocation, searchQuery, smartFilters, liveStatus]);
 
-    // Helper for Suspense
-    const renderLazyView = (Component: any, props = {}) => (
+    // Helper for Suspense (Memoized to prevent unnecessary re-creation)
+    const renderLazyView = useCallback((Component: any, props = {}) => (
         <Suspense fallback={<PageLoader />}>
             <Component {...props} />
         </Suspense>
-    );
+    ), []);
 
     if (loading) return <PageLoader />;
     if (showPrint) return renderLazyView(PrintView, { data: ALL_DATA, onClose: () => setShowPrint(false) });
