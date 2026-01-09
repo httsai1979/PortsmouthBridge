@@ -3,7 +3,7 @@ import Fuse from 'fuse.js';
 import { ALL_DATA, AREAS, TAG_ICONS, COMMUNITY_DEALS, GIFT_EXCHANGE, PROGRESS_TIPS } from './data';
 import { checkStatus, playSuccessSound, getDistance } from './utils';
 import { logSearchEvent } from './services/AnalyticsService';
-// [核心修改] 引入 Google Sheets 服務，取代 Firebase onSnapshot
+// [Google Sheets] 引入即時狀態服務
 import { fetchLiveStatus, type LiveStatus } from './services/LiveStatusService';
 
 // Components
@@ -71,9 +71,10 @@ const App = () => {
     const [visibleCount, setVisibleCount] = useState(10);
     const [showScrollTop, setShowScrollTop] = useState(false);
 
-    // [修改] 使用 liveStatus 取代原本的 Firestore services state
+    // [Data State] 使用 liveStatus 存 Google Sheets 資料
     const [liveStatus, setLiveStatus] = useState<Record<string, LiveStatus>>({});
     
+    // Feature State
     const [journeyItems, setJourneyItems] = useState<string[]>([]);
     const [compareItems, setCompareItems] = useState<string[]>([]);
     const [notifications, setNotifications] = useState<Array<{ id: string; type: 'opening_soon' | 'favorite' | 'weather' | 'info'; message: string; timestamp: number; resourceId?: string }>>([]);
@@ -139,14 +140,23 @@ const App = () => {
         root.classList.add(`fs-${fontSize}`);
     }, [fontSize]);
 
+    // [核心修改] Initial Load & Auto-Refresh (Polling)
     useEffect(() => {
         setTimeout(() => setLoading(false), 800);
 
-        // [核心修改] 改為從 Google Sheets 獲取即時狀態
-        fetchLiveStatus().then(statusMap => {
+        // 定義讀取函式
+        const loadLiveStatus = async () => {
+            console.log("🔄 Polling Google Sheets for updates...");
+            const statusMap = await fetchLiveStatus();
+            // 只有當資料有變動時才更新 state，避免不必要的重新渲染 (React 會自動處理 Object reference 比較，但這裡直接設也無妨)
             setLiveStatus(statusMap);
-            console.log("📊 Live Status Synced (Google Sheets)");
-        });
+        };
+
+        // 1. 啟動時立刻讀取一次
+        loadLiveStatus();
+
+        // 2. 設定定時器：每 5 分鐘 (300000 毫秒) 自動重新讀取一次
+        const intervalId = setInterval(loadLiveStatus, 5 * 60 * 1000);
 
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(
@@ -164,7 +174,9 @@ const App = () => {
         };
         window.addEventListener('scroll', handleScroll);
 
+        // 清除定時器 (Cleanup)
         return () => {
+            clearInterval(intervalId); // [重要] 離開頁面時要關掉定時器
             window.removeEventListener('online', handleStatus);
             window.removeEventListener('offline', handleStatus);
             window.removeEventListener('scroll', handleScroll);
@@ -267,7 +279,7 @@ const App = () => {
         }
     };
 
-    // [核心邏輯] 資料合併與搜尋
+    // [核心邏輯] 資料合併 & Fuse.js 模糊搜尋
     const filteredData = useMemo(() => {
         // 1. 合併靜態資料與 Live Status
         let mergedData = ALL_DATA.map(item => {
@@ -291,7 +303,7 @@ const App = () => {
                     { name: 'description', weight: 0.2 },
                     { name: 'category', weight: 0.1 }
                 ],
-                threshold: 0.3,
+                threshold: 0.3, // 容許度
                 ignoreLocation: true
             });
             mergedData = fuse.search(searchQuery).map(result => result.item);
