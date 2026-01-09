@@ -82,7 +82,8 @@ const App = () => {
     // List View Pagination
     const [visibleCount, setVisibleCount] = useState(10);
     const [showScrollTop, setShowScrollTop] = useState(false);
-    // [Fix] Stable ref for intersection observer
+    
+    // [Fix] Stable ref for intersection observer to prevent crashes
     const loadMoreRef = useRef<HTMLDivElement>(null);
 
     // [Hybrid Data State]
@@ -142,6 +143,14 @@ const App = () => {
         category: 'all',
         date: 'today'
     });
+
+    // [Optimization] Inject Styles ONCE on mount to prevent Layout Thrashing
+    useEffect(() => {
+        const styleTag = document.createElement('style');
+        styleTag.innerHTML = APP_STYLES;
+        document.head.appendChild(styleTag);
+        return () => { document.head.removeChild(styleTag); };
+    }, []);
 
     // 🛡️ Route Guard
     useEffect(() => {
@@ -255,6 +264,21 @@ const App = () => {
     useEffect(() => {
         setVisibleCount(10);
     }, [filters, searchQuery, smartFilters]);
+
+    // [CRITICAL FIX] Infinite Scroll with stable observer
+    // This prevents the infinite loop of observer creation/destruction on scroll
+    useEffect(() => {
+        if (view !== 'list' || !loadMoreRef.current) return;
+        
+        const observer = new IntersectionObserver((entries) => {
+            if (entries[0].isIntersecting) {
+                setVisibleCount(prev => prev + 10);
+            }
+        }, { threshold: 0.1, rootMargin: '100px' });
+        
+        observer.observe(loadMoreRef.current);
+        return () => observer.disconnect();
+    }, [view, searchQuery, filters, smartFilters]);
 
     // [UPDATED] FAQ Navigation Handler
     const handleFAQNavigate = (action: string) => {
@@ -416,27 +440,13 @@ const App = () => {
         });
     }, [filters, userLocation, searchQuery, smartFilters, liveStatus]);
 
-    // [CRITICAL FIX] Intersection Observer Logic for Infinite Scroll
-    useEffect(() => {
-        if (view !== 'list' || !loadMoreRef.current) return;
-        
-        const observer = new IntersectionObserver((entries) => {
-            if (entries[0].isIntersecting && visibleCount < filteredData.length) {
-                setVisibleCount(prev => Math.min(prev + 10, filteredData.length));
-            }
-        }, { threshold: 0.1, rootMargin: '100px' });
-        
-        observer.observe(loadMoreRef.current);
-        return () => observer.disconnect();
-    }, [view, visibleCount, filteredData.length]);
-
     if (loading) return <PageLoader />;
     if (showPrint) return <Suspense fallback={<PageLoader />}><PrintView data={ALL_DATA} onClose={() => setShowPrint(false)} /></Suspense>;
 
     return (
         <div className={`app-container min-h-screen font-sans text-slate-900 selection:bg-indigo-200 selection:text-indigo-900 ${highContrast ? 'high-contrast' : ''}`}>
-            <style>{APP_STYLES}</style>
-
+            {/* Styles are now injected via useEffect, but we keep this placeholder if needed, or remove it entirely as styles are in head */}
+            
             {showScrollTop && (
                 <button
                     onClick={scrollToTop}
@@ -560,7 +570,7 @@ const App = () => {
                                 { id: 'family', ...TAG_ICONS.family },
                                 { id: 'skills', ...TAG_ICONS.skills },
                                 { id: 'charity', ...TAG_ICONS.charity },
-                                { id: 'faq', label: 'Guide', icon: 'help-circle' }
+                                { id: 'faq', label: 'Guide', icon: 'help-circle' } // [修正] Help -> Guide
                             ].map(cat => (
                                 <button
                                     key={cat.id || cat.label}
@@ -578,6 +588,7 @@ const App = () => {
                             ))}
                         </div>
 
+                        {/* [修正] Find Help Now -> Find Support */}
                         <button
                             onClick={() => setShowWizard(true)}
                             className="w-full mb-8 bg-rose-500 text-white p-1 rounded-[32px] shadow-xl shadow-rose-200 group transition-all hover:scale-[1.02] active:scale-95 pr-2"
@@ -706,7 +717,7 @@ const App = () => {
                     </div>
                 )}
 
-                {/* [重要修正] FAQSection 移除 Lazy Load，改為直接渲染以解決當機 */}
+                {/* [關鍵修正] 直接渲染 FAQSection，解決滑動當機問題 */}
                 {view === 'faq' && (
                     <FAQSection onClose={() => setView('home')} onNavigate={handleFAQNavigate} />
                 )}
@@ -798,7 +809,7 @@ const App = () => {
                                 />
                             ))}
                         </div>
-                        {/* [CRITICAL FIX] Use stable ref for intersection observer to prevent memory leaks/crashes */}
+                        {/* [CRITICAL FIX] Use stable ref from useRef, not inline function, to prevent infinite re-rendering loop */}
                         {visibleCount < filteredData.length && <div ref={loadMoreRef} className="h-20 flex items-center justify-center p-4 text-slate-400 font-bold text-xs uppercase tracking-widest animate-pulse">Loading more resources...</div>}
                     </div>
                 )}
