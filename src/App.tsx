@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo, Suspense, lazy, useRef, useCallback } from 'react';
 import Fuse from 'fuse.js';
-import { collection, onSnapshot } from 'firebase/firestore'; 
-import { db } from './lib/firebase'; 
+import { collection, onSnapshot } from 'firebase/firestore';
+import { db } from './lib/firebase';
 import { ALL_DATA, AREAS, TAG_ICONS, COMMUNITY_DEALS, GIFT_EXCHANGE, PROGRESS_TIPS } from './data';
 import { checkStatus, playSuccessSound, getDistance } from './utils';
 import { fetchLiveStatus, type LiveStatus } from './services/LiveStatusService';
@@ -54,18 +54,18 @@ const GLOBAL_APP_STYLES = `
 
 const App = () => {
     // --- STATE MANAGEMENT ---
-    
+
     // UI & Accessibility
     const [highContrast, setHighContrast] = useState(false);
     const [stealthMode, setStealthMode] = useState(false);
-    const [fontSize, setFontSize] = useState(0); 
+    const [fontSize, setFontSize] = useState(0);
     const [isOffline, setIsOffline] = useState(!navigator.onLine);
     const [loading, setLoading] = useState(true);
     const [showScrollTop, setShowScrollTop] = useState(false);
 
     // Navigation
     const [view, setView] = useState<'home' | 'map' | 'list' | 'planner' | 'compare' | 'community-plan' | 'safe-sleep-plan' | 'warm-spaces-plan' | 'faq' | 'partner-dashboard' | 'analytics' | 'data-migration'>('home');
-    
+
     // Modals
     const [showTips, setShowTips] = useState(false);
     const [showCrisis, setShowCrisis] = useState(false);
@@ -74,26 +74,26 @@ const App = () => {
     const [showPartnerLogin, setShowPartnerLogin] = useState(false);
     const [showTutorial, setShowTutorial] = useState(false);
     const [showPartnerRequest, setShowPartnerRequest] = useState(false);
-    
+
     // Interaction
-    const [reportTarget, setReportTarget] = useState<{name: string, id: string} | null>(null);
+    const [reportTarget, setReportTarget] = useState<{ name: string, id: string } | null>(null);
     const [mapFilter, setMapFilter] = useState<'all' | 'open'>('open');
     const [mapFocus, setMapFocus] = useState<{ lat: number, lng: number, label: string, id?: string } | null>(null);
-    
+
     // Search & Filter
     const [searchQuery, setSearchQuery] = useState('');
     const [filters, setFilters] = useState({ area: 'All', category: 'all', date: 'today' });
     const [smartFilters, setSmartFilters] = useState({ openNow: false, nearMe: false, verified: false });
-    
+
     // Infinite Scroll
     const [visibleCount, setVisibleCount] = useState(10);
-    
+
     // Data
     const { currentUser, isPartner, loading: authLoading } = useAuth();
     const [sheetStatus, setSheetStatus] = useState<Record<string, LiveStatus>>({});
     const [firebaseStatus, setFirebaseStatus] = useState<Record<string, LiveStatus>>({});
     const [userLocation, setUserLocation] = useState<{ lat: number, lng: number } | null>(null);
-    
+
     // Features
     const [journeyItems, setJourneyItems] = useState<string[]>([]);
     const [compareItems, setCompareItems] = useState<string[]>([]);
@@ -122,7 +122,7 @@ const App = () => {
     // 2. Initial Setup
     useEffect(() => {
         setTimeout(() => setLoading(false), 800);
-        
+
         const seenTutorial = localStorage.getItem('seen_tutorial');
         if (!seenTutorial) setShowTutorial(true);
 
@@ -142,6 +142,7 @@ const App = () => {
                 const data = await fetchLiveStatus();
                 if (Object.keys(data).length) {
                     setSheetStatus(data);
+                    // 這裡可以選擇是否緩存，目前保持原有邏輯
                     localStorage.setItem('cached_live_status', JSON.stringify(data));
                 }
             } catch (e) {
@@ -150,25 +151,26 @@ const App = () => {
             }
         };
         loadSheetData();
-        const intervalId = setInterval(loadSheetData, 300000); 
+        const intervalId = setInterval(loadSheetData, 5 * 60 * 1000);
 
         const unsubscribe = onSnapshot(collection(db, 'services'), (snapshot) => {
-            if (snapshot.empty) return;
-            const fbData: Record<string, LiveStatus> = {};
-            snapshot.docs.forEach(doc => {
-                const d = doc.data();
-                if (d.liveStatus) {
-                    fbData[doc.id] = {
-                        id: doc.id,
-                        status: d.liveStatus.isOpen ? 'Open' : 'Closed',
-                        urgency: d.liveStatus.capacity === 'Low' ? 'High' : 'Normal',
-                        message: d.liveStatus.message || '',
-                        lastUpdated: d.liveStatus.lastUpdated
-                    };
-                }
-            });
-            setFirebaseStatus(prev => JSON.stringify(prev) === JSON.stringify(fbData) ? prev : fbData);
-        });
+            if (snapshot && !snapshot.empty) {
+                const fbData: Record<string, LiveStatus> = {};
+                snapshot.docs.forEach(doc => {
+                    const d = doc.data();
+                    if (d.liveStatus) {
+                        fbData[doc.id] = {
+                            id: doc.id,
+                            status: d.liveStatus.isOpen ? 'Open' : 'Closed',
+                            urgency: (d.liveStatus.capacity === 'Low' || d.liveStatus.capacity === 'Critical') ? 'High' : 'Normal',
+                            message: d.liveStatus.message || '',
+                            lastUpdated: d.liveStatus.lastUpdated
+                        };
+                    }
+                });
+                setFirebaseStatus(fbData);
+            }
+        }, (err) => console.error("Firebase Snapshot Error:", err));
 
         return () => {
             clearInterval(intervalId);
@@ -205,14 +207,20 @@ const App = () => {
         return () => observer.disconnect();
     }, [view]);
 
-    // 6. Infinite Scroll Observer
+    // 6. Infinite Scroll Observer & Reset
+    useEffect(() => {
+        setVisibleCount(10);
+    }, [filters, searchQuery, smartFilters]);
+
     useEffect(() => {
         if (view !== 'list' || !loadMoreRef.current) return;
-        const observer = new IntersectionObserver(([entry]) => {
-            if (entry.isIntersecting) {
+
+        const observer = new IntersectionObserver((entries) => {
+            if (entries[0].isIntersecting) {
                 setVisibleCount(prev => prev + 10);
             }
         }, { threshold: 0.1, rootMargin: '100px' });
+
         observer.observe(loadMoreRef.current);
         return () => observer.disconnect();
     }, [view, searchQuery, filters, smartFilters]);
@@ -275,7 +283,7 @@ const App = () => {
     }, [view]);
 
     const handleBulletinClick = useCallback((id: string) => {
-        if (id === '1') { setMapFilter('open'); setView('map'); }
+        if (id === '1') { setSmartFilters(prev => ({ ...prev, openNow: true })); setView('map'); }
         else if (id === '2') { setFilters(prev => ({ ...prev, category: 'food' })); setView('map'); }
         else if (id === '3') { setFilters(prev => ({ ...prev, category: 'warmth' })); setView('map'); }
         else if (id === '4') { setView('faq'); }
@@ -306,10 +314,10 @@ const App = () => {
         let mergedData = ALL_DATA.map(item => {
             const status = liveStatus[item.id];
             if (status) {
-                return { 
-                    ...item, 
+                return {
+                    ...item,
                     description: status.message ? `[${status.status}] ${status.message}` : item.description,
-                    capacityLevel: status.urgency === 'High' ? 'low' : 'high', 
+                    capacityLevel: (status.urgency === 'High' ? 'low' : 'high') as 'low' | 'high',
                 };
             }
             return item;
@@ -330,7 +338,7 @@ const App = () => {
             const status = checkStatus(item.schedule);
             const matchesOpenNow = !smartFilters.openNow || status.isOpen;
             const matchesVerified = !smartFilters.verified || (item.trustScore && item.trustScore > 90);
-            
+
             let matchesNearMe = true;
             if (smartFilters.nearMe && userLocation) {
                 const dist = getDistance(userLocation.lat, userLocation.lng, item.lat, item.lng);
@@ -353,7 +361,7 @@ const App = () => {
 
     return (
         <div className={`app-container min-h-screen font-sans text-slate-900 selection:bg-indigo-200 selection:text-indigo-900 ${highContrast ? 'high-contrast' : ''}`}>
-            
+
             <div ref={topSentinelRef} className="absolute top-0 left-0 w-full h-1 bg-transparent pointer-events-none" />
 
             {showScrollTop && (
@@ -464,7 +472,7 @@ const App = () => {
 
                 {/* --- VIEW: FAQ --- */}
                 {view === 'faq' && <FAQSection onClose={() => setView('home')} onNavigate={handleFAQNavigate} />}
-                
+
                 {/* --- LAZY VIEWS --- */}
                 {view === 'community-plan' && <Suspense fallback={<PageLoader />}><UnifiedSchedule category="food" title="Weekly Food Support" data={ALL_DATA} onNavigate={(id) => { const item = ALL_DATA.find(i => i.id === id); if (item) { setMapFocus({ lat: item.lat, lng: item.lng, label: item.name, id: item.id }); setView('map'); } }} onSave={toggleSaved} savedIds={savedIds} /></Suspense>}
                 {view === 'safe-sleep-plan' && <Suspense fallback={<PageLoader />}><UnifiedSchedule category="shelter" title="Safe Sleep" data={ALL_DATA} onNavigate={(id) => { const item = ALL_DATA.find(i => i.id === id); if (item) { setMapFocus({ lat: item.lat, lng: item.lng, label: item.name, id: item.id }); setView('map'); } }} onSave={toggleSaved} savedIds={savedIds} /></Suspense>}
@@ -472,7 +480,7 @@ const App = () => {
                 {view === 'partner-dashboard' && <Suspense fallback={<PageLoader />}><PartnerDashboard /></Suspense>}
                 {view === 'analytics' && <Suspense fallback={<PageLoader />}><PulseMap /></Suspense>}
                 {view === 'data-migration' && <Suspense fallback={<PageLoader />}><DataMigration /></Suspense>}
-                
+
                 {view === 'planner' && (
                     <div className="animate-fade-in-up">
                         <div className="mb-6 flex items-center justify-between">
@@ -484,7 +492,7 @@ const App = () => {
                         </Suspense>
                     </div>
                 )}
-                
+
                 {view === 'compare' && (
                     <div className="fixed inset-0 z-50 bg-black/20 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setView('home')}>
                         <div className="w-full max-w-4xl" onClick={e => e.stopPropagation()}>
@@ -565,24 +573,24 @@ const App = () => {
                             <div className="flex gap-2">
                                 <button onClick={() => setView('list')} className="p-3 bg-white border-2 border-slate-100 rounded-2xl text-slate-600 hover:bg-slate-50 transition-all flex items-center gap-2 shadow-sm"><Icon name="list" size={18} /></button>
                                 <div className="flex gap-1">
-                                    <button onClick={() => setMapFilter('open')} className={`px-4 py-2 rounded-full text-[10px] font-black uppercase border-2 transition-all ${mapFilter === 'open' ? 'bg-emerald-600 text-white border-emerald-600' : 'bg-white text-slate-400 border-slate-100'}`}>Open</button>
-                                    <button onClick={() => setMapFilter('all')} className={`px-4 py-2 rounded-full text-[10px] font-black uppercase border-2 transition-all ${mapFilter === 'all' ? 'bg-slate-900 text-white border-slate-900' : 'bg-white text-slate-400 border-slate-100'}`}>All</button>
+                                    <button onClick={() => setSmartFilters({ ...smartFilters, openNow: true })} className={`px-4 py-2 rounded-full text-[10px] font-black uppercase border-2 transition-all ${smartFilters.openNow ? 'bg-emerald-600 text-white border-emerald-600' : 'bg-white text-slate-400 border-slate-100'}`}>Open</button>
+                                    <button onClick={() => setSmartFilters({ ...smartFilters, openNow: false })} className={`px-4 py-2 rounded-full text-[10px] font-black uppercase border-2 transition-all ${!smartFilters.openNow ? 'bg-slate-900 text-white border-slate-900' : 'bg-white text-slate-400 border-slate-100'}`}>All</button>
                                 </div>
                             </div>
                         </div>
                         <Suspense fallback={<PageLoader />}>
-                            <SimpleMap 
-                                data={filteredData} 
-                                category={filters.category} 
-                                statusFilter={mapFilter} 
-                                savedIds={savedIds} 
-                                onToggleSave={toggleSaved} 
-                                stealthMode={stealthMode} 
-                                externalFocus={mapFocus} 
-                                liveStatus={liveStatus} 
-                                isPartner={isPartner} 
+                            <SimpleMap
+                                data={filteredData}
+                                category={filters.category}
+                                statusFilter={smartFilters.openNow ? 'open' : 'all'}
+                                savedIds={savedIds}
+                                onToggleSave={toggleSaved}
+                                stealthMode={stealthMode}
+                                externalFocus={mapFocus}
+                                liveStatus={liveStatus}
+                                isPartner={isPartner}
                                 onReport={(item: any) => setReportTarget({ name: item.name, id: item.id })}
-                                onCategoryChange={(cat: string) => { setFilters(prev => ({ ...prev, category: cat, area: 'All' })); setSearchQuery(''); }} 
+                                onCategoryChange={(cat: string) => { setFilters(prev => ({ ...prev, category: cat, area: 'All' })); setSearchQuery(''); }}
                             />
                         </Suspense>
                     </div>
@@ -602,23 +610,34 @@ const App = () => {
             <TipsModal isOpen={showTips} onClose={() => setShowTips(false)} />
             <CrisisModal isOpen={showCrisis} onClose={() => setShowCrisis(false)} />
             <PrivacyShield onAccept={() => console.log('Privacy accepted')} />
-            <SmartNotifications notifications={notifications} onDismiss={(id) => setNotifications(prev => prev.filter(n => n.id !== id))} onClearAll={() => setNotifications([])} onAction={(resourceId) => { const resource = ALL_DATA.find(r => r.id === resourceId); if (resource) { setMapFocus({ lat: resource.lat, lng: resource.lng, label: resource.name }); setView('map'); } }} />
-            
+            <SmartNotifications
+                notifications={notifications}
+                onDismiss={(id) => setNotifications(prev => prev.filter(n => n.id !== id))}
+                onClearAll={() => setNotifications([])}
+                onAction={(resourceId) => {
+                    const resource = ALL_DATA.find(r => r.id === resourceId);
+                    if (resource) {
+                        setMapFocus({ lat: resource.lat, lng: resource.lng, label: resource.name, id: resource.id });
+                        setView('map');
+                    }
+                }}
+            />
+
             {showPartnerLogin && <div className="fixed inset-0 z-[100] flex items-center justify-center p-5 bg-slate-900/40 backdrop-blur-sm animate-fade-in"><div className="w-full max-w-md"><PartnerLogin onClose={() => setShowPartnerLogin(false)} onRequestAccess={() => { setShowPartnerLogin(false); setShowPartnerRequest(true); }} /></div></div>}
-            
+
             <ReportModal isOpen={!!reportTarget} onClose={() => setReportTarget(null)} resourceName={reportTarget?.name || ''} resourceId={reportTarget?.id || ''} />
             <PartnerRequestModal isOpen={showPartnerRequest} onClose={() => setShowPartnerRequest(false)} />
-            
-            <TutorialModal 
-                isOpen={showTutorial} 
+
+            <TutorialModal
+                isOpen={showTutorial}
                 onClose={() => {
                     setShowTutorial(false);
                     localStorage.setItem('seen_tutorial', 'true');
-                }} 
+                }}
             />
-            
+
             {showWizard && <Suspense fallback={<PageLoader />}><CrisisWizard userLocation={userLocation} onClose={() => setShowWizard(false)} savedIds={savedIds} onToggleSave={toggleSaved} /></Suspense>}
-            
+
             {(journeyItems.length > 0 || compareItems.length > 0) && (
                 <div className="fixed bottom-24 left-5 z-[50] flex flex-col gap-3">
                     {journeyItems.length > 0 && (<button onClick={() => setView('planner')} className="bg-indigo-600 text-white p-4 rounded-full shadow-2xl hover:bg-indigo-700 transition-all active:scale-95 relative"><Icon name="mapPin" size={20} /><div className="absolute -top-1 -right-1 w-6 h-6 bg-emerald-500 rounded-full border-2 border-white flex items-center justify-center"><span className="text-xs font-black">{journeyItems.length}</span></div></button>)}
@@ -626,7 +645,20 @@ const App = () => {
                 </div>
             )}
 
-            {view === 'planner' && journeyItems.length > 0 && (<div className="fixed inset-0 z-50 bg-black/20 backdrop-blur-sm flex items-end" onClick={() => setView('home')}><div className="w-full max-w-lg mx-auto animate-slide-up" onClick={(e) => e.stopPropagation()}><Suspense fallback={<PageLoader />}><JourneyPlanner items={ALL_DATA.filter(r => journeyItems.includes(r.id))} userLocation={userLocation} onRemove={(id) => setJourneyItems(prev => prev.filter(i => i !== id))} onClear={() => { setJourneyItems([]); setView('home'); }} onNavigate={() => { if (journeyItems.length > 0) { const points = ALL_DATA.filter(r => journeyItems.includes(r.id)).map(r => `${r.lat},${r.lng}`).join('|'); window.open(`https://www.google.com/maps/dir/?api=1&destination=${points.split('|').pop()}&waypoints=${points}`, '_blank'); } }} /></Suspense></div></div>)}
+            {view === 'planner' && journeyItems.length > 0 && (
+                <div className="fixed inset-0 z-50 bg-black/20 backdrop-blur-sm flex items-end" onClick={() => setView('home')}>
+                    <div className="w-full max-w-lg mx-auto animate-slide-up" onClick={(e) => e.stopPropagation()}>
+                        <Suspense fallback={<PageLoader />}>
+                            <JourneyPlanner
+                                items={ALL_DATA.filter(r => journeyItems.includes(r.id))}
+                                userLocation={userLocation}
+                                onRemove={(id) => setJourneyItems(prev => prev.filter(i => i !== id))}
+                                onClear={() => { setJourneyItems([]); setView('home'); }}
+                            />
+                        </Suspense>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

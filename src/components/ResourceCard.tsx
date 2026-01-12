@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, memo } from 'react';
 import Icon from './Icon';
 import { checkStatus } from '../utils';
 import type { Resource } from '../data';
@@ -14,61 +14,55 @@ interface ResourceCardProps {
     onTagClick?: (tag: string) => void;
     isInJourney?: boolean;
     isInCompare?: boolean;
-    // [關鍵] 接收回報函式與合作夥伴狀態
     onReport?: () => void;
     isPartner?: boolean;
 }
 
-const ResourceCard = ({ 
-    item, 
-    isSaved, 
-    onToggleSave, 
-    highContrast, 
-    onAddToJourney, 
-    onAddToCompare, 
-    onTagClick, 
-    isInJourney, 
+const ResourceCard = memo(({
+    item,
+    isSaved,
+    onToggleSave,
+    highContrast,
+    onAddToJourney,
+    onAddToCompare,
+    onTagClick,
+    isInJourney,
     isInCompare,
     onReport,
     isPartner
 }: ResourceCardProps) => {
     const [expanded, setExpanded] = useState(false);
-    
+
     // 使用統一的狀態檢查工具
     const status = checkStatus(item.schedule);
 
     return (
         <div className={`bg-white rounded-[32px] mb-6 shadow-xl shadow-slate-200/50 border overflow-hidden transition-all duration-300 relative group flex flex-col ${highContrast ? 'border-slate-900 border-[3px]' : isSaved ? 'ring-4 ring-indigo-50 border-indigo-200' : 'border-slate-100 hover:scale-[1.01] hover:shadow-2xl'}`}>
-
-            {/* Header Image Section */}
+            {/* ... rest of the component remains same ... */}
             <div className="h-32 relative bg-slate-100 overflow-hidden">
                 {item.entranceMeta?.imageUrl ? (
                     <img src={item.entranceMeta.imageUrl} alt={item.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
                 ) : (
-                    <div className={`w-full h-full bg-gradient-to-br ${
-                        item.category === 'food' ? 'from-emerald-400 to-teal-600' :
-                        item.category === 'shelter' ? 'from-indigo-400 to-purple-600' :
-                        item.category === 'warmth' ? 'from-orange-400 to-red-500' :
-                        item.category === 'family' ? 'from-pink-400 to-rose-500' :
-                        'from-slate-400 to-slate-600'
-                    } opacity-90`}>
+                    <div className={`w-full h-full bg-gradient-to-br ${item.category === 'food' ? 'from-emerald-400 to-teal-600' :
+                            item.category === 'shelter' ? 'from-indigo-400 to-purple-600' :
+                                item.category === 'warmth' ? 'from-orange-400 to-red-500' :
+                                    item.category === 'family' ? 'from-pink-400 to-rose-500' :
+                                        'from-slate-400 to-slate-600'
+                        } opacity-90`}>
                         <div className="absolute inset-0 flex items-center justify-center opacity-20">
                             <Icon name={item.category === 'food' ? 'utensils' : 'mapPin'} size={64} />
                         </div>
                     </div>
                 )}
 
-                {/* Gradient Overlay */}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
 
-                {/* Capacity/Urgency Indicator (Live Status) */}
                 {item.capacityLevel && (
                     <div className="absolute top-4 right-4 flex flex-col items-end gap-1">
-                        <div className={`flex items-center gap-2 px-3 py-1 rounded-full backdrop-blur-md border border-white/20 shadow-lg ${
-                            item.capacityLevel === 'high' ? 'bg-emerald-500/90 text-white' :
-                            item.capacityLevel === 'medium' ? 'bg-amber-400/90 text-slate-900' :
-                            'bg-rose-500/90 text-white animate-pulse'
-                        }`}>
+                        <div className={`flex items-center gap-2 px-3 py-1 rounded-full backdrop-blur-md border border-white/20 shadow-lg ${item.capacityLevel === 'high' ? 'bg-emerald-500/90 text-white' :
+                                item.capacityLevel === 'medium' ? 'bg-amber-400/90 text-slate-900' :
+                                    'bg-rose-500/90 text-white animate-pulse'
+                            }`}>
                             <div className="w-2 h-2 rounded-full bg-current"></div>
                             <span className="text-[10px] font-black uppercase tracking-widest leading-none">
                                 {item.capacityLevel === 'high' ? 'Good Stock' : item.capacityLevel === 'low' ? 'Urgent Need' : 'Stock OK'}
@@ -77,14 +71,12 @@ const ResourceCard = ({
                     </div>
                 )}
 
-                {/* Saved Badge */}
                 {isSaved && (
                     <div className="absolute top-4 left-4 bg-indigo-600 text-white px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest shadow-lg flex items-center gap-1">
                         <Icon name="star" size={12} /> Pinned
                     </div>
                 )}
 
-                {/* Status Chips */}
                 <div className="absolute bottom-4 left-4 flex flex-wrap gap-2 items-center">
                     <span className={`px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest shadow-lg backdrop-blur-md border border-white/20 ${status.status === 'open' ? 'bg-emerald-500 text-white' : 'bg-slate-800/80 text-white'}`}>
                         {status.label}
@@ -95,7 +87,6 @@ const ResourceCard = ({
                 </div>
             </div>
 
-            {/* Content Body */}
             <div className="flex-1 p-6 relative">
                 <div className="flex justify-between items-start mb-2">
                     <h3 className="text-2xl font-black text-slate-900 leading-tight tracking-tight">{item.name}</h3>
@@ -111,12 +102,10 @@ const ResourceCard = ({
                     <Icon name="mapPin" size={14} className="text-slate-400" /> {item.address}
                 </div>
 
-                {/* Description - Highlight if it's an urgent message */}
                 <p className={`text-sm mb-6 leading-relaxed font-medium line-clamp-2 ${item.description.startsWith('[') ? 'text-rose-600 font-bold' : 'text-slate-600'}`}>
                     {item.description}
                 </p>
 
-                {/* Tags */}
                 <div className="flex flex-wrap gap-2 mb-6">
                     {(item.eligibility === 'open' || item.tags.includes('no_referral')) && (
                         <span className="px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-100 flex items-center gap-1 cursor-default">
@@ -137,7 +126,6 @@ const ResourceCard = ({
                     ))}
                 </div>
 
-                {/* Primary Actions */}
                 <div className="grid grid-cols-2 gap-3 mb-4">
                     <button
                         onClick={() => setExpanded(!expanded)}
@@ -159,7 +147,6 @@ const ResourceCard = ({
                     </a>
                 </div>
 
-                {/* Secondary Icons */}
                 <div className="flex gap-2">
                     {item.phone && (
                         <a href={`tel:${item.phone}`} className="p-3 bg-emerald-50 text-emerald-600 rounded-xl hover:bg-emerald-100 transition-colors flex items-center justify-center flex-1">
@@ -178,15 +165,12 @@ const ResourceCard = ({
                     )}
                 </div>
 
-                {/* Expanded Details & Reporting */}
                 {expanded && (
                     <div className="mt-6 pt-6 border-t border-slate-100 animate-fade-in">
                         <div className="flex justify-between items-center mb-4">
                             <p className="font-black text-slate-400 text-[10px] uppercase tracking-widest">Details & Feedback</p>
-                            
-                            {/* [安全] 只有當 onReport 存在時才顯示按鈕 */}
                             {onReport && (
-                                <button 
+                                <button
                                     onClick={onReport}
                                     className="text-[10px] font-bold text-slate-400 hover:text-rose-500 flex items-center gap-1 transition-colors"
                                 >
@@ -208,6 +192,6 @@ const ResourceCard = ({
             </div>
         </div>
     );
-};
+});
 
 export default ResourceCard;
