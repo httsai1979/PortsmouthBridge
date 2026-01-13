@@ -43,6 +43,10 @@ const PageLoader = () => (
     </div>
 );
 
+const ConnectCalculatorView = lazy(() => import('./components/ConnectCalculator'));
+const ConnectDashboardView = lazy(() => import('./components/ConnectDashboard'));
+const PompeyLoopView = lazy(() => import('./components/PompeyLoop'));
+
 // --- STATIC STYLES ---
 const GLOBAL_APP_STYLES = `
     .app-container { max-width: 500px; margin: 0 auto; background-color: #ffffff; min-height: 100vh; box-shadow: 0 0 50px rgba(0, 0, 0, 0.08); position: relative; padding-bottom: 140px; }
@@ -64,7 +68,7 @@ const App = () => {
     const [showScrollTop, setShowScrollTop] = useState(false);
 
     // Navigation
-    const [view, setView] = useState<'home' | 'map' | 'list' | 'planner' | 'compare' | 'community-plan' | 'safe-sleep-plan' | 'warm-spaces-plan' | 'faq' | 'partner-dashboard' | 'analytics' | 'data-migration'>('home');
+    const [view, setView] = useState<'home' | 'map' | 'list' | 'planner' | 'compare' | 'community-plan' | 'safe-sleep-plan' | 'warm-spaces-plan' | 'faq' | 'partner-dashboard' | 'analytics' | 'data-migration' | 'connect' | 'pompey-loop'>('home');
 
     // Modals
     const [showTips, setShowTips] = useState(false);
@@ -98,6 +102,11 @@ const App = () => {
     const [journeyItems, setJourneyItems] = useState<string[]>([]);
     const [compareItems, setCompareItems] = useState<string[]>([]);
     const [notifications, setNotifications] = useState<Array<any>>([]);
+
+    // Connect State
+    const [connectResult, setConnectResult] = useState<any>(null);
+    const [connectInput, setConnectInput] = useState<any>(null);
+    const [showConnectCalculator, setShowConnectCalculator] = useState(false);
     const [savedIds, setSavedIds] = useState<string[]>(() => {
         try {
             const saved = localStorage.getItem('bridge_saved_resources');
@@ -449,11 +458,45 @@ const App = () => {
                             <button onClick={() => setView('warm-spaces-plan')} className="snap-start min-w-[140px] bg-white border border-slate-100 p-4 rounded-[24px] shadow-sm flex flex-col gap-2 hover:border-orange-200"><div className="w-10 h-10 rounded-2xl bg-orange-50 text-orange-600 flex items-center justify-center"><Icon name="flame" size={18} /></div><div><h4 className="text-xs font-black text-slate-800">Warm Hubs</h4><p className="text-[9px] text-slate-400 font-bold uppercase">Safe Warm Spaces</p></div></button>
                         </div>
 
+                        <div className="mb-8">
+                            <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4 pl-1">Survival Map Shortcuts</h4>
+                            <div className="flex gap-2 overflow-x-auto pb-4 scrollbar-hide">
+                                <button onClick={() => { setFilters({ ...filters, category: 'warmth' }); setView('map'); }} className="px-5 py-3 bg-orange-600 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-lg shadow-orange-100 flex items-center gap-2 whitespace-nowrap"><Icon name="flame" size={14} /> Warm Spaces</button>
+                                <button onClick={() => { setFilters({ ...filters, category: 'food' }); setSearchQuery('no_referral'); setView('map'); }} className="px-5 py-3 bg-emerald-600 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-lg shadow-emerald-100 flex items-center gap-2 whitespace-nowrap"><Icon name="utensils" size={14} /> Eco-Food Rescue</button>
+                                <button onClick={() => { setSearchQuery('wifi'); setView('map'); }} className="px-5 py-3 bg-blue-600 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-lg shadow-blue-100 flex items-center gap-2 whitespace-nowrap"><Icon name="wifi" size={14} /> Digital Inclusion</button>
+                            </div>
+                        </div>
+
                         <div className="mb-10 p-6 bg-gradient-to-br from-amber-50 via-white to-orange-50 rounded-[32px] border-2 border-amber-100/50 shadow-md shadow-amber-200/20 relative overflow-hidden group transition-all hover:shadow-lg">
                             <div className="absolute top-0 right-0 w-32 h-32 bg-amber-200/20 rounded-full -mr-16 -mt-16 blur-2xl"></div>
                             <h3 className="text-[10px] font-black text-amber-600 uppercase tracking-[0.2em] mb-3 flex items-center gap-2"><Icon name="sparkles" size={14} className="animate-pulse" /> Community Growth Tip</h3>
                             <div className="relative z-10">
                                 {(() => { const tip = PROGRESS_TIPS[Math.floor(new Date().getDate()) % PROGRESS_TIPS.length]; return (<><p className="text-sm font-black text-slate-900 mb-1">{tip.title}</p><p className="text-xs text-slate-600 font-medium leading-relaxed opacity-90">{tip.note}</p></>); })()}
+                            </div>
+                        </div>
+
+                        {/* Portsmouth Connect CTA */}
+                        <div className="mb-10 px-1">
+                            <div className="bg-indigo-600 rounded-[40px] p-8 text-white relative overflow-hidden group shadow-2xl shadow-indigo-200">
+                                <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16 group-hover:scale-150 transition-transform duration-700"></div>
+                                <div className="relative z-10">
+                                    <h3 className="text-3xl font-black italic tracking-tighter mb-2">Connect Your Support</h3>
+                                    <p className="text-sm font-bold text-indigo-100 leading-tight mb-8">Uncover unclaimed benefits & avoid "Benefits Cliffs" with our 2026 Portsmouth Intelligence engine.</p>
+                                    <div className="flex gap-3">
+                                        <button
+                                            onClick={() => setShowConnectCalculator(true)}
+                                            className="flex-1 bg-white text-indigo-600 py-4 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl active:scale-95 transition-all"
+                                        >
+                                            Start Check
+                                        </button>
+                                        <button
+                                            onClick={() => setView('pompey-loop')}
+                                            className="flex-1 bg-indigo-500/30 border border-white/20 text-white py-4 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-indigo-500/50 transition-all"
+                                        >
+                                            Pompey Loop
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
@@ -480,6 +523,14 @@ const App = () => {
                 {view === 'partner-dashboard' && <Suspense fallback={<PageLoader />}><PartnerDashboard /></Suspense>}
                 {view === 'analytics' && <Suspense fallback={<PageLoader />}><PulseMap /></Suspense>}
                 {view === 'data-migration' && <Suspense fallback={<PageLoader />}><DataMigration /></Suspense>}
+                {view === 'pompey-loop' && (
+                    <div className="p-8">
+                        <div className="mb-6 flex items-center justify-between">
+                            <button onClick={() => setView('home')} className="p-3 bg-slate-100 rounded-2xl text-slate-400"><Icon name="chevron-left" size={20} /></button>
+                        </div>
+                        <Suspense fallback={<PageLoader />}><PompeyLoopView /></Suspense>
+                    </div>
+                )}
 
                 {view === 'planner' && (
                     <div className="animate-fade-in-up">
@@ -654,6 +705,60 @@ const App = () => {
                                 userLocation={userLocation}
                                 onRemove={(id) => setJourneyItems(prev => prev.filter(i => i !== id))}
                                 onClear={() => { setJourneyItems([]); setView('home'); }}
+                            />
+                        </Suspense>
+                    </div>
+                </div>
+            )}
+            {showConnectCalculator && (
+                <div className="fixed inset-0 z-[60] bg-black/40 backdrop-blur-sm flex items-center justify-center p-5 animate-fade-in">
+                    <div className="w-full max-w-lg">
+                        <Suspense fallback={<PageLoader />}>
+                            <ConnectCalculatorView
+                                onComplete={(res, input) => {
+                                    setConnectResult(res);
+                                    setConnectInput(input);
+                                    setShowConnectCalculator(false);
+                                    // Notifications based on alerts
+                                    if (res.alerts.length > 0) {
+                                        const newNotifs = res.alerts.map((a: any, i: number) => ({
+                                            id: `connect-${Date.now()}-${i}`,
+                                            type: a.type === 'warning' ? 'important' : 'info',
+                                            message: a.title,
+                                            time: 'Just now'
+                                        }));
+                                        setNotifications(prev => [...newNotifs, ...prev]);
+                                    }
+                                }}
+                                onClose={() => setShowConnectCalculator(false)}
+                            />
+                        </Suspense>
+                    </div>
+                </div>
+            )}
+
+            {connectResult && !showConnectCalculator && (
+                <div className="fixed bottom-32 right-5 z-40">
+                    <button
+                        onClick={() => setView('connect')}
+                        className="w-14 h-14 bg-indigo-600 text-white rounded-full shadow-2xl flex items-center justify-center animate-bounce hover:animate-none border-4 border-white"
+                    >
+                        <Icon name="zap" size={24} />
+                    </button>
+                </div>
+            )}
+
+            {view === 'connect' && connectResult && (
+                <div className="fixed inset-0 z-[60] bg-black/40 backdrop-blur-sm flex items-center justify-center p-5">
+                    <div className="w-full max-w-lg">
+                        <Suspense fallback={<PageLoader />}>
+                            <ConnectDashboardView
+                                result={connectResult}
+                                onReset={() => {
+                                    setConnectResult(null);
+                                    setShowConnectCalculator(true);
+                                }}
+                                onClose={() => setView('home')}
                             />
                         </Suspense>
                     </div>
