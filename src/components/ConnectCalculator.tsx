@@ -5,11 +5,12 @@ import { calculateConnectBenefits, type ConnectInput, type ConnectResult } from 
 interface ConnectCalculatorProps {
     onComplete: (result: ConnectResult, input: ConnectInput) => void;
     onClose: () => void;
+    initialData?: ConnectInput | null;
 }
 
-const ConnectCalculator = ({ onComplete, onClose }: ConnectCalculatorProps) => {
+const ConnectCalculator = ({ onComplete, onClose, initialData }: ConnectCalculatorProps) => {
     const [step, setStep] = useState(1);
-    const [formData, setFormData] = useState<ConnectInput>({
+    const [formData, setFormData] = useState<ConnectInput>(initialData || {
         postcode: '',
         tenure: 'rent_private',
         rentAmount: 0,

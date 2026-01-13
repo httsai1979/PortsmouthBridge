@@ -105,13 +105,19 @@ const App = () => {
 
     // Connect State
     const [connectResult, setConnectResult] = useState<any>(null);
-    const [connectInput, setConnectInput] = useState<any>(null);
     const [showConnectCalculator, setShowConnectCalculator] = useState(false);
     const [savedIds, setSavedIds] = useState<string[]>(() => {
         try {
             const saved = localStorage.getItem('bridge_saved_resources');
             return saved ? JSON.parse(saved) : [];
         } catch { return []; }
+    });
+
+    const [connectInput, setConnectInput] = useState<any>(() => {
+        try {
+            const saved = localStorage.getItem('bridge_connect_input');
+            return saved ? JSON.parse(saved) : null;
+        } catch { return null; }
     });
 
     // --- REFS ---
@@ -348,20 +354,29 @@ const App = () => {
             const matchesOpenNow = !smartFilters.openNow || status.isOpen;
             const matchesVerified = !smartFilters.verified || (item.trustScore && item.trustScore > 90);
 
+            // Special keyword filtering (e.g., 'no_referral')
+            let matchesKeyword = true;
+            if (searchQuery.toLowerCase().includes('no_referral')) {
+                matchesKeyword = item.description?.toLowerCase().includes('no referral') || item.tags?.includes('no_referral');
+            }
+
             let matchesNearMe = true;
             if (smartFilters.nearMe && userLocation) {
                 const dist = getDistance(userLocation.lat, userLocation.lng, item.lat, item.lng);
                 matchesNearMe = dist < 2;
             }
-            return matchesArea && matchesCategory && matchesOpenNow && matchesVerified && matchesNearMe;
+            return matchesArea && matchesCategory && matchesOpenNow && matchesVerified && matchesNearMe && matchesKeyword;
         });
 
         return data.sort((a, b) => {
+            // Prioritise Open resources
             const statusA = checkStatus(a.schedule);
             const statusB = checkStatus(b.schedule);
             if (statusA.isOpen && !statusB.isOpen) return -1;
             if (!statusA.isOpen && statusB.isOpen) return 1;
-            return 0;
+
+            // Then prioritise by trustScore
+            return (b.trustScore || 0) - (a.trustScore || 0);
         });
     }, [filters, userLocation, searchQuery, smartFilters, liveStatus]);
 
@@ -715,9 +730,11 @@ const App = () => {
                     <div className="w-full max-w-lg">
                         <Suspense fallback={<PageLoader />}>
                             <ConnectCalculatorView
+                                initialData={connectInput}
                                 onComplete={(res, input) => {
                                     setConnectResult(res);
                                     setConnectInput(input);
+                                    localStorage.setItem('bridge_connect_input', JSON.stringify(input));
                                     setShowConnectCalculator(false);
                                     // Notifications based on alerts
                                     if (res.alerts.length > 0) {

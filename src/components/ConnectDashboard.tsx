@@ -77,9 +77,18 @@ const ConnectDashboard = ({ result, onReset, onClose }: ConnectDashboardProps) =
                             <h2 className="text-2xl font-black italic tracking-tighter">Your Connect Strategy</h2>
                             <p className="text-[10px] font-black text-white/40 uppercase tracking-[0.2em] mt-1">Personalised Portsmouth Plan</p>
                         </div>
-                        <button onClick={onClose} className="p-2 bg-white/10 rounded-full hover:bg-white/20">
-                            <Icon name="x" size={20} />
-                        </button>
+                        <div className="flex gap-2">
+                            <button
+                                onClick={() => window.print()}
+                                className="p-2 bg-white/10 rounded-full hover:bg-white/20 transition-all border border-white/5"
+                                title="Print Strategy"
+                            >
+                                <Icon name="printer" size={20} />
+                            </button>
+                            <button onClick={onClose} className="p-2 bg-white/10 rounded-full hover:bg-white/20 transition-all border border-white/5">
+                                <Icon name="x" size={20} />
+                            </button>
+                        </div>
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
@@ -107,18 +116,23 @@ const ConnectDashboard = ({ result, onReset, onClose }: ConnectDashboardProps) =
                     <div className="space-y-4">
                         <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Knowledge Alerts</h4>
                         {result.alerts.map((alert, i) => (
-                            <div key={i} className={`p-5 rounded-3xl border-2 flex flex-col gap-3 ${alert.type === 'warning' ? 'bg-rose-50 border-rose-100' : 'bg-orange-50 border-orange-100'}`}>
-                                <div className="flex gap-4 items-center">
-                                    <div className={`w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 ${alert.type === 'warning' ? 'bg-rose-500 text-white' : 'bg-orange-500 text-white'}`}>
-                                        <Icon name={alert.type === 'warning' ? 'alert-triangle' : 'zap'} size={20} />
+                            <div key={i} className={`p-5 rounded-3xl border-2 flex flex-col gap-3 relative overflow-hidden group transition-all ${alert.type === 'warning' ? 'bg-rose-50 border-rose-100 shadow-lg shadow-rose-100/50' : 'bg-orange-50 border-orange-100'}`}>
+                                {alert.type === 'warning' && (
+                                    <div className="absolute top-0 right-0 p-2 opacity-10">
+                                        <Icon name="alert-circle" size={80} />
+                                    </div>
+                                )}
+                                <div className="flex gap-4 items-center relative z-10">
+                                    <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 shadow-lg ${alert.type === 'warning' ? 'bg-rose-500 text-white animate-pulse' : 'bg-orange-500 text-white'}`}>
+                                        <Icon name={alert.type === 'warning' ? 'alert-octagon' : 'zap'} size={24} />
                                     </div>
                                     <div className="space-y-0.5">
-                                        <h5 className="font-black text-sm text-slate-900">{alert.title}</h5>
-                                        <p className="text-[11px] text-slate-600 font-bold leading-tight">{alert.message}</p>
+                                        <h5 className={`font-black text-sm ${alert.type === 'warning' ? 'text-rose-900' : 'text-slate-900'}`}>{alert.title}</h5>
+                                        <p className={`text-[11px] font-bold leading-tight ${alert.type === 'warning' ? 'text-rose-700/80' : 'text-slate-600'}`}>{alert.message}</p>
                                     </div>
                                 </div>
                                 {alert.detailedInfo && (
-                                    <div className="bg-white/50 p-4 rounded-2xl text-[10px] font-medium text-slate-500 leading-normal border border-slate-100/50">
+                                    <div className={`p-4 rounded-2xl text-[10px] font-medium leading-relaxed border relative z-10 ${alert.type === 'warning' ? 'bg-white/60 border-rose-200 text-rose-800' : 'bg-white/50 border-slate-100/50 text-slate-500'}`}>
                                         {alert.detailedInfo}
                                     </div>
                                 )}

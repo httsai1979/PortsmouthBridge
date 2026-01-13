@@ -81,6 +81,20 @@ const PompeyLoop = () => {
         return date.toLocaleDateString();
     };
 
+    const [revealedContacts, setRevealedContacts] = useState<string[]>([]);
+
+    const toggleContact = (id: string) => {
+        if (revealedContacts.includes(id)) {
+            setRevealedContacts(prev => prev.filter(i => i !== id));
+        } else {
+            setRevealedContacts(prev => [...prev, id]);
+        }
+    };
+
+    const handleReport = (id: string) => {
+        alert('Thank you for your report. Our community moderators will review this post within 24 hours to ensure the Loop remains safe and dignified.');
+    };
+
     return (
         <div className="space-y-8 animate-fade-in-up">
             {/* Header Section */}
@@ -117,10 +131,20 @@ const PompeyLoop = () => {
                 {posts.filter(i => activeTab === 'all' || (activeTab === 'skills' ? i.type === 'skill' : i.type === 'item')).map(item => (
                     <div key={item.id} className="p-6 bg-white rounded-[32px] border-2 border-slate-50 hover:border-indigo-100 transition-all shadow-xl shadow-slate-100/50">
                         <div className="flex justify-between items-start mb-4">
-                            <span className={`px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest ${item.type === 'skill' ? 'bg-indigo-50 text-indigo-600' : 'bg-emerald-50 text-emerald-600'}`}>
-                                {item.type === 'skill' ? 'Skill Swap' : 'Item Flow'}
-                            </span>
-                            <span className="text-[10px] text-slate-300 font-bold uppercase">{formatTime(item.timestamp)}</span>
+                            <div className="flex gap-2">
+                                <span className={`px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest ${item.type === 'skill' ? 'bg-indigo-50 text-indigo-600' : 'bg-emerald-50 text-emerald-600'}`}>
+                                    {item.type === 'skill' ? 'Skill Swap' : 'Item Flow'}
+                                </span>
+                                <span className="px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest bg-slate-50 text-slate-400 border border-slate-100">
+                                    {item.category}
+                                </span>
+                            </div>
+                            <div className="flex items-center gap-3">
+                                <span className="text-[10px] text-slate-300 font-bold uppercase">{formatTime(item.timestamp)}</span>
+                                <button onClick={() => handleReport(item.id)} className="text-slate-300 hover:text-rose-400 transition-colors">
+                                    <Icon name="flag" size={14} />
+                                </button>
+                            </div>
                         </div>
                         <h4 className="text-xl font-black text-slate-900 mb-1 leading-tight tracking-tight uppercase">{item.title}</h4>
                         <p className="text-xs text-slate-500 font-medium leading-relaxed mb-6">{item.description}</p>
@@ -132,9 +156,20 @@ const PompeyLoop = () => {
                                 </div>
                                 <span className="text-[10px] font-black text-slate-900 uppercase tracking-tighter">{item.userName}</span>
                             </div>
-                            <button className="flex items-center gap-2 py-2 px-4 bg-slate-900 text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-xl shadow-slate-200 active:scale-95 transition-all">
-                                Connect
-                            </button>
+                            <div className="flex gap-2">
+                                {revealedContacts.includes(item.id) ? (
+                                    <div className="px-4 py-2 bg-indigo-50 text-indigo-600 rounded-xl text-[10px] font-black border border-indigo-100 animate-fade-in">
+                                        {item.contact}
+                                    </div>
+                                ) : (
+                                    <button
+                                        onClick={() => toggleContact(item.id)}
+                                        className="flex items-center gap-2 py-2 px-4 bg-slate-900 text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-xl shadow-slate-200 active:scale-95 transition-all"
+                                    >
+                                        Connect
+                                    </button>
+                                )}
+                            </div>
                         </div>
                     </div>
                 ))}

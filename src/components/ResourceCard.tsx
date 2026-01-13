@@ -153,6 +153,25 @@ const ResourceCard = memo(({
                             <Icon name="phone" size={18} />
                         </a>
                     )}
+                    <button
+                        onClick={async () => {
+                            if (navigator.share) {
+                                try {
+                                    await navigator.share({
+                                        title: item.name,
+                                        text: item.description,
+                                        url: window.location.href,
+                                    });
+                                } catch (err) { console.log('Error sharing:', err); }
+                            } else {
+                                navigator.clipboard.writeText(window.location.href);
+                                alert('Link copied to clipboard!');
+                            }
+                        }}
+                        className="p-3 bg-slate-50 text-slate-400 rounded-xl hover:bg-slate-100 transition-colors flex items-center justify-center flex-1"
+                    >
+                        <Icon name="share-2" size={18} />
+                    </button>
                     {onAddToJourney && (
                         <button onClick={onAddToJourney} className={`p-3 rounded-xl transition-colors flex items-center justify-center flex-1 ${isInJourney ? 'bg-indigo-600 text-white shadow-md' : 'bg-slate-50 text-slate-400 hover:bg-slate-100'}`}>
                             <Icon name="mapPin" size={18} />

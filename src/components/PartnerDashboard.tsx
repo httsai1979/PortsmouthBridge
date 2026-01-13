@@ -10,6 +10,7 @@ const PartnerDashboard = () => {
     const [managedServices, setManagedServices] = useState<ServiceDocument[]>([]);
     const [loading, setLoading] = useState(true);
     const [updating, setUpdating] = useState<string | null>(null);
+    const [searchTerm, setSearchTerm] = useState('');
 
     useEffect(() => {
         if (!currentUser) return;
@@ -23,6 +24,11 @@ const PartnerDashboard = () => {
 
         return () => unsubscribe();
     }, [currentUser]);
+
+    const filteredServices = managedServices.filter(s =>
+        s.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        s.category.toLowerCase().includes(searchTerm.toLowerCase())
+    );
 
     // Function to update status
     const updateStatus = async (serviceId: string, updates: any) => {
@@ -45,13 +51,25 @@ const PartnerDashboard = () => {
 
     return (
         <div className="max-w-4xl mx-auto p-6 space-y-8 pb-32">
-            <div className="flex justify-between items-center">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
                 <div>
                     <h2 className="text-3xl font-black text-slate-900 tracking-tight">Partner Dashboard</h2>
                     <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">Real-time Management Centre</p>
                 </div>
-                <div className="px-4 py-2 bg-indigo-600 text-white rounded-full text-[10px] font-black uppercase tracking-widest">
-                    Live System
+                <div className="flex items-center gap-4 w-full md:w-auto">
+                    <div className="relative flex-1 md:w-64">
+                        <Icon name="search" size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+                        <input
+                            type="text"
+                            placeholder="Filter services..."
+                            className="w-full pl-12 pr-4 py-3 bg-white border-2 border-slate-100 rounded-2xl text-xs font-bold outline-none focus:border-indigo-600 transition-all"
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                        />
+                    </div>
+                    <div className="hidden md:block px-4 py-3 bg-indigo-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-indigo-100">
+                        Live System
+                    </div>
                 </div>
             </div>
 
@@ -72,9 +90,9 @@ const PartnerDashboard = () => {
             ) : (
                 // Show control cards if data exists
                 <div className="grid gap-6">
-                    {managedServices.map(service => (
+                    {filteredServices.map(service => (
                         <div key={service.id} className="bg-white rounded-[40px] p-8 shadow-xl shadow-slate-200/50 border border-slate-50 overflow-hidden relative">
-                            
+
                             {/* Loading Overlay */}
                             {updating === service.id && (
                                 <div className="absolute inset-0 bg-white/60 backdrop-blur-[2px] z-50 flex items-center justify-center">
