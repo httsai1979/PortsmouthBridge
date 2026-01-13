@@ -11,6 +11,7 @@ import PrivacyShield from './components/PrivacyShield';
 import SmartNotifications from './components/SmartNotifications';
 import PartnerLogin from './components/PartnerLogin';
 import AnimatedRoutes from './components/AnimatedRoutes';
+import MetaData from './components/MetaData';
 
 // --- LAZY COMPONENTS ---
 const CrisisWizard = lazy(() => import('./components/CrisisWizard'));
@@ -91,6 +92,7 @@ const App = () => {
 
     return (
         <Router>
+            <MetaData />
             <div className={`selection:bg-indigo-200 selection:text-indigo-900 ${highContrast ? 'high-contrast' : ''}`}>
                 <Layout
                     isOffline={isOffline}
@@ -104,7 +106,6 @@ const App = () => {
                         setReportTarget={setReportTarget}
                         setShowWizard={setShowWizard}
                         setShowConnectCalculator={setShowConnectCalculator}
-                        setMapFocus={() => { }}
                         connectResult={connectResult}
                     />
                 </Layout>

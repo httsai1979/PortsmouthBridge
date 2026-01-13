@@ -1,4 +1,4 @@
-import React, { Suspense, lazy } from 'react';
+import { Suspense, lazy } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import Icon from '../components/Icon';
 

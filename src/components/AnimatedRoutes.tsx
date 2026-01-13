@@ -3,6 +3,7 @@ import { AnimatePresence } from 'framer-motion';
 
 // --- COMPONENTS ---
 import PageTransition from './PageTransition';
+import ProtectedRoute from './ProtectedRoute';
 
 // --- PAGES ---
 import Home from '../pages/Home';
@@ -22,7 +23,6 @@ interface AnimatedRoutesProps {
     setReportTarget: (target: any) => void;
     setShowWizard: (show: boolean) => void;
     setShowConnectCalculator: (show: boolean) => void;
-    setMapFocus: (focus: any) => void;
     connectResult: any;
 }
 
@@ -33,7 +33,6 @@ const AnimatedRoutes = ({
     setReportTarget,
     setShowWizard,
     setShowConnectCalculator,
-    setMapFocus,
     connectResult
 }: AnimatedRoutesProps) => {
     const location = useLocation();
@@ -46,7 +45,6 @@ const AnimatedRoutes = ({
                         <Home
                             onShowWizard={() => setShowWizard(true)}
                             onShowConnectCalculator={() => setShowConnectCalculator(true)}
-                            onNavigateToMapFocus={setMapFocus}
                         />
                     </PageTransition>
                 } />
@@ -86,14 +84,16 @@ const AnimatedRoutes = ({
                     </PageTransition>
                 } />
 
-                {/* Protected Partner Routes */}
+                {/* Secure Partner Routes */}
                 <Route path="/partner/*" element={
-                    isPartner ? (
+                    <ProtectedRoute requirePartner>
                         <PageTransition>
                             <PartnerPortal />
                         </PageTransition>
-                    ) : <Navigate to="/" replace />
+                    </ProtectedRoute>
                 } />
+
+                <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
         </AnimatePresence>
     );

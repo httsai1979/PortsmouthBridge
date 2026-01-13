@@ -15,9 +15,9 @@ export interface Resource {
     transport?: string;
     trustScore?: number; // 0-100
     thanksCount?: number;
-    languages?: string[]; 
-    culture_tags?: string[]; 
-    capacityLevel?: 'high' | 'medium' | 'low' | 'unknown';
+    languages?: string[];
+    culture_tags?: string[];
+    capacityLevel?: 'high' | 'medium' | 'low' | 'full' | 'unknown';
     entranceMeta?: {
         imageUrl?: string;
         queueStatus?: 'empty' | 'light' | 'busy' | 'unknown';
@@ -590,7 +590,7 @@ export const ALL_DATA: Resource[] = [
         requirements: "Drop-in or appointment.",
         tags: ["support", "advice", "legal", "debt", "free", "no_referral"],
         schedule: { 0: "Closed", 1: "09:00-16:00", 2: "09:00-16:00", 3: "09:00-16:00", 4: "09:00-16:00", 5: "09:00-16:00", 6: "Closed" },
-        lat: 50.7965, 
+        lat: 50.7965,
         lng: -1.0915,
         phone: "0800 144 8848",
         trustScore: 99,

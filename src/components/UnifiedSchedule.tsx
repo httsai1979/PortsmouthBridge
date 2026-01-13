@@ -46,8 +46,8 @@ const SCHEDULE_STYLES = `
     }
 `;
 
-const UnifiedSchedule = ({ data, category, title, onNavigate, onSave, savedIds }: UnifiedScheduleProps) => {
-    
+const UnifiedSchedule = ({ data, category, title, onNavigate, savedIds }: UnifiedScheduleProps) => {
+
     // [FIX] Inject styles once on mount
     useEffect(() => {
         const style = document.createElement('style');
@@ -95,7 +95,7 @@ const UnifiedSchedule = ({ data, category, title, onNavigate, onSave, savedIds }
                         <h2 className="text-xl font-black text-slate-900 tracking-tight">{title || "Weekly Overview"}</h2>
                         <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">7-Day Plan</p>
                     </div>
-                    <button 
+                    <button
                         onClick={() => window.print()}
                         className="p-3 bg-indigo-50 text-indigo-600 rounded-xl hover:bg-indigo-100 transition-colors flex items-center gap-2 active:scale-95"
                     >
@@ -126,24 +126,24 @@ const UnifiedSchedule = ({ data, category, title, onNavigate, onSave, savedIds }
                                         items.map(item => {
                                             const style = TAG_ICONS[item.category] || TAG_ICONS.default;
                                             const time = item.schedule[index];
-                                            
+
                                             return (
-                                                <div 
-                                                    key={`${item.id}-${index}`} 
+                                                <div
+                                                    key={`${item.id}-${index}`}
                                                     className="bg-white p-3 rounded-xl border border-slate-100 shadow-sm hover:border-indigo-200 transition-all cursor-pointer group relative overflow-hidden"
                                                     onClick={() => onNavigate(item.id)}
                                                 >
                                                     {/* Color Strip */}
                                                     <div className={`absolute left-0 top-0 bottom-0 w-1 ${style.bg.replace('bg-', 'bg-')}-500`}></div>
-                                                    
+
                                                     <div className="pl-2">
                                                         <div className="flex justify-between items-start">
                                                             <span className="text-[10px] font-black text-slate-400 uppercase tracking-wide">{time}</span>
-                                                            {savedIds.includes(item.id) && <Icon name="heart" size={10} className="text-rose-500" fill={true} />}
+                                                            {savedIds.includes(item.id) && <Icon name="heart" size={10} className="text-rose-500" />}
                                                         </div>
-                                                        
+
                                                         <h4 className="text-xs font-bold text-slate-800 leading-tight my-1 line-clamp-2">{item.name}</h4>
-                                                        
+
                                                         <div className="flex items-center gap-1 mt-1">
                                                             <div className={`w-1.5 h-1.5 rounded-full ${style.bg.replace('bg-', 'bg-')}-500`}></div>
                                                             <span className="text-[9px] text-slate-500 truncate max-w-[80px]">{item.area}</span>

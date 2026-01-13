@@ -104,7 +104,7 @@ const PompeyLoop = () => {
         }
     };
 
-    const handleReport = (id: string) => {
+    const handleReport = (_id: string) => {
         alert('Thank you for your report. Our community moderators will review this post within 24 hours to ensure the Loop remains safe and dignified.');
     };
 

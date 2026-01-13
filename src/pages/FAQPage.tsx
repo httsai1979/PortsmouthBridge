@@ -1,4 +1,3 @@
-import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import FAQSection from '../components/FAQSection';
 import Icon from '../components/Icon';

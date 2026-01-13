@@ -1,7 +1,6 @@
 import { useMemo } from 'react';
 import Fuse from 'fuse.js';
 import { checkStatus, getDistance } from '../utils';
-import { Resource } from '../data';
 import { ServiceDocument } from '../types/schema';
 
 interface FilterState {
