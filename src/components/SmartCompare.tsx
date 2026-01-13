@@ -1,3 +1,4 @@
+import { motion, AnimatePresence } from 'framer-motion';
 import Icon from './Icon';
 import { checkStatus, getTagConfig, getDistance } from '../utils';
 import { TAG_ICONS } from '../data';
@@ -15,11 +16,17 @@ interface SmartCompareProps {
 const SmartCompare = ({ items, userLocation, onRemove, onNavigate, onCall }: SmartCompareProps) => {
     if (items.length === 0) {
         return (
-            <div className="p-8 text-center bg-white rounded-[32px] border-2 border-dashed border-slate-200">
-                <Icon name="shield" size={48} className="mx-auto text-slate-300 mb-3" />
-                <p className="text-sm font-black text-slate-400 uppercase tracking-widest">No resources to compare</p>
-                <p className="text-xs text-slate-400 mt-2">Add up to 3 resources for side-by-side comparison</p>
-            </div>
+            <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="p-12 text-center bg-white rounded-[40px] border-4 border-dashed border-slate-100"
+            >
+                <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <Icon name="shield" size={40} className="text-slate-200" />
+                </div>
+                <p className="text-lg font-black text-slate-900 uppercase tracking-tighter mb-2">Comparison Empty</p>
+                <p className="text-sm font-medium text-slate-400 max-w-[240px] mx-auto leading-relaxed">Add up to 3 resources from the directory to compare their details side-by-side.</p>
+            </motion.div>
         );
     }
 
@@ -50,191 +57,211 @@ const SmartCompare = ({ items, userLocation, onRemove, onNavigate, onCall }: Sma
     const bestTrust = Math.max(...itemsWithMetrics.map(i => i.trustScore));
 
     return (
-        <div className="bg-white rounded-[32px] shadow-2xl border-2 border-slate-100 overflow-hidden max-h-[90vh] flex flex-col">
+        <motion.div
+            layout
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-white rounded-[40px] shadow-2xl border border-slate-100 overflow-hidden max-h-[90vh] flex flex-col"
+        >
             {/* Header */}
-            <div className="bg-gradient-to-r from-emerald-600 to-indigo-600 p-6 text-white">
-                <h3 className="text-2xl font-black mb-2">Smart Compare</h3>
-                <p className="text-sm font-bold opacity-90">Side-by-side resource comparison</p>
+            <div className="bg-slate-900 p-8 text-white relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/10 rounded-full -mr-32 -mt-32 blur-3xl"></div>
+                <div className="relative z-10 flex justify-between items-end">
+                    <div>
+                        <h3 className="text-3xl font-black tracking-tight italic">Smart Compare</h3>
+                        <p className="text-xs font-bold text-white/40 uppercase tracking-[0.2em] mt-1">Strategic Resource Analysis</p>
+                    </div>
+                    <div className="px-4 py-2 bg-white/5 rounded-2xl border border-white/10 backdrop-blur-md">
+                        <span className="text-[10px] font-black uppercase tracking-widest text-indigo-400">Comparing {items.length} items</span>
+                    </div>
+                </div>
             </div>
 
             {/* Comparison Grid */}
-            <div className="flex-1 overflow-y-auto p-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {itemsWithMetrics.map(item => {
-                        const config = getTagConfig(item.category, TAG_ICONS);
-                        const isBestDistance = item.distance === bestDistance && bestDistance !== null;
-                        const isBestTrust = item.trustScore === bestTrust && bestTrust > 0;
+            <div className="flex-1 overflow-y-auto p-8 bg-slate-50/50">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <AnimatePresence mode="popLayout">
+                        {itemsWithMetrics.map((item, idx) => {
+                            const config = getTagConfig(item.category, TAG_ICONS);
+                            const isBestDistance = item.distance === bestDistance && bestDistance !== null;
+                            const isBestTrust = item.trustScore === bestTrust && bestTrust > 0;
 
-                        return (
-                            <div
-                                key={item.id}
-                                className="relative bg-gradient-to-br from-white to-slate-50 rounded-3xl p-6 border-2 border-slate-100 shadow-lg hover:shadow-2xl transition-all group"
-                            >
-                                {/* Winner Badges */}
-                                <div className="absolute -top-3 -right-3 flex flex-col gap-2 z-10">
-                                    {isBestDistance && (
-                                        <div className="bg-emerald-500 text-white px-3 py-1 rounded-full text-xs font-black shadow-lg flex items-center gap-1">
-                                            <Icon name="navigation" size={12} />
-                                            CLOSEST
-                                        </div>
-                                    )}
-                                    {isBestTrust && (
-                                        <div className="bg-indigo-500 text-white px-3 py-1 rounded-full text-xs font-black shadow-lg flex items-center gap-1">
-                                            <Icon name="check_circle" size={12} />
-                                            VERIFIED
-                                        </div>
-                                    )}
-                                </div>
-
-                                {/* Remove Button */}
-                                <button
-                                    onClick={() => onRemove(item.id)}
-                                    className="absolute top-4 right-4 p-2 bg-white rounded-full shadow-md text-slate-400 hover:text-rose-500 hover:bg-rose-50 transition-all z-10"
+                            return (
+                                <motion.div
+                                    layout
+                                    initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                                    exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.2 } }}
+                                    transition={{ delay: idx * 0.1 }}
+                                    key={item.id}
+                                    className="relative bg-white rounded-[32px] p-8 border border-slate-200/60 shadow-xl shadow-slate-200/50 group"
                                 >
-                                    <Icon name="x" size={14} />
-                                </button>
-
-                                {/* Resource Header */}
-                                <div className="flex items-start gap-4 mb-6 pt-2">
-                                    <div className={`w-16 h-16 rounded-2xl flex items-center justify-center ${config.bg} shrink-0 shadow-md`}>
-                                        <Icon name={config.icon} size={28} className={config.color} />
-                                    </div>
-                                    <div className="flex-1 min-w-0">
-                                        <h4 className="text-lg font-black text-slate-900 leading-tight mb-1">{item.name}</h4>
-                                        <p className="text-xs font-bold text-slate-400 uppercase tracking-wide">{(item as any).location?.area || (item as any).area} • {(item as any).type || (item as any).category}</p>
-                                    </div>
-                                </div>
-
-                                {/* Metrics Cards */}
-                                <div className="space-y-3 mb-6">
-                                    {/* Status Metric */}
-                                    <div className={`p-4 rounded-2xl border-2 transition-all ${item.isOpen
-                                        ? 'bg-emerald-50 border-emerald-200'
-                                        : item.isClosingSoon
-                                            ? 'bg-amber-50 border-amber-200'
-                                            : 'bg-slate-50 border-slate-200'
-                                        }`}>
-                                        <div className="flex items-center justify-between">
-                                            <span className="text-xs font-bold text-slate-600">Status</span>
-                                            <div className="flex items-center gap-2">
-                                                <div className={`w-3 h-3 rounded-full ${item.isOpen ? 'bg-emerald-500 animate-pulse shadow-lg shadow-emerald-200' :
-                                                    item.isClosingSoon ? 'bg-amber-500' : 'bg-slate-300'
-                                                    }`}></div>
-                                                <span className={`text-sm font-black ${item.isOpen ? 'text-emerald-700' :
-                                                    item.isClosingSoon ? 'text-amber-700' : 'text-slate-500'
-                                                    }`}>
-                                                    {item.isOpen ? 'OPEN NOW' : item.isClosingSoon ? 'CLOSING SOON' : 'CLOSED'}
-                                                </span>
+                                    {/* Winner Badges */}
+                                    <div className="absolute -top-3 -right-3 flex flex-col gap-2 z-10">
+                                        {isBestDistance && (
+                                            <div className="bg-emerald-500 text-white px-3 py-1 rounded-full text-xs font-black shadow-lg flex items-center gap-1">
+                                                <Icon name="navigation" size={12} />
+                                                CLOSEST
                                             </div>
-                                        </div>
+                                        )}
+                                        {isBestTrust && (
+                                            <div className="bg-indigo-500 text-white px-3 py-1 rounded-full text-xs font-black shadow-lg flex items-center gap-1">
+                                                <Icon name="check_circle" size={12} />
+                                                VERIFIED
+                                            </div>
+                                        )}
                                     </div>
 
-                                    {/* Distance Metric */}
-                                    {item.distance !== null && (
-                                        <div className={`p-4 rounded-2xl border-2 ${isBestDistance
-                                            ? 'bg-emerald-50 border-emerald-300 ring-2 ring-emerald-200'
-                                            : 'bg-white border-slate-200'
-                                            }`}>
-                                            <div className="flex items-center justify-between">
-                                                <span className="text-xs font-bold text-slate-600">Distance</span>
-                                                <div className="flex items-center gap-2">
-                                                    <Icon name="navigation" size={14} className={isBestDistance ? 'text-emerald-600' : 'text-slate-400'} />
-                                                    <span className={`text-lg font-black ${isBestDistance ? 'text-emerald-700' : 'text-slate-700'}`}>
-                                                        {item.distance.toFixed(1)} km
-                                                    </span>
-                                                </div>
-                                            </div>
-                                            <div className="mt-2 bg-slate-100 rounded-full h-2 overflow-hidden">
-                                                <div
-                                                    className={`h-full rounded-full transition-all ${isBestDistance ? 'bg-emerald-500' : 'bg-indigo-400'}`}
-                                                    style={{ width: `${Math.max(10, 100 - (item.distance * 20))}%` }}
-                                                ></div>
-                                            </div>
-                                        </div>
-                                    )}
-
-                                    {/* Trust Score Metric */}
-                                    {item.trustScore > 0 && (
-                                        <div className={`p-4 rounded-2xl border-2 ${isBestTrust
-                                            ? 'bg-indigo-50 border-indigo-300 ring-2 ring-indigo-200'
-                                            : 'bg-white border-slate-200'
-                                            }`}>
-                                            <div className="flex items-center justify-between">
-                                                <span className="text-xs font-bold text-slate-600">Trust Score</span>
-                                                <div className="flex items-center gap-2">
-                                                    {isBestTrust && <Icon name="check_circle" size={14} className="text-indigo-600" />}
-                                                    <span className={`text-lg font-black ${isBestTrust ? 'text-indigo-700' : 'text-slate-700'}`}>
-                                                        {item.trustScore}%
-                                                    </span>
-                                                </div>
-                                            </div>
-                                            <div className="mt-2 bg-slate-100 rounded-full h-2 overflow-hidden">
-                                                <div
-                                                    className={`h-full rounded-full transition-all ${isBestTrust ? 'bg-indigo-500' : 'bg-slate-400'}`}
-                                                    style={{ width: `${item.trustScore}%` }}
-                                                ></div>
-                                            </div>
-                                        </div>
-                                    )}
-
-                                    {/* Tags */}
-                                    <div className="p-4 bg-white rounded-2xl border-2 border-slate-200 mb-4">
-                                        <span className="text-xs font-bold text-slate-600 block mb-3">Services</span>
-                                        <div className="flex flex-wrap gap-2">
-                                            {item.tags.slice(0, 4).map(tag => (
-                                                <span
-                                                    key={tag}
-                                                    className="text-xs font-bold px-3 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-700"
-                                                >
-                                                    {TAG_ICONS[tag]?.label || tag}
-                                                </span>
-                                            ))}
-                                        </div>
-                                    </div>
-
-                                    {/* Language & Culture Grid */}
-                                    <div className="grid grid-cols-2 gap-3 mb-6">
-                                        <div className="p-3 bg-white rounded-2xl border-2 border-slate-200">
-                                            <span className="text-[10px] font-bold text-slate-400 block mb-2 uppercase">Languages</span>
-                                            <div className="flex flex-wrap gap-1">
-                                                {((item as any).languages as string[])?.length ? ((item as any).languages as string[]).map(l => (
-                                                    <span key={l} className="text-[9px] font-black px-1.5 py-0.5 rounded bg-slate-100 text-slate-600">{l}</span>
-                                                )) : <span className="text-[9px] text-slate-400">Default (En)</span>}
-                                            </div>
-                                        </div>
-                                        <div className="p-3 bg-white rounded-2xl border-2 border-slate-200">
-                                            <span className="text-[10px] font-bold text-slate-400 block mb-2 uppercase">Culture</span>
-                                            <div className="flex flex-wrap gap-1">
-                                                {((item as any).culture_tags as string[])?.length ? ((item as any).culture_tags as string[]).map(t => (
-                                                    <span key={t} className="text-[9px] font-black px-1.5 py-0.5 rounded bg-rose-50 text-rose-500">{t}</span>
-                                                )) : <span className="text-[9px] text-slate-400">-</span>}
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* Action Buttons */}
-                                <div className="grid grid-cols-2 gap-3">
-                                    {item.phone && (
-                                        <button
-                                            onClick={() => onCall(item.phone!)}
-                                            className="bg-emerald-600 text-white py-3 rounded-2xl text-xs font-black uppercase tracking-wider flex items-center justify-center gap-2 hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-200 active:scale-95"
-                                        >
-                                            <Icon name="phone" size={14} />
-                                            Call
-                                        </button>
-                                    )}
+                                    {/* Remove Button */}
                                     <button
-                                        onClick={() => onNavigate(item.id)}
-                                        className={`bg-indigo-600 text-white py-3 rounded-2xl text-xs font-black uppercase tracking-wider flex items-center justify-center gap-2 hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-200 active:scale-95 ${!item.phone ? 'col-span-2' : ''}`}
+                                        onClick={() => onRemove(item.id)}
+                                        className="absolute top-4 right-4 p-2 bg-white rounded-full shadow-md text-slate-400 hover:text-rose-500 hover:bg-rose-50 transition-all z-10"
                                     >
-                                        <Icon name="navigation" size={14} />
-                                        Navigate
+                                        <Icon name="x" size={14} />
                                     </button>
-                                </div>
-                            </div>
-                        );
-                    })}
+
+                                    {/* Resource Header */}
+                                    <div className="flex items-start gap-4 mb-6 pt-2">
+                                        <div className={`w-16 h-16 rounded-2xl flex items-center justify-center ${config.bg} shrink-0 shadow-md`}>
+                                            <Icon name={config.icon} size={28} className={config.color} />
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <h4 className="text-lg font-black text-slate-900 leading-tight mb-1">{item.name}</h4>
+                                            <p className="text-xs font-bold text-slate-400 uppercase tracking-wide">{(item as any).location?.area || (item as any).area} • {(item as any).type || (item as any).category}</p>
+                                        </div>
+                                    </div>
+
+                                    {/* Metrics Cards */}
+                                    <div className="space-y-3 mb-6">
+                                        {/* Status Metric */}
+                                        <div className={`p-4 rounded-2xl border-2 transition-all ${item.isOpen
+                                            ? 'bg-emerald-50 border-emerald-200'
+                                            : item.isClosingSoon
+                                                ? 'bg-amber-50 border-amber-200'
+                                                : 'bg-slate-50 border-slate-200'
+                                            }`}>
+                                            <div className="flex items-center justify-between">
+                                                <span className="text-xs font-bold text-slate-600">Status</span>
+                                                <div className="flex items-center gap-2">
+                                                    <div className={`w-3 h-3 rounded-full ${item.isOpen ? 'bg-emerald-500 animate-pulse shadow-lg shadow-emerald-200' :
+                                                        item.isClosingSoon ? 'bg-amber-500' : 'bg-slate-300'
+                                                        }`}></div>
+                                                    <span className={`text-sm font-black ${item.isOpen ? 'text-emerald-700' :
+                                                        item.isClosingSoon ? 'text-amber-700' : 'text-slate-500'
+                                                        }`}>
+                                                        {item.isOpen ? 'OPEN NOW' : item.isClosingSoon ? 'CLOSING SOON' : 'CLOSED'}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* Distance Metric */}
+                                        {item.distance !== null && (
+                                            <div className={`p-4 rounded-2xl border-2 ${isBestDistance
+                                                ? 'bg-emerald-50 border-emerald-300 ring-2 ring-emerald-200'
+                                                : 'bg-white border-slate-200'
+                                                }`}>
+                                                <div className="flex items-center justify-between">
+                                                    <span className="text-xs font-bold text-slate-600">Distance</span>
+                                                    <div className="flex items-center gap-2">
+                                                        <Icon name="navigation" size={14} className={isBestDistance ? 'text-emerald-600' : 'text-slate-400'} />
+                                                        <span className={`text-lg font-black ${isBestDistance ? 'text-emerald-700' : 'text-slate-700'}`}>
+                                                            {item.distance.toFixed(1)} km
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                                <div className="mt-2 bg-slate-100 rounded-full h-2 overflow-hidden">
+                                                    <div
+                                                        className={`h-full rounded-full transition-all ${isBestDistance ? 'bg-emerald-500' : 'bg-indigo-400'}`}
+                                                        style={{ width: `${Math.max(10, 100 - (item.distance * 20))}%` }}
+                                                    ></div>
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {/* Trust Score Metric */}
+                                        {item.trustScore > 0 && (
+                                            <div className={`p-4 rounded-2xl border-2 ${isBestTrust
+                                                ? 'bg-indigo-50 border-indigo-300 ring-2 ring-indigo-200'
+                                                : 'bg-white border-slate-200'
+                                                }`}>
+                                                <div className="flex items-center justify-between">
+                                                    <span className="text-xs font-bold text-slate-600">Trust Score</span>
+                                                    <div className="flex items-center gap-2">
+                                                        {isBestTrust && <Icon name="check_circle" size={14} className="text-indigo-600" />}
+                                                        <span className={`text-lg font-black ${isBestTrust ? 'text-indigo-700' : 'text-slate-700'}`}>
+                                                            {item.trustScore}%
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                                <div className="mt-2 bg-slate-100 rounded-full h-2 overflow-hidden">
+                                                    <div
+                                                        className={`h-full rounded-full transition-all ${isBestTrust ? 'bg-indigo-500' : 'bg-slate-400'}`}
+                                                        style={{ width: `${item.trustScore}%` }}
+                                                    ></div>
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {/* Tags */}
+                                        <div className="p-4 bg-white rounded-2xl border-2 border-slate-200 mb-4">
+                                            <span className="text-xs font-bold text-slate-600 block mb-3">Services</span>
+                                            <div className="flex flex-wrap gap-2">
+                                                {item.tags.slice(0, 4).map(tag => (
+                                                    <span
+                                                        key={tag}
+                                                        className="text-xs font-bold px-3 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-700"
+                                                    >
+                                                        {TAG_ICONS[tag]?.label || tag}
+                                                    </span>
+                                                ))}
+                                            </div>
+                                        </div>
+
+                                        {/* Language & Culture Grid */}
+                                        <div className="grid grid-cols-2 gap-3 mb-6">
+                                            <div className="p-3 bg-white rounded-2xl border-2 border-slate-200">
+                                                <span className="text-[10px] font-bold text-slate-400 block mb-2 uppercase">Languages</span>
+                                                <div className="flex flex-wrap gap-1">
+                                                    {((item as any).languages as string[])?.length ? ((item as any).languages as string[]).map(l => (
+                                                        <span key={l} className="text-[9px] font-black px-1.5 py-0.5 rounded bg-slate-100 text-slate-600">{l}</span>
+                                                    )) : <span className="text-[9px] text-slate-400">Default (En)</span>}
+                                                </div>
+                                            </div>
+                                            <div className="p-3 bg-white rounded-2xl border-2 border-slate-200">
+                                                <span className="text-[10px] font-bold text-slate-400 block mb-2 uppercase">Culture</span>
+                                                <div className="flex flex-wrap gap-1">
+                                                    {((item as any).culture_tags as string[])?.length ? ((item as any).culture_tags as string[]).map(t => (
+                                                        <span key={t} className="text-[9px] font-black px-1.5 py-0.5 rounded bg-rose-50 text-rose-500">{t}</span>
+                                                    )) : <span className="text-[9px] text-slate-400">-</span>}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Action Buttons */}
+                                    <div className="grid grid-cols-2 gap-3">
+                                        {item.phone && (
+                                            <button
+                                                onClick={() => onCall(item.phone!)}
+                                                className="bg-emerald-600 text-white py-3 rounded-2xl text-xs font-black uppercase tracking-wider flex items-center justify-center gap-2 hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-200 active:scale-95"
+                                            >
+                                                <Icon name="phone" size={14} />
+                                                Call
+                                            </button>
+                                        )}
+                                        <button
+                                            onClick={() => onNavigate(item.id)}
+                                            className={`bg-indigo-600 text-white py-3 rounded-2xl text-xs font-black uppercase tracking-wider flex items-center justify-center gap-2 hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-200 active:scale-95 ${!item.phone ? 'col-span-2' : ''}`}
+                                        >
+                                            <Icon name="navigation" size={14} />
+                                            Navigate
+                                        </button>
+                                    </div>
+                                </motion.div>
+                            );
+                        })}
+                    </AnimatePresence>
                 </div>
             </div>
 
@@ -261,7 +288,7 @@ const SmartCompare = ({ items, userLocation, onRemove, onNavigate, onCall }: Sma
                     </div>
                 </div>
             </div>
-        </div>
+        </motion.div>
     );
 };
 

@@ -16,7 +16,6 @@ interface LoopItem {
     timestamp: Timestamp | null;
 }
 
-const BANNED_WORDS = ['scam', 'crypto', 'investment', 'money', 'payment', 'cash', 'piss', 'shit', 'fuck', 'bastard', 'crap', 'nigger', 'faggot'];
 
 const PompeyLoop = () => {
     const { currentUser } = useAuth();
@@ -65,16 +64,6 @@ const PompeyLoop = () => {
             return;
         }
 
-        // Moderation Logic
-        const hasBannedWord = BANNED_WORDS.some(word =>
-            formData.title.toLowerCase().includes(word) ||
-            formData.description.toLowerCase().includes(word)
-        );
-
-        if (hasBannedWord) {
-            alert('Safety Alert: Your post contains flagged keywords. To maintain a safe and dignified environment, please review your text and ensure it is for community support.');
-            return;
-        }
 
         try {
             setIsSubmitting(true);

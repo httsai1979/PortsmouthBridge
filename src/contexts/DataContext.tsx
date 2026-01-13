@@ -1,6 +1,6 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useMemo } from 'react';
 import { db } from '../lib/firebase';
-import { collection, query, where, onSnapshot } from 'firebase/firestore';
+import { collection, query, where, onSnapshot, orderBy } from 'firebase/firestore';
 import { ServiceDocument } from '../types/schema';
 
 interface DataContextType {
@@ -8,6 +8,7 @@ interface DataContextType {
     loading: boolean;
     error: string | null;
     lastUpdated: string | null;
+    isHydrating: boolean;
 }
 
 const DataContext = createContext<DataContextType | undefined>(undefined);
@@ -18,47 +19,59 @@ export const useData = () => {
     return context;
 };
 
+/**
+ * DataProvider implements a Stale-While-Revalidate (SWR) Strategy:
+ * 1. Instant Start: Load from bridge_cache (localStorage)
+ * 2. Static Baseline: Load latest data.json from server
+ * 3. Dynamic Hydration: Patch with real-time Firestore updates for any change AFTER the baseline
+ */
 export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    const [data, setData] = useState<ServiceDocument[]>([]);
+    const [dataMap, setDataMap] = useState<Map<string, ServiceDocument>>(new Map());
     const [loading, setLoading] = useState(true);
+    const [isHydrating, setIsHydrating] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [lastUpdated, setLastUpdated] = useState<string | null>(null);
+
+    // Derived array for components
+    const data = useMemo(() => Array.from(dataMap.values()), [dataMap]);
 
     useEffect(() => {
         let isMounted = true;
 
         const initializeData = async () => {
             try {
-                // 1. Fallback: Load from Local Storage for instant (offline) start
+                // Phase 1: Local Cache (Instant)
                 const cached = localStorage.getItem('bridge_cache');
                 if (cached && isMounted) {
-                    try {
-                        const parsed = JSON.parse(cached);
-                        setData(parsed.data);
-                        setLastUpdated(parsed.lastUpdated);
-                        setLoading(false);
-                    } catch (e) {
-                        console.warn('Cache corrupted, ignored.');
-                    }
+                    const parsed = JSON.parse(cached);
+                    const map = new Map<string, ServiceDocument>(parsed.data.map((item: ServiceDocument) => [item.id, item]));
+                    setDataMap(map);
+                    setLastUpdated(parsed.lastUpdated);
+                    setLoading(false);
                 }
 
-                // 2. Fetch Static Core (JSON)
+                // Phase 2: Static Baseline (/data.json)
                 const response = await fetch('/data.json');
-                if (!response.ok) throw new Error('Failed to fetch static core.');
+                if (!response.ok) throw new Error('Static baseline unavailable');
 
                 const staticCore = await response.json();
                 const staticData: ServiceDocument[] = staticCore.data;
                 const staticTimestamp = staticCore.generatedAt;
 
                 if (isMounted) {
-                    setData(staticData);
+                    setDataMap(prev => {
+                        const newMap = new Map<string, ServiceDocument>(prev);
+                        staticData.forEach(item => newMap.set(item.id, item));
+                        return newMap;
+                    });
                     setLastUpdated(staticTimestamp);
                     setLoading(false);
                 }
 
-                // 3. Asynchronously Check Firestore for newer updates (Hybrid Patching)
-                // We only fetch docs that were updated AFTER our JSON was generated
+                // Phase 3: Firestore Hydration (Real-time Patches)
+                setIsHydrating(true);
                 const servicesRef = collection(db, 'services');
+                // Fetch anything updated since the static baseline was built
                 const q = query(
                     servicesRef,
                     where('liveStatus.lastUpdated', '>', staticTimestamp)
@@ -73,39 +86,38 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
                     } as ServiceDocument));
 
                     if (patches.length > 0) {
-                        setData(prevData => {
-                            const updatedData = [...prevData];
+                        setDataMap(prev => {
+                            const newMap = new Map(prev);
                             patches.forEach(patch => {
-                                const index = updatedData.findIndex(item => item.id === patch.id);
-                                if (index !== -1) {
-                                    updatedData[index] = { ...updatedData[index], ...patch };
-                                } else {
-                                    updatedData.push(patch);
-                                }
+                                // Graceful Merge: Ensure we don't overwrite newer local states if applicable
+                                // though usually Firestore is source of truth
+                                newMap.set(patch.id, { ...newMap.get(patch.id), ...patch });
                             });
 
-                            // Update Cache
+                            // Update persistent cache
                             const now = new Date().toISOString();
                             localStorage.setItem('bridge_cache', JSON.stringify({
-                                data: updatedData,
+                                data: Array.from(newMap.values()),
                                 lastUpdated: now
                             }));
-                            setLastUpdated(now);
 
-                            return updatedData;
+                            return newMap;
                         });
                     }
+                    setIsHydrating(false);
                 }, (err) => {
-                    console.warn('Firestore Patching Error (likely permissions):', err);
+                    console.warn('Hydration Error:', err);
+                    setIsHydrating(false);
                 });
 
                 return unsubscribe;
 
             } catch (err: any) {
-                console.error('Hybrid Data Layer Error:', err);
+                console.error('Data Strategy Error:', err);
                 if (isMounted) {
                     setError(err.message);
                     setLoading(false);
+                    setIsHydrating(false);
                 }
             }
         };
@@ -119,7 +131,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }, []);
 
     return (
-        <DataContext.Provider value={{ data, loading, error, lastUpdated }}>
+        <DataContext.Provider value={{ data, loading, error, lastUpdated, isHydrating }}>
             {children}
         </DataContext.Provider>
     );

@@ -1,4 +1,5 @@
 import { useState, useEffect, memo } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import Icon from './Icon';
 import { checkStatus } from '../utils';
 import type { Resource } from '../data';
@@ -6,7 +7,6 @@ import { TAG_ICONS } from '../data';
 import { db } from '../lib/firebase';
 import { doc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { useAuth } from '../contexts/AuthContext';
-import { ServiceDocument } from '../types/schema';
 
 interface ResourceCardProps {
     item: Resource;
@@ -59,61 +59,80 @@ const ResourceCard = memo(({
     const status = checkStatus(item.schedule);
 
     return (
-        <div className={`bg-white rounded-[32px] mb-6 shadow-xl shadow-slate-200/50 border overflow-hidden transition-all duration-300 relative group flex flex-col ${highContrast ? 'border-slate-900 border-[3px]' : isSaved ? 'ring-4 ring-indigo-50 border-indigo-200' : 'border-slate-100 hover:scale-[1.01] hover:shadow-2xl'}`}>
-            {/* ... rest of the component remains same ... */}
-            <div className="h-32 relative bg-slate-100 overflow-hidden">
+        <motion.div
+            layout
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4 }}
+            className={`bg-white rounded-[32px] mb-6 shadow-xl shadow-slate-200/50 border overflow-hidden transition-all duration-300 relative group flex flex-col ${highContrast ? 'border-slate-900 border-[3px]' : isSaved ? 'ring-4 ring-indigo-50 border-indigo-200' : 'border-slate-100 hover:shadow-2xl'}`}
+        >
+            <div className="h-40 relative bg-slate-100 overflow-hidden">
                 {item.entranceMeta?.imageUrl ? (
-                    <img src={item.entranceMeta.imageUrl} alt={item.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                    <motion.img
+                        whileHover={{ scale: 1.05 }}
+                        transition={{ duration: 0.6 }}
+                        src={item.entranceMeta.imageUrl}
+                        alt={item.name}
+                        className="w-full h-full object-cover"
+                    />
                 ) : (
-                    <div className={`w-full h-full bg-gradient-to-br ${item.category === 'food' ? 'from-emerald-400 to-teal-600' :
-                        item.category === 'shelter' ? 'from-indigo-400 to-purple-600' :
-                            item.category === 'warmth' ? 'from-orange-400 to-red-500' :
-                                item.category === 'family' ? 'from-pink-400 to-rose-500' :
-                                    'from-slate-400 to-slate-600'
-                        } opacity-90`}>
-                        <div className="absolute inset-0 flex items-center justify-center opacity-20">
-                            <Icon name={item.category === 'food' ? 'utensils' : 'mapPin'} size={64} />
+                    <div className={`w-full h-full bg-gradient-to-br transition-all duration-500 ${item.category === 'food' ? 'from-emerald-400 via-emerald-500 to-teal-600' :
+                            item.category === 'shelter' ? 'from-indigo-400 via-indigo-500 to-purple-600' :
+                                item.category === 'warmth' ? 'from-orange-400 via-orange-500 to-red-500' :
+                                    item.category === 'family' ? 'from-pink-400 via-pink-500 to-rose-500' :
+                                        'from-slate-400 via-slate-500 to-slate-600'
+                        }`}>
+                        <div className="absolute inset-0 flex items-center justify-center opacity-10">
+                            <Icon name={item.category === 'food' ? 'utensils' : 'mapPin'} size={80} />
                         </div>
                     </div>
                 )}
 
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
 
                 {item.capacityLevel && (
                     <div className="absolute top-4 right-4 flex flex-col items-end gap-1">
-                        <div className={`flex items-center gap-2 px-3 py-1 rounded-full backdrop-blur-md border border-white/20 shadow-lg ${item.capacityLevel === 'high' ? 'bg-emerald-500/90 text-white' :
-                            item.capacityLevel === 'medium' ? 'bg-amber-400/90 text-slate-900' :
-                                'bg-rose-500/90 text-white animate-pulse'
-                            }`}>
-                            <div className="w-2 h-2 rounded-full bg-current"></div>
+                        <motion.div
+                            initial={{ scale: 0.8, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            className={`flex items-center gap-2 px-3 py-1.5 rounded-full backdrop-blur-xl border border-white/30 shadow-2xl ${item.capacityLevel === 'high' ? 'bg-emerald-500/80 text-white' :
+                                    item.capacityLevel === 'medium' ? 'bg-amber-400/80 text-slate-900' :
+                                        'bg-rose-500/80 text-white'
+                                }`}
+                        >
+                            <div className={`w-2 h-2 rounded-full bg-current ${item.capacityLevel === 'low' ? 'animate-pulse' : ''}`}></div>
                             <span className="text-[10px] font-black uppercase tracking-widest leading-none">
                                 {item.capacityLevel === 'high' ? 'Good Stock' : item.capacityLevel === 'low' ? 'Urgent Need' : 'Stock OK'}
                             </span>
-                        </div>
+                        </motion.div>
                     </div>
                 )}
 
                 {isPartner && (
                     <button
                         onClick={(e) => { e.stopPropagation(); setIsEditing(true); }}
-                        className="absolute top-4 left-4 z-40 bg-white/90 backdrop-blur-md text-indigo-600 px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest shadow-lg flex items-center gap-1 hover:bg-white transition-all ring-1 ring-black/5"
+                        className="absolute top-4 left-4 z-40 bg-white/90 backdrop-blur-md text-indigo-600 px-3 py-2 rounded-full text-[10px] font-black uppercase tracking-widest shadow-xl flex items-center gap-1.5 hover:bg-white transition-all ring-1 ring-black/5 active:scale-95"
                     >
                         <Icon name="edit" size={12} /> Partner Edit
                     </button>
                 )}
 
                 {!isPartner && isSaved && (
-                    <div className="absolute top-4 left-4 bg-indigo-600 text-white px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest shadow-lg flex items-center gap-1">
+                    <motion.div
+                        initial={{ x: -20, opacity: 0 }}
+                        animate={{ x: 0, opacity: 1 }}
+                        className="absolute top-4 left-4 bg-indigo-600 text-white px-3 py-2 rounded-full text-[10px] font-black uppercase tracking-widest shadow-xl flex items-center gap-1.5"
+                    >
                         <Icon name="star" size={12} /> Pinned
-                    </div>
+                    </motion.div>
                 )}
 
                 <div className="absolute bottom-4 left-4 flex flex-wrap gap-2 items-center">
-                    <span className={`px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest shadow-lg backdrop-blur-md border border-white/20 ${status.status === 'open' ? 'bg-emerald-500 text-white' : 'bg-slate-800/80 text-white'}`}>
+                    <span className={`px-3 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-widest shadow-xl backdrop-blur-xl border border-white/20 ${status.status === 'open' ? 'bg-emerald-500/90 text-white' : 'bg-slate-900/90 text-white'}`}>
                         {status.label}
                     </span>
-                    <span className="px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest bg-white/20 text-white backdrop-blur-md border border-white/20 shadow-lg">
-                        {item.type.replace('Food Bank', 'Pantry').replace('Soup Kitchen', 'Meal')}
+                    <span className="px-3 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-widest bg-white/10 text-white backdrop-blur-xl border border-white/20 shadow-xl">
+                        {item.type.replace('Food Bank', 'Pantry').replace(' soup Kitchen', 'Meal')}
                     </span>
                 </div>
             </div>
@@ -215,73 +234,83 @@ const ResourceCard = memo(({
                     )}
                 </div>
 
-                {expanded && (
-                    <div className="mt-6 pt-6 border-t border-slate-100 animate-fade-in space-y-6">
-                        {/* Access Guide */}
-                        <div className="bg-slate-900 rounded-3xl p-6 text-white relative overflow-hidden">
-                            <div className="absolute top-0 right-0 w-24 h-24 bg-white/5 rounded-full -mr-12 -mt-12 blur-xl"></div>
-                            <h4 className="text-[10px] font-black uppercase tracking-[0.2em] mb-4 text-white/50 flex items-center gap-2">
-                                <Icon name="shield" size={12} className="text-indigo-400" /> Access Guide
-                            </h4>
+                <AnimatePresence>
+                    {expanded && (
+                        <motion.div
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={{ height: 'auto', opacity: 1 }}
+                            exit={{ height: 0, opacity: 0 }}
+                            transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+                            className="overflow-hidden"
+                        >
+                            <div className="mt-6 pt-6 border-t border-slate-100 space-y-6">
+                                {/* Access Guide */}
+                                <div className="bg-slate-900 rounded-[32px] p-6 text-white relative overflow-hidden">
+                                    <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/10 rounded-full -mr-16 -mt-16 blur-2xl"></div>
+                                    <h4 className="text-[10px] font-black uppercase tracking-[0.2em] mb-4 text-white/50 flex items-center gap-2">
+                                        <Icon name="shield" size={12} className="text-indigo-400" /> Access Guide
+                                    </h4>
 
-                            <div className="space-y-4 relative z-10">
-                                <div className="flex gap-4">
-                                    <div className="w-8 h-8 rounded-xl bg-white/10 flex items-center justify-center shrink-0">
-                                        <Icon name={item.eligibility === 'referral' ? "file-text" : "check-circle"} size={16} />
-                                    </div>
-                                    <div className="space-y-1">
-                                        <p className="text-xs font-black uppercase tracking-wide">Requirement: {(item.eligibility || 'open').toUpperCase()}</p>
-                                        <p className="text-[11px] text-white/60 font-medium leading-relaxed">
-                                            {item.eligibility === 'referral'
-                                                ? "You need a voucher or a referral from HIVE Portsmouth, Citizens Advice, or a school worker."
-                                                : "Direct access available. No referral needed, just show up during opening hours."}
-                                        </p>
-                                    </div>
-                                </div>
-
-                                {item.entranceMeta?.idRequired && (
-                                    <div className="flex gap-4 p-3 bg-white/5 rounded-2xl border border-white/10">
-                                        <Icon name="user-check" size={16} className="text-amber-400 shrink-0 mt-0.5" />
-                                        <div className="space-y-1">
-                                            <p className="text-[10px] font-black uppercase tracking-widest text-amber-400">ID Required</p>
-                                            <p className="text-[10px] text-white/50 font-medium leading-tight">Please bring a proof of address or a photo ID if possible.</p>
+                                    <div className="space-y-4 relative z-10">
+                                        <div className="flex gap-4">
+                                            <div className="w-10 h-10 rounded-2xl bg-white/10 flex items-center justify-center shrink-0 border border-white/10">
+                                                <Icon name={item.eligibility === 'referral' ? "file-text" : "check-circle"} size={18} />
+                                            </div>
+                                            <div className="space-y-1">
+                                                <p className="text-xs font-black uppercase tracking-wide">Requirement: {(item.eligibility || 'open').toUpperCase()}</p>
+                                                <p className="text-[11px] text-white/60 font-medium leading-relaxed">
+                                                    {item.eligibility === 'referral'
+                                                        ? "You need a voucher or a referral from HIVE Portsmouth, Citizens Advice, or a school worker."
+                                                        : "Direct access available. No referral needed, just show up during opening hours."}
+                                                </p>
+                                            </div>
                                         </div>
+
+                                        {item.entranceMeta?.idRequired && (
+                                            <div className="flex gap-4 p-4 bg-white/5 rounded-2xl border border-white/10 backdrop-blur-sm">
+                                                <Icon name="user-check" size={18} className="text-amber-400 shrink-0 mt-0.5" />
+                                                <div className="space-y-1">
+                                                    <p className="text-[10px] font-black uppercase tracking-widest text-amber-400">ID Required</p>
+                                                    <p className="text-[10px] text-white/50 font-medium leading-tight">Please bring a proof of address or a photo ID if possible.</p>
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {item.eligibility === 'referral' && (
+                                            <button
+                                                onClick={() => window.open('https://www.hiveportsmouth.org.uk/contact-us', '_blank')}
+                                                className="w-full py-4 bg-white text-slate-900 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-slate-50 transition-all active:scale-[0.98] shadow-lg shadow-black/20"
+                                            >
+                                                Get Referral Help (HIVE)
+                                            </button>
+                                        )}
                                     </div>
-                                )}
-
-                                {item.eligibility === 'referral' && (
-                                    <button
-                                        onClick={() => window.open('https://www.hiveportsmouth.org.uk/contact-us', '_blank')}
-                                        className="w-full py-3 bg-white text-slate-900 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-indigo-50 transition-all"
-                                    >
-                                        Get Referral Help (HIVE)
-                                    </button>
-                                )}
-                            </div>
-                        </div>
-
-                        <div className="flex justify-between items-center px-1">
-                            <p className="font-black text-slate-400 text-[10px] uppercase tracking-widest">Opening Schedule</p>
-                            {onReport && (
-                                <button
-                                    onClick={onReport}
-                                    className="text-[10px] font-bold text-slate-400 hover:text-rose-500 flex items-center gap-1 transition-colors"
-                                >
-                                    <Icon name="alert-triangle" size={12} />
-                                    {isPartner ? 'Update Status' : 'Report Issue'}
-                                </button>
-                            )}
-                        </div>
-
-                        <div className="space-y-1">
-                            {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((d, i) => (
-                                <div key={d} className={`flex justify-between py-1.5 border-b border-slate-50 last:border-0 text-[10px] px-1 ${i === new Date().getDay() ? 'font-black text-indigo-600 bg-indigo-50/50 rounded-lg' : 'text-slate-500 font-medium'}`}>
-                                    <span>{d}</span><span>{item.schedule[i] || 'Closed'}</span>
                                 </div>
-                            ))}
-                        </div>
-                    </div>
-                )}
+
+                                <div className="flex justify-between items-center px-1">
+                                    <p className="font-black text-slate-400 text-[10px] uppercase tracking-widest">Opening Schedule</p>
+                                    {onReport && (
+                                        <button
+                                            onClick={onReport}
+                                            className="text-[10px] font-black text-slate-400 hover:text-rose-500 flex items-center gap-1.5 transition-colors uppercase tracking-widest"
+                                        >
+                                            <Icon name="alert-triangle" size={12} />
+                                            {isPartner ? 'Update Status' : 'Report Issue'}
+                                        </button>
+                                    )}
+                                </div>
+
+                                <div className="space-y-1 bg-slate-50/50 p-2 rounded-3xl border border-slate-100/50">
+                                    {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((d, i) => (
+                                        <div key={d} className={`flex justify-between py-2 border-b border-slate-200/50 last:border-0 text-[10px] px-3 ${i === new Date().getDay() ? 'font-black text-indigo-800 bg-white rounded-2xl shadow-sm border-indigo-100 border' : 'text-slate-500 font-bold uppercase tracking-wide'}`}>
+                                            <span>{d}</span><span>{item.schedule[i] || 'Closed'}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
             </div>
 
             {/* Partner Direct-Edit Modal */}
@@ -385,7 +414,7 @@ const ResourceCard = memo(({
                     </div>
                 </div>
             )}
-        </div>
+        </motion.div>
     );
 });
 

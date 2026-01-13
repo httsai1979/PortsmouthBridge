@@ -3,48 +3,52 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     
-    // Helper to check if user is a verified partner
-    function isPartner() {
-      return request.auth != null && (
-        exists(/databases/$(database)/documents/partners/$(request.auth.uid)) ||
-        request.auth.token.email.matches('.*@sustainsage-group\\.com') ||
-        request.auth.token.email.matches('.*@portsmouthbridge\\.org') ||
-        request.auth.token.email == 'test@test.org'
-      );
+    // Helper to check if user has a specific role via Custom Claims
+    function hasRole(role) {
+      return request.auth != null && request.auth.token.role == role;
     }
 
-    // Community Loop Posts - Zero Liability Safety
+    // Services / Resources Data - Public read, Partner write
+    match /services/{serviceId} {
+      allow read: if true;
+      allow write: if hasRole('partner');
+    }
+
+    // Community Loop Posts - Authentic and validated
     match /community_posts/{postId} {
       allow read: if true;
       allow create: if request.auth != null 
                     && request.resource.data.title.size() < 100
-                    && request.resource.data.description.size() < 1000
                     && request.resource.data.userId == request.auth.uid;
-      allow update, delete: if request.auth != null && request.auth.uid == resource.data.userId;
+      allow update, delete: if request.auth != null && (request.auth.uid == resource.data.userId || hasRole('partner'));
     }
 
-    // Services / Resources Data
-    match /services/{serviceId} {
-      allow read: if true;
-      allow write: if isPartner();
+    // System Configuration - Backend only usually, but some parts might need to be read
+    match /system_config/{configId} {
+      allow read: if request.auth != null; // Allow logged in users to read (or restrict further)
+      allow write: if hasRole('admin'); // Only master admins can change policy rules
+    }
+
+    // Audit Logs - Read by partners/admins, Create only by backend triggers (the rules apply to clients)
+    match /audit_logs/{logId} {
+      allow read: if hasRole('partner');
+      allow write: if false; // Clients should NEVER write to audit logs directly
     }
 
     // Partner Profiles
     match /partners/{userId} {
       allow read: if request.auth != null;
-      allow write: if request.auth != null && request.auth.uid == userId;
+      allow write: if hasRole('admin') || (request.auth != null && request.auth.uid == userId);
     }
 
-    // Incident/Urgency Reports
+    // Analytics & Reports
     match /reports/{reportId} {
       allow create: if true;
-      allow read, update, delete: if isPartner();
+      allow read, update, delete: if hasRole('partner');
     }
-
-    // Analytics Gaps (used for PulseMap)
+    
     match /analytics_gaps/{gapId} {
-      allow read: if isPartner();
-      allow write: if true; // Allow public gap reporting for better analytics
+      allow read, write: if hasRole('partner');
     }
   }
 }

@@ -1,152 +1,56 @@
-import { useState, useEffect, useMemo, Suspense, lazy, useRef, useCallback } from 'react';
-import Fuse from 'fuse.js';
-import { collection, onSnapshot } from 'firebase/firestore';
-import { db } from './lib/firebase';
-import { AREAS, TAG_ICONS, COMMUNITY_DEALS, GIFT_EXCHANGE, PROGRESS_TIPS, MAP_BOUNDS } from './data';
-import { checkStatus, playSuccessSound, getDistance } from './utils';
-import { fetchLiveStatus, type LiveStatus } from './services/LiveStatusService';
-import { DEFAULT_POLICY_CONFIG, type PolicyConfig } from './config/policy_2026';
-
-// --- COMPONENTS ---
-import Icon from './components/Icon';
-import ResourceCard from './components/ResourceCard';
-import { TipsModal, CrisisModal, ReportModal, PartnerRequestModal, TutorialModal } from './components/Modals';
-import FAQSection from './components/FAQSection';
-import CommunityBulletin from './components/CommunityBulletin';
-import AIAssistant from './components/AIAssistant';
-import PrivacyShield from './components/PrivacyShield';
-import SmartNotifications from './components/SmartNotifications';
-import ProgressTimeline from './components/ProgressTimeline';
-
-// --- IMAGES ---
-import logo from './assets/images/logo.png';
-
-// --- AUTHENTICATION ---
+import { useState, useEffect, Suspense, lazy, useMemo } from 'react';
+import { BrowserRouter as Router } from 'react-router-dom';
 import { useAuth } from './contexts/AuthContext';
 import { useData } from './contexts/DataContext';
+import { useAppStore } from './store/useAppStore';
+
+// --- COMPONENTS ---
+import Layout from './components/Layout';
+import { TipsModal, CrisisModal, ReportModal, PartnerRequestModal, TutorialModal } from './components/Modals';
+import PrivacyShield from './components/PrivacyShield';
+import SmartNotifications from './components/SmartNotifications';
 import PartnerLogin from './components/PartnerLogin';
+import AnimatedRoutes from './components/AnimatedRoutes';
 
-// --- LAZY LOAD COMPONENTS ---
-const SimpleMap = lazy(() => import('./components/SimpleMap'));
-const JourneyPlanner = lazy(() => import('./components/JourneyPlanner'));
-const SmartCompare = lazy(() => import('./components/SmartCompare'));
-const UnifiedSchedule = lazy(() => import('./components/UnifiedSchedule'));
-const AreaScheduleView = lazy(() => import('./components/Schedule').then(module => ({ default: module.AreaScheduleView })));
+// --- LAZY COMPONENTS ---
 const CrisisWizard = lazy(() => import('./components/CrisisWizard'));
-const PartnerDashboard = lazy(() => import('./components/PartnerDashboard'));
-const PulseMap = lazy(() => import('./components/PulseMap'));
-const DataMigration = lazy(() => import('./components/DataMigration'));
-const PrintView = lazy(() => import('./components/PrintView'));
+const ConnectCalculatorView = lazy(() => import('./components/ConnectCalculator'));
 
-// --- LOADING UI ---
 const PageLoader = () => (
     <div className="flex items-center justify-center py-20 min-h-[50vh]">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
     </div>
 );
 
-const ConnectCalculatorView = lazy(() => import('./components/ConnectCalculator'));
-const ConnectDashboardView = lazy(() => import('./components/ConnectDashboard'));
-const PompeyLoopView = lazy(() => import('./components/PompeyLoop'));
-
-// --- STATIC STYLES ---
-const GLOBAL_APP_STYLES = `
-    .app-container { max-width: 500px; margin: 0 auto; background-color: #ffffff; min-height: 100vh; box-shadow: 0 0 50px rgba(0, 0, 0, 0.08); position: relative; padding-bottom: 140px; }
-    .animate-fade-in-up { animation: fadeInUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-    @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); scale: 0.98; } to { opacity: 1; transform: translateY(0); scale: 1; } }
-    .scrollbar-hide::-webkit-scrollbar { display: none; }
-    .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
-`;
-
 const App = () => {
-    // --- STATE MANAGEMENT ---
+    // --- GLOBAL STORES ---
+    const { isPartner, loading: authLoading } = useAuth();
+    const { data: dynamicData, loading: dataLoading } = useData();
+    const {
+        highContrast, fontSize, savedIds, userLocation,
+        notifications, setUserLocation, toggleSavedId,
+        clearNotifications
+    } = useAppStore();
 
-    // UI & Accessibility
-    const [highContrast, setHighContrast] = useState(false);
-    const [stealthMode, setStealthMode] = useState(false);
-    const [fontSize, setFontSize] = useState(0);
+    // --- LOCAL UI STATE ---
     const [isOffline, setIsOffline] = useState(!navigator.onLine);
-    const [loading, setLoading] = useState(true);
-    const [showScrollTop, setShowScrollTop] = useState(false);
-
-    // Navigation
-    const [view, setView] = useState<'home' | 'map' | 'list' | 'planner' | 'compare' | 'community-plan' | 'safe-sleep-plan' | 'warm-spaces-plan' | 'faq' | 'partner-dashboard' | 'analytics' | 'data-migration' | 'connect' | 'pompey-loop'>('home');
-
-    // Modals
     const [showTips, setShowTips] = useState(false);
     const [showCrisis, setShowCrisis] = useState(false);
-    const [showPrint, setShowPrint] = useState(false);
-    const [showWizard, setShowWizard] = useState(false);
     const [showPartnerLogin, setShowPartnerLogin] = useState(false);
-    const [showTutorial, setShowTutorial] = useState(false);
     const [showPartnerRequest, setShowPartnerRequest] = useState(false);
-    const [showDisclaimer, setShowDisclaimer] = useState(false);
-
-    // Interaction
+    const [showTutorial, setShowTutorial] = useState(!localStorage.getItem('seen_tutorial'));
+    const [showWizard, setShowWizard] = useState(false);
     const [reportTarget, setReportTarget] = useState<{ name: string, id: string } | null>(null);
-    const [mapFilter, setMapFilter] = useState<'all' | 'open'>('open');
-    const [mapFocus, setMapFocus] = useState<{ lat: number, lng: number, label: string, id?: string } | null>(null);
-
-    // Search & Filter
-    const [searchQuery, setSearchQuery] = useState('');
-    const [filters, setFilters] = useState({ area: 'All', category: 'all', date: 'today' });
-    const [smartFilters, setSmartFilters] = useState({ openNow: false, nearMe: false, verified: false });
-
-    // Infinite Scroll
-    const [visibleCount, setVisibleCount] = useState(10);
-
-    // Data
-    const { currentUser, isPartner, loading: authLoading } = useAuth();
-    const { data: dynamicData, loading: dataLoading, error: dataError } = useData();
-    const [userLocation, setUserLocation] = useState<{ lat: number, lng: number } | null>(null);
-
-    // Features
-    const [journeyItems, setJourneyItems] = useState<string[]>([]);
-    const [compareItems, setCompareItems] = useState<string[]>([]);
-    const [notifications, setNotifications] = useState<Array<any>>([]);
+    const [showConnectCalculator, setShowConnectCalculator] = useState(false);
 
     // Connect State
     const [connectResult, setConnectResult] = useState<any>(null);
-    const [showConnectCalculator, setShowConnectCalculator] = useState(false);
-    const [savedIds, setSavedIds] = useState<string[]>(() => {
-        try {
-            const saved = localStorage.getItem('bridge_saved_resources');
-            return saved ? JSON.parse(saved) : [];
-        } catch { return []; }
-    });
-
-    const [connectInput, setConnectInput] = useState<any>(() => {
-        try {
-            const saved = localStorage.getItem('bridge_connect_input');
-            return saved ? JSON.parse(saved) : null;
-        } catch { return null; }
-    });
-
-    const [policyConfig, setPolicyConfig] = useState<PolicyConfig>(DEFAULT_POLICY_CONFIG);
-
-    // --- REFS ---
-    const loadMoreRef = useRef<HTMLDivElement>(null);
-    const topSentinelRef = useRef<HTMLDivElement>(null);
+    const [connectInput, setConnectInput] = useState<any>(null);
 
     // --- EFFECTS ---
-
-    // 1. Style Injection
     useEffect(() => {
-        const style = document.createElement('style');
-        style.textContent = GLOBAL_APP_STYLES;
-        document.head.appendChild(style);
-        return () => { document.head.removeChild(style); };
-    }, []);
-
-    // 2. Initial Setup
-    useEffect(() => {
-        const seenTutorial = localStorage.getItem('seen_tutorial');
-        if (!seenTutorial) setShowTutorial(true);
-
-        const seenDisclaimer = localStorage.getItem('seen_disclaimer');
-        if (!seenDisclaimer) setShowDisclaimer(true);
-
-        if (navigator.geolocation) {
+        // Init Location
+        if ("geolocation" in navigator) {
             navigator.geolocation.getCurrentPosition(
                 (pos) => setUserLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
                 (err) => console.log('Location access denied', err)
@@ -157,654 +61,105 @@ const App = () => {
         window.addEventListener('online', handleStatus);
         window.addEventListener('offline', handleStatus);
 
-        // Configuration-Driven Policy Fetching (Remote GitHub Sync)
-        const fetchRemotePolicy = async () => {
-            try {
-                // This URL would be points to a JSON version of src/config/policy_2026.ts
-                const REMOTE_POLICY_URL = 'https://raw.githubusercontent.com/httsai1979/PortsmouthCommon/main/src/config/policy_remote.json';
-                const res = await fetch(REMOTE_POLICY_URL);
-                if (res.ok) {
-                    const remotePolicy = await res.json();
-                    setPolicyConfig(remotePolicy);
-                    console.log('✅ Remote policy config loaded successfully.');
-                }
-            } catch (error) {
-                console.warn('⚠️ Could not fetch remote policy, using local policy_2026 constants.', error);
-            }
-        };
-        fetchRemotePolicy();
-
         return () => {
             window.removeEventListener('online', handleStatus);
             window.removeEventListener('offline', handleStatus);
         };
     }, []);
 
-    // 3. Font Size
     useEffect(() => {
         const root = document.documentElement;
         root.classList.remove('fs-0', 'fs-1', 'fs-2');
         root.classList.add(`fs-${fontSize}`);
     }, [fontSize]);
 
-    // 4. Route Guard
-    useEffect(() => {
-        if (!authLoading && !currentUser) {
-            const restrictedViews = ['partner-dashboard', 'analytics', 'data-migration'];
-            if (restrictedViews.includes(view)) {
-                setView('home');
-            }
-        }
-    }, [currentUser, authLoading, view]);
-
-    // 5. Scroll Top Observer
-    useEffect(() => {
-        if (!topSentinelRef.current) return;
-        const observer = new IntersectionObserver(([entry]) => {
-            setShowScrollTop(!entry.isIntersecting);
-        }, { threshold: 0 });
-        observer.observe(topSentinelRef.current);
-        return () => observer.disconnect();
-    }, [view]);
-
-    // 6. Infinite Scroll Observer & Reset
-    useEffect(() => {
-        setVisibleCount(10);
-    }, [filters, searchQuery, smartFilters]);
-
-    useEffect(() => {
-        if (view !== 'list' || !loadMoreRef.current) return;
-
-        const observer = new IntersectionObserver((entries) => {
-            if (entries[0].isIntersecting) {
-                setVisibleCount(prev => prev + 10);
-            }
-        }, { threshold: 0.1, rootMargin: '100px' });
-
-        observer.observe(loadMoreRef.current);
-        return () => observer.disconnect();
-    }, [view, searchQuery, filters, smartFilters]);
-
-    // 7. Notifications
-    useEffect(() => {
-        const checkNotifications = () => {
-            // ... (Simple check logic here to save space, but functional)
-        };
-        const timer = setInterval(checkNotifications, 60000);
-        return () => clearInterval(timer);
-    }, [savedIds]);
-
     // --- HANDLERS ---
-
-    // [CRITICAL FIX] Added handleShare function back!
-    const handleShare = useCallback(async () => {
-        if (navigator.share) {
-            try {
-                await navigator.share({
-                    title: 'Portsmouth Bridge',
-                    text: 'Find food, shelter, and community support in Portsmouth. Check out Portsmouth Bridge!',
-                    url: window.location.href,
-                });
-            } catch (err) {
-                console.log('Error sharing:', err);
-            }
-        } else {
-            navigator.clipboard.writeText(window.location.href);
-            alert('Link copied to clipboard!');
-        }
-    }, []);
-
-    const toggleSaved = useCallback((id: string) => {
-        setSavedIds(prev => {
-            const next = prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id];
-            localStorage.setItem('bridge_saved_resources', JSON.stringify(next));
-            if (!prev.includes(id)) playSuccessSound();
-            return next;
-        });
-    }, []);
-
-    const toggleJourneyItem = useCallback((id: string) => {
-        setJourneyItems(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]);
-    }, []);
-
-    const toggleCompareItem = useCallback((id: string) => {
-        setCompareItems(prev => {
-            if (prev.includes(id)) return prev.filter(i => i !== id);
-            if (prev.length >= 3) { alert('Maximum 3 items'); return prev; }
-            return [...prev, id];
-        });
-    }, []);
-
-    const handleSearch = useCallback((newFilters: any) => {
-        setFilters(newFilters);
-        if (newFilters.category !== 'all' && view === 'home') {
-            setView('map');
-        }
-    }, [view]);
-
-    const handleBulletinClick = useCallback((id: string) => {
-        if (id === '1') { setSmartFilters(prev => ({ ...prev, openNow: true })); setView('map'); }
-        else if (id === '2') { setFilters(prev => ({ ...prev, category: 'food' })); setView('map'); }
-        else if (id === '3') { setFilters(prev => ({ ...prev, category: 'warmth' })); setView('map'); }
-        else if (id === '4') { setView('faq'); }
-    }, []);
-
-    const handleFAQNavigate = useCallback((action: string) => {
-        if (action === 'planner') { setView('planner'); return; }
-        if (action === 'map') { setView('map'); return; }
-        if (action === 'list') { setView('list'); return; }
-        if (['food', 'support', 'warmth', 'shelter', 'family'].includes(action)) {
-            setFilters(prev => ({ ...prev, category: action, area: 'All' }));
-            setView('map');
-            return;
-        }
-        if (action === 'no_referral') { setSearchQuery('no_referral'); setView('list'); return; }
-        if (action === 'all') {
-            setFilters({ area: 'All', category: 'all', date: 'today' });
-            setSearchQuery('');
-            setView('list');
-            return;
-        }
-    }, []);
-
     const liveStatus = useMemo(() => {
         const statuses: Record<string, any> = {};
         dynamicData.forEach(item => {
             statuses[item.id] = {
                 id: item.id,
                 status: item.liveStatus.isOpen ? 'Open' : 'Closed',
-                urgency: (item.liveStatus.capacity === 'Low' || item.liveStatus.capacity === 'Full') ? 'High' : 'Normal',
-                message: item.liveStatus.message || '',
+                urgency: item.liveStatus.capacity === 'Full' ? 'High' : 'Normal',
                 lastUpdated: item.liveStatus.lastUpdated
             };
         });
         return statuses;
     }, [dynamicData]);
 
-    const filteredData = useMemo(() => {
-        let mergedData = dynamicData.map(item => ({
-            ...item,
-            lat: item.location.lat,
-            lng: item.location.lng,
-            address: item.location.address,
-            area: item.location.area,
-            type: item.category === 'food' ? 'Pantry' : (item.category.charAt(0).toUpperCase() + item.category.slice(1)),
-            eligibility: (item.tags.includes('no_referral') ? 'open' : 'referral') as 'open' | 'referral',
-            requirements: "",
-            thanksCount: 0,
-            phone: item.phone || undefined,
-            entranceMeta: {
-                imageUrl: item.thresholdInfo.entrancePhotoUrl || undefined,
-                idRequired: item.thresholdInfo.idRequired,
-                queueStatus: item.thresholdInfo.queueStatus.toLowerCase() as any
-            },
-            capacityLevel: item.liveStatus.capacity.toLowerCase() as any
-        }));
-
-        if (searchQuery) {
-            const fuse = new Fuse(mergedData, {
-                keys: ['name', 'tags', 'description', 'category'],
-                threshold: 0.3,
-                ignoreLocation: true
-            });
-            mergedData = fuse.search(searchQuery).map(result => result.item as any);
-        }
-
-        const data = mergedData.filter(item => {
-            const matchesArea = filters.area === 'All' || item.area === filters.area;
-            const matchesCategory = filters.category === 'all' || item.category === filters.category;
-            const status = checkStatus(item.schedule);
-            const matchesOpenNow = !smartFilters.openNow || status.isOpen;
-            const matchesVerified = !smartFilters.verified || (item.trustScore && item.trustScore > 90);
-
-            // Special keyword filtering (e.g., 'no_referral')
-            let matchesKeyword = true;
-            if (searchQuery.toLowerCase().includes('no_referral')) {
-                matchesKeyword = item.description?.toLowerCase().includes('no referral') || item.tags?.includes('no_referral');
-            }
-
-            let matchesNearMe = true;
-            if (smartFilters.nearMe && userLocation) {
-                const dist = getDistance(userLocation.lat, userLocation.lng, item.lat, item.lng);
-                matchesNearMe = dist < 2;
-            }
-            return matchesArea && matchesCategory && matchesOpenNow && matchesVerified && matchesNearMe && matchesKeyword;
-        });
-
-        return data.sort((a, b) => {
-            // Prioritise Open resources
-            const statusA = checkStatus(a.schedule);
-            const statusB = checkStatus(b.schedule);
-            if (statusA.isOpen && !statusB.isOpen) return -1;
-            if (!statusA.isOpen && statusB.isOpen) return 1;
-
-            // Then prioritise by trustScore
-            return (b.trustScore || 0) - (a.trustScore || 0);
-        });
-    }, [filters, userLocation, searchQuery, smartFilters, dynamicData, liveStatus]);
-
-    if (loading || dataLoading) return <PageLoader />;
-    if (showPrint) return <Suspense fallback={<PageLoader />}><PrintView data={filteredData} onClose={() => setShowPrint(false)} /></Suspense>;
+    if (authLoading || dataLoading) return <PageLoader />;
 
     return (
-        <div className={`app-container min-h-screen font-sans text-slate-900 selection:bg-indigo-200 selection:text-indigo-900 ${highContrast ? 'high-contrast' : ''}`}>
-
-            <div ref={topSentinelRef} className="absolute top-0 left-0 w-full h-1 bg-transparent pointer-events-none" />
-
-            {showScrollTop && (
-                <button
-                    onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-                    className="fixed bottom-24 right-5 z-[5000] p-4 bg-slate-900 text-white rounded-full shadow-2xl animate-fade-in-up hover:bg-black transition-all active:scale-90"
-                    aria-label="Scroll to top"
+        <Router>
+            <div className={`selection:bg-indigo-200 selection:text-indigo-900 ${highContrast ? 'high-contrast' : ''}`}>
+                <Layout
+                    isOffline={isOffline}
+                    onShowCrisis={() => setShowCrisis(true)}
+                    onShowPartnerLogin={() => setShowPartnerLogin(true)}
                 >
-                    <Icon name="arrow-right" size={20} className="-rotate-90" />
-                </button>
-            )}
+                    <AnimatedRoutes
+                        dynamicData={dynamicData as any}
+                        isPartner={isPartner}
+                        liveStatus={liveStatus}
+                        setReportTarget={setReportTarget}
+                        setShowWizard={setShowWizard}
+                        setShowConnectCalculator={setShowConnectCalculator}
+                        setMapFocus={() => { }}
+                        connectResult={connectResult}
+                    />
+                </Layout>
 
-            <header className={`sticky top-0 z-50 ${stealthMode ? 'bg-slate-50 border-none' : 'bg-white/95 backdrop-blur-md border-b border-slate-100'} pt-4 pb-3 transition-all`}>
-                <div className="px-5 flex justify-between items-center max-w-lg mx-auto">
-                    <div className="flex items-center gap-3">
-                        <img src={logo} alt="Logo" className={`w-10 h-10 transition-all ${stealthMode ? 'grayscale opacity-50' : ''}`} />
-                        <div>
-                            <h1 className={`text-xl font-black ${stealthMode ? 'text-slate-400' : 'text-slate-900'} tracking-tighter leading-none mb-1`}>
-                                {stealthMode ? 'Safe Compass' : 'Portsmouth Bridge'}
-                            </h1>
-                            {!stealthMode && <p className="text-[8px] font-black text-slate-400 tracking-widest uppercase">Community Support Network</p>}
-                        </div>
-                    </div>
-                    <div className="flex gap-2">
-                        <button onClick={() => setFontSize(p => (p + 1) % 3)} className={`p-2 rounded-xl transition-all border-2 ${fontSize > 0 ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-slate-100 text-slate-600 border-slate-100 hover:bg-slate-200'}`}><Icon name="type" size={20} /></button>
-                        <button onClick={() => setStealthMode(!stealthMode)} className={`p-2 rounded-xl transition-all ${stealthMode ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-600'}`}><Icon name="eye" size={20} /></button>
-                        <button onClick={() => setHighContrast(!highContrast)} className="p-2 bg-slate-100 rounded-xl text-slate-600 hover:bg-slate-200 transition-colors"><Icon name="zap" size={20} /></button>
-                        {isPartner && (<>
-                            <button onClick={() => setView(v => v === 'partner-dashboard' ? 'home' : 'partner-dashboard')} className="p-2 rounded-xl bg-indigo-600 text-white shadow-lg"><Icon name="briefcase" size={20} /></button>
-                            <button onClick={() => setView(v => v === 'analytics' ? 'home' : 'analytics')} className="p-2 rounded-xl bg-indigo-600 text-white shadow-lg"><Icon name="activity" size={20} /></button>
-                            <button onClick={() => setView(v => v === 'data-migration' ? 'home' : 'data-migration')} className="p-2 rounded-xl bg-indigo-600 text-white shadow-lg"><Icon name="database" size={20} /></button>
-                        </>)}
-                        <button onClick={() => setShowPartnerLogin(true)} className={`p-2 rounded-xl transition-all ${currentUser ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-600'}`}><Icon name="users" size={20} /></button>
-                    </div>
-                </div>
-                {isOffline && <div className="bg-amber-50 text-amber-700 px-5 py-2 text-[10px] font-black uppercase tracking-widest text-center border-b border-amber-100 animate-pulse">Offline Support Active</div>}
-            </header>
+                {/* --- GLOBAL MODALS --- */}
+                <TipsModal isOpen={showTips} onClose={() => setShowTips(false)} />
+                <CrisisModal isOpen={showCrisis} onClose={() => setShowCrisis(false)} />
+                <PrivacyShield onAccept={() => { }} />
+                <SmartNotifications
+                    notifications={notifications}
+                    onDismiss={() => { }}
+                    onClearAll={clearNotifications}
+                    onAction={() => { }}
+                />
 
-            <AIAssistant onIntent={handleSearch} currentArea={filters.area} />
-
-            <div className={`px-5 mt-4 relative z-20 transition-all ${stealthMode ? 'opacity-90 grayscale-[0.3]' : ''}`}>
-
-                {/* --- VIEW: HOME --- */}
-                {view === 'home' && (
-                    <div className="animate-fade-in-up">
-                        <CommunityBulletin onCTAClick={handleBulletinClick} />
-
-                        {savedIds.length > 0 && (
-                            <div className="mb-6">
-                                <ProgressTimeline savedCount={savedIds.length} />
-                            </div>
-                        )}
-
-                        <div className="mb-8 relative group">
-                            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none"><Icon name="search" size={18} className="text-slate-400" /></div>
-                            <div className="flex gap-2">
-                                <input type="text" value={searchQuery} onChange={(e) => { setSearchQuery(e.target.value); setView('list'); }} placeholder="Search resources..." className="flex-1 py-4 pl-12 pr-4 bg-white rounded-[24px] border-2 border-slate-100 focus:border-indigo-600 outline-none text-sm font-bold shadow-sm" />
-                                <button onClick={handleShare} className="p-4 bg-white border-2 border-slate-100 rounded-[24px] text-indigo-600 hover:bg-slate-50 shadow-sm flex items-center justify-center active:scale-95"><Icon name="share-2" size={20} /></button>
-                            </div>
-                        </div>
-
-                        <div className="grid grid-cols-4 gap-3 mb-8">
-                            {[
-                                { id: 'food', ...TAG_ICONS.food }, { id: 'shelter', ...TAG_ICONS.shelter }, { id: 'warmth', ...TAG_ICONS.warmth }, { id: 'support', ...TAG_ICONS.support },
-                                { id: 'family', ...TAG_ICONS.family }, { id: 'skills', ...TAG_ICONS.skills }, { id: 'charity', ...TAG_ICONS.charity }, { id: 'faq', label: 'Guide', icon: 'help-circle' }
-                            ].map(cat => (
-                                <button key={cat.id || cat.label} onClick={() => { if (cat.id === 'faq') setView('faq'); else handleSearch({ ...filters, category: cat.id || 'all' }); }} className="flex flex-col items-center gap-2 group">
-                                    <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shadow-sm transition-all group-active:scale-90 ${filters.category === cat.id ? 'bg-slate-900 text-white' : 'bg-white text-slate-500 border-2 border-slate-50'}`}><Icon name={cat.icon} size={20} /></div>
-                                    <span className="text-[9px] font-black text-slate-400 uppercase tracking-tight truncate w-full px-1">{cat.label.replace(' Support', '').replace(' Hub', '')}</span>
-                                </button>
-                            ))}
-                        </div>
-
-                        <button onClick={() => setShowWizard(true)} className="w-full mb-8 bg-rose-500 text-white p-1 rounded-[32px] shadow-xl shadow-rose-200 group transition-all hover:scale-[1.02] active:scale-95 pr-2">
-                            <div className="flex items-center justify-between bg-white/10 rounded-[28px] p-4 border border-white/20">
-                                <div className="flex items-center gap-4"><div className="w-10 h-10 bg-white text-rose-600 rounded-full flex items-center justify-center animate-pulse shadow-sm"><Icon name="lifebuoy" size={20} /></div><div className="text-left"><h3 className="text-base font-black leading-none mb-1">Find Support</h3><p className="text-[9px] font-bold text-rose-100 uppercase tracking-widest">Interactive Wizard</p></div></div>
-                                <Icon name="chevron-right" size={20} className="mr-2 text-rose-100" />
-                            </div>
-                        </button>
-
-                        <div className="flex gap-3 mb-8 overflow-x-auto pb-4 scrollbar-hide snap-x px-1">
-                            <button onClick={() => setView('planner')} className="snap-start min-w-[140px] bg-white border border-slate-100 p-4 rounded-[24px] shadow-sm flex flex-col gap-2 hover:border-indigo-200"><div className="w-10 h-10 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center"><Icon name="calendar" size={18} /></div><div><h4 className="text-xs font-black text-slate-800">My Journey</h4><p className="text-[9px] text-slate-400 font-bold uppercase">{savedIds.length} Trusted Hubs</p></div></button>
-                            <button onClick={() => setView('community-plan')} className="snap-start min-w-[140px] bg-white border border-slate-100 p-4 rounded-[24px] shadow-sm flex flex-col gap-2 hover:border-emerald-200"><div className="w-10 h-10 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center"><Icon name="utensils" size={18} /></div><div><h4 className="text-xs font-black text-slate-800">Food Plan</h4><p className="text-[9px] text-slate-400 font-bold uppercase">Food & Pantries</p></div></button>
-                            <button onClick={() => setView('safe-sleep-plan')} className="snap-start min-w-[140px] bg-white border border-slate-100 p-4 rounded-[24px] shadow-sm flex flex-col gap-2 hover:border-indigo-200"><div className="w-10 h-10 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center"><Icon name="home" size={18} /></div><div><h4 className="text-xs font-black text-slate-800">Sleep Plan</h4><p className="text-[9px] text-slate-400 font-bold uppercase">Housing Support</p></div></button>
-                            <button onClick={() => setView('warm-spaces-plan')} className="snap-start min-w-[140px] bg-white border border-slate-100 p-4 rounded-[24px] shadow-sm flex flex-col gap-2 hover:border-orange-200"><div className="w-10 h-10 rounded-2xl bg-orange-50 text-orange-600 flex items-center justify-center"><Icon name="flame" size={18} /></div><div><h4 className="text-xs font-black text-slate-800">Warm Hubs</h4><p className="text-[9px] text-slate-400 font-bold uppercase">Safe Warm Spaces</p></div></button>
-                        </div>
-
-                        <div className="mb-8">
-                            <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4 pl-1">Survival Map Shortcuts</h4>
-                            <div className="flex gap-2 overflow-x-auto pb-4 scrollbar-hide">
-                                <button onClick={() => { setFilters({ ...filters, category: 'warmth' }); setView('map'); }} className="px-5 py-3 bg-orange-600 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-lg shadow-orange-100 flex items-center gap-2 whitespace-nowrap"><Icon name="flame" size={14} /> Warm Spaces</button>
-                                <button onClick={() => { setFilters({ ...filters, category: 'food' }); setSearchQuery('no_referral'); setView('map'); }} className="px-5 py-3 bg-emerald-600 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-lg shadow-emerald-100 flex items-center gap-2 whitespace-nowrap"><Icon name="utensils" size={14} /> Eco-Food Rescue</button>
-                                <button onClick={() => { setSearchQuery('wifi'); setView('map'); }} className="px-5 py-3 bg-blue-600 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-lg shadow-blue-100 flex items-center gap-2 whitespace-nowrap"><Icon name="wifi" size={14} /> Digital Inclusion</button>
-                            </div>
-                        </div>
-
-                        <div className="mb-10 p-6 bg-gradient-to-br from-amber-50 via-white to-orange-50 rounded-[32px] border-2 border-amber-100/50 shadow-md shadow-amber-200/20 relative overflow-hidden group transition-all hover:shadow-lg">
-                            <div className="absolute top-0 right-0 w-32 h-32 bg-amber-200/20 rounded-full -mr-16 -mt-16 blur-2xl"></div>
-                            <h3 className="text-[10px] font-black text-amber-600 uppercase tracking-[0.2em] mb-3 flex items-center gap-2"><Icon name="sparkles" size={14} className="animate-pulse" /> Community Growth Tip</h3>
-                            <div className="relative z-10">
-                                {(() => { const tip = PROGRESS_TIPS[Math.floor(new Date().getDate()) % PROGRESS_TIPS.length]; return (<><p className="text-sm font-black text-slate-900 mb-1">{tip.title}</p><p className="text-xs text-slate-600 font-medium leading-relaxed opacity-90">{tip.note}</p></>); })()}
-                            </div>
-                        </div>
-
-                        {/* Portsmouth Connect CTA */}
-                        <div className="mb-10 px-1">
-                            <div className="bg-indigo-600 rounded-[40px] p-8 text-white relative overflow-hidden group shadow-2xl shadow-indigo-200">
-                                <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16 group-hover:scale-150 transition-transform duration-700"></div>
-                                <div className="relative z-10">
-                                    <h3 className="text-3xl font-black italic tracking-tighter mb-2">Connect Your Support</h3>
-                                    <p className="text-sm font-bold text-indigo-100 leading-tight mb-8">Uncover unclaimed benefits & avoid "Benefits Cliffs" with our 2026 Portsmouth Intelligence engine.</p>
-                                    <div className="flex gap-3">
-                                        <button
-                                            onClick={() => setShowConnectCalculator(true)}
-                                            className="flex-1 bg-white text-indigo-600 py-4 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl active:scale-95 transition-all"
-                                        >
-                                            Start Check
-                                        </button>
-                                        <button
-                                            onClick={() => setView('pompey-loop')}
-                                            className="flex-1 bg-indigo-500/30 border border-white/20 text-white py-4 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-indigo-500/50 transition-all"
-                                        >
-                                            Pompey Loop
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-10">
-                            <div className="p-6 bg-white rounded-[32px] border-2 border-slate-100 shadow-sm relative overflow-hidden group">
-                                <h3 className="text-[10px] font-black text-emerald-600 uppercase tracking-[0.2em] mb-4 flex items-center gap-2 relative z-10"><Icon name="tag" size={14} /> Portsmouth Market Deals</h3>
-                                <div className="space-y-4 relative z-10">{COMMUNITY_DEALS.map((deal: any) => (<button key={deal.id} onClick={() => { setMapFocus({ lat: deal.lat, lng: deal.lng, label: deal.store }); setView('map'); }} className="border-l-4 border-emerald-500 pl-4 py-1 hover:bg-emerald-50 w-full text-left rounded-r-lg transition-all active:scale-[0.98]"><p className="text-xs font-black text-slate-900">{deal.store}</p><p className="text-[10px] font-bold text-emerald-600 uppercase tracking-wide">{deal.deal} • {deal.time}</p><p className="text-[10px] text-slate-400 font-medium">{deal.info}</p></button>))}</div>
-                            </div>
-                            <div className="p-6 bg-white rounded-[32px] border-2 border-slate-100 shadow-sm relative overflow-hidden group">
-                                <h3 className="text-[10px] font-black text-rose-600 uppercase tracking-[0.2em] mb-4 flex items-center gap-2 relative z-10"><Icon name="heart" size={14} /> City Gift Exchange</h3>
-                                <div className="space-y-4 relative z-10">{GIFT_EXCHANGE.map((gift: any) => (<button key={gift.id} onClick={() => { setMapFocus({ lat: gift.lat, lng: gift.lng, label: gift.location }); setView('map'); }} className="border-l-4 border-rose-500 pl-4 py-1 hover:bg-rose-50 w-full text-left rounded-r-lg transition-all active:scale-[0.98]"><p className="text-xs font-black text-slate-900">{gift.item}</p><p className="text-[10px] font-bold text-rose-600 uppercase tracking-wide">{gift.location} • {gift.date}</p><p className="text-[10px] text-slate-400 font-medium">{gift.info}</p></button>))}</div>
-                            </div>
+                {showPartnerLogin && (
+                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-5 bg-slate-900/40 backdrop-blur-sm animate-fade-in">
+                        <div className="w-full max-w-md">
+                            <PartnerLogin
+                                onClose={() => setShowPartnerLogin(false)}
+                                onRequestAccess={() => { setShowPartnerLogin(false); setShowPartnerRequest(true); }}
+                            />
                         </div>
                     </div>
                 )}
 
-                {/* --- VIEW: FAQ --- */}
-                {view === 'faq' && <FAQSection onClose={() => setView('home')} onNavigate={handleFAQNavigate} />}
+                <ReportModal isOpen={!!reportTarget} onClose={() => setReportTarget(null)} resourceName={reportTarget?.name || ''} resourceId={reportTarget?.id || ''} />
+                <PartnerRequestModal isOpen={showPartnerRequest} onClose={() => setShowPartnerRequest(false)} />
+                <TutorialModal isOpen={showTutorial} onClose={() => { setShowTutorial(false); localStorage.setItem('seen_tutorial', 'true'); }} />
 
-                {/* --- LAZY VIEWS --- */}
-                {view === 'community-plan' && <Suspense fallback={<PageLoader />}><UnifiedSchedule category="food" title="Weekly Food Support" data={dynamicData as any} onNavigate={(id) => { const item = dynamicData.find(i => i.id === id); if (item) { setMapFocus({ lat: item.location.lat, lng: item.location.lng, label: item.name, id: item.id }); setView('map'); } }} onSave={toggleSaved} savedIds={savedIds} /></Suspense>}
-                {view === 'safe-sleep-plan' && <Suspense fallback={<PageLoader />}><UnifiedSchedule category="shelter" title="Safe Sleep" data={dynamicData as any} onNavigate={(id) => { const item = dynamicData.find(i => i.id === id); if (item) { setMapFocus({ lat: item.location.lat, lng: item.location.lng, label: item.name, id: item.id }); setView('map'); } }} onSave={toggleSaved} savedIds={savedIds} /></Suspense>}
-                {view === 'warm-spaces-plan' && <Suspense fallback={<PageLoader />}><UnifiedSchedule category="warmth" title="Warm Spaces" data={dynamicData as any} onNavigate={(id) => { const item = dynamicData.find(i => i.id === id); if (item) { setMapFocus({ lat: item.location.lat, lng: item.location.lng, label: item.name, id: item.id }); setView('map'); } }} onSave={toggleSaved} savedIds={savedIds} /></Suspense>}
-                {view === 'partner-dashboard' && <Suspense fallback={<PageLoader />}><PartnerDashboard /></Suspense>}
-                {view === 'analytics' && <Suspense fallback={<PageLoader />}><PulseMap /></Suspense>}
-                {view === 'data-migration' && <Suspense fallback={<PageLoader />}><DataMigration /></Suspense>}
-                {view === 'pompey-loop' && (
-                    <div className="p-8">
-                        <div className="mb-6 flex items-center justify-between">
-                            <button onClick={() => setView('home')} className="p-3 bg-slate-100 rounded-2xl text-slate-400"><Icon name="chevron-left" size={20} /></button>
-                        </div>
-                        <Suspense fallback={<PageLoader />}><PompeyLoopView /></Suspense>
-                    </div>
+                {showWizard && (
+                    <Suspense fallback={<PageLoader />}>
+                        <CrisisWizard data={dynamicData as any} userLocation={userLocation} onClose={() => setShowWizard(false)} savedIds={savedIds} onToggleSave={toggleSavedId} />
+                    </Suspense>
                 )}
 
-                {view === 'planner' && (
-                    <div className="animate-fade-in-up">
-                        <div className="mb-6 flex items-center justify-between">
-                            <div><h2 className="text-2xl font-black text-slate-900 tracking-tight">Journey Planner</h2></div>
-                            <button onClick={() => setView('home')} className="p-3 bg-slate-100 rounded-2xl"><Icon name="x" size={20} /></button>
-                        </div>
-                        <Suspense fallback={<PageLoader />}>
-                            <AreaScheduleView data={filteredData.filter(item => savedIds.includes(item.id))} area={filters.area} category={filters.category} />
-                        </Suspense>
-                    </div>
-                )}
-
-                {view === 'compare' && (
-                    <div className="fixed inset-0 z-50 bg-black/20 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setView('home')}>
-                        <div className="w-full max-w-4xl" onClick={e => e.stopPropagation()}>
+                {showConnectCalculator && (
+                    <div className="fixed inset-0 z-[60] bg-black/40 backdrop-blur-sm flex items-center justify-center p-5 animate-fade-in">
+                        <div className="w-full max-w-lg">
                             <Suspense fallback={<PageLoader />}>
-                                <SmartCompare items={filteredData.filter(i => compareItems.includes(i.id))} userLocation={userLocation} onRemove={toggleCompareItem} onNavigate={(id) => { const resource = filteredData.find(r => r.id === id); if (resource) { window.open(`https://www.google.com/maps/dir/?api=1&destination=${resource.lat},${resource.lng}`, '_blank'); } }} onCall={(phone) => window.open(`tel:${phone}`)} />
+                                <ConnectCalculatorView
+                                    initialData={connectInput}
+                                    onComplete={(res, input) => {
+                                        setConnectResult(res);
+                                        setConnectInput(input);
+                                        setShowConnectCalculator(false);
+                                    }}
+                                    onClose={() => setShowConnectCalculator(false)}
+                                />
                             </Suspense>
                         </div>
                     </div>
                 )}
-
-                {/* --- VIEW: LIST --- */}
-                {view === 'list' && (
-                    <div className="animate-fade-in-up">
-                        <div className="flex justify-between items-center mb-6">
-                            <div>
-                                <h2 className="text-2xl font-black text-slate-900 tracking-tight capitalize">{filters.category === 'all' ? 'Directory' : filters.category}</h2>
-                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Finding the right support</p>
-                            </div>
-                            <div className="flex gap-2">
-                                <button onClick={() => setView('community-plan')} className="p-3 bg-emerald-50 text-emerald-600 rounded-2xl hover:bg-emerald-100 transition-all"><Icon name="calendar" size={20} /></button>
-                                <button onClick={() => setView('map')} className="p-3 bg-indigo-600 text-white rounded-2xl hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-200 flex items-center gap-2"><Icon name="mapPin" size={20} /></button>
-                                <button onClick={() => setView('home')} className="p-3 bg-slate-100 text-slate-400 rounded-2xl hover:bg-slate-200 transition-all"><Icon name="home" size={20} /></button>
-                            </div>
-                        </div>
-
-                        {/* Filters */}
-                        <div className="space-y-4 mb-8">
-                            <div className="relative">
-                                <Icon name="search" size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
-                                <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Search resources..." className="w-full py-4 pl-11 pr-4 bg-white rounded-2xl border-2 border-slate-100 focus:border-indigo-600 outline-none text-xs font-bold" />
-                                {searchQuery && <button onClick={() => setSearchQuery('')} className="absolute right-3 top-1/2 -translate-y-1/2 p-2 text-slate-400 hover:text-slate-600"><Icon name="x" size={14} /></button>}
-                            </div>
-                            <div className="flex gap-2 items-center">
-                                <button onClick={() => setSmartFilters({ ...smartFilters, openNow: !smartFilters.openNow })} className={`px-3 py-1.5 rounded-full text-[9px] font-black uppercase tracking-wider flex items-center gap-1.5 transition-all border ${smartFilters.openNow ? 'bg-emerald-600 border-emerald-600 text-white' : 'bg-white border-slate-100 text-slate-400'}`}><div className={`w-1.5 h-1.5 rounded-full ${smartFilters.openNow ? 'bg-white animate-pulse' : 'bg-emerald-500'}`}></div>Open Now</button>
-                                <button onClick={() => setSmartFilters({ ...smartFilters, verified: !smartFilters.verified })} className={`px-3 py-1.5 rounded-full text-[9px] font-black uppercase tracking-wider flex items-center gap-1.5 transition-all border ${smartFilters.verified ? 'bg-indigo-600 border-indigo-600 text-white' : 'bg-white border-slate-100 text-slate-400'}`}><Icon name="check_circle" size={10} /> Verified</button>
-                                <button onClick={() => setSmartFilters({ ...smartFilters, nearMe: !smartFilters.nearMe })} className={`px-3 py-1.5 rounded-full text-[9px] font-black uppercase tracking-wider flex items-center gap-1.5 transition-all border ${smartFilters.nearMe ? 'bg-blue-600 border-blue-600 text-white' : 'bg-white border-slate-100 text-slate-400'}`}><Icon name="navigation" size={10} /> Near Me</button>
-                            </div>
-                            <div className="flex gap-2 overflow-x-auto no-scrollbar pb-2">
-                                <button onClick={() => setFilters({ ...filters, area: 'All' })} className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest border-2 transition-all whitespace-nowrap ${filters.area === 'All' ? 'bg-slate-900 border-slate-900 text-white' : 'bg-white border-slate-100 text-slate-400'}`}>Whole City</button>
-                                {AREAS.map(area => (<button key={area} onClick={() => setFilters({ ...filters, area })} className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest border-2 transition-all whitespace-nowrap ${filters.area === area ? 'bg-indigo-600 border-indigo-600 text-white shadow-lg' : 'bg-white border-slate-100 text-slate-400'}`}>{area}</button>))}
-                            </div>
-                            <div className="flex gap-2 overflow-x-auto no-scrollbar pb-2">
-                                {['all', 'food', 'shelter', 'warmth', 'support', 'family', 'learning', 'skills', 'charity'].map(cat => (<button key={cat} onClick={() => setFilters({ ...filters, category: cat })} className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest border-2 transition-all whitespace-nowrap ${filters.category === cat ? 'bg-slate-900 border-slate-900 text-white shadow-lg' : 'bg-white border-slate-100 text-slate-400'}`}>{cat === 'all' ? 'All Needs' : cat}</button>))}
-                            </div>
-                            <div className="flex gap-2 pb-4 overflow-x-auto scrollbar-hide">
-                                {[{ label: 'No Referral', tag: 'no_referral', icon: 'check_circle' }, { label: 'Free', tag: 'free', icon: 'tag' }, { label: 'Membership', tag: 'membership', icon: 'id-card' }].map(f => (<button key={f.tag} onClick={() => setSearchQuery(searchQuery === f.tag ? '' : f.tag)} className={`flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider transition-all border ${searchQuery === f.tag ? 'bg-indigo-600 text-white border-indigo-600 shadow-md' : 'bg-white text-slate-600 border-slate-200 hover:border-indigo-300'}`}><Icon name={f.icon} size={12} />{f.label}</button>))}
-                            </div>
-                        </div>
-
-                        <div className="space-y-4 pb-24">
-                            {filteredData.slice(0, visibleCount).map(item => (
-                                <ResourceCard
-                                    key={item.id}
-                                    item={item}
-                                    isSaved={savedIds.includes(item.id)}
-                                    onToggleSave={() => toggleSaved(item.id)}
-                                    onAddToCompare={() => toggleCompareItem(item.id)}
-                                    onAddToJourney={() => toggleJourneyItem(item.id)}
-                                    isInCompare={compareItems.includes(item.id)}
-                                    isInJourney={journeyItems.includes(item.id)}
-                                    highContrast={highContrast}
-                                    isPartner={isPartner}
-                                    onTagClick={(tag) => setSearchQuery(tag)}
-                                    onReport={() => setReportTarget({ name: item.name, id: item.id })}
-                                />
-                            ))}
-                        </div>
-                        {/* 穩定不變的 LoadMore 觸發器 */}
-                        {visibleCount < filteredData.length && <div ref={loadMoreRef} className="h-20 flex items-center justify-center p-4 text-slate-400 font-bold text-xs uppercase tracking-widest animate-pulse">Loading more resources...</div>}
-                    </div>
-                )}
-
-                {/* --- VIEW: MAP --- */}
-                {view === 'map' && (
-                    <div className="animate-fade-in-up pb-20">
-                        <div className="mb-4 flex items-center justify-between">
-                            <div><h2 className="text-xl font-black text-slate-800">Explorer</h2><p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Visual navigation</p></div>
-                            <div className="flex gap-2">
-                                <button onClick={() => setView('list')} className="p-3 bg-white border-2 border-slate-100 rounded-2xl text-slate-600 hover:bg-slate-50 transition-all flex items-center gap-2 shadow-sm"><Icon name="list" size={18} /></button>
-                                <div className="flex gap-1">
-                                    <button onClick={() => setSmartFilters({ ...smartFilters, openNow: true })} className={`px-4 py-2 rounded-full text-[10px] font-black uppercase border-2 transition-all ${smartFilters.openNow ? 'bg-emerald-600 text-white border-emerald-600' : 'bg-white text-slate-400 border-slate-100'}`}>Open</button>
-                                    <button onClick={() => setSmartFilters({ ...smartFilters, openNow: false })} className={`px-4 py-2 rounded-full text-[10px] font-black uppercase border-2 transition-all ${!smartFilters.openNow ? 'bg-slate-900 text-white border-slate-900' : 'bg-white text-slate-400 border-slate-100'}`}>All</button>
-                                </div>
-                            </div>
-                        </div>
-                        <Suspense fallback={<PageLoader />}>
-                            <SimpleMap
-                                data={filteredData}
-                                category={filters.category}
-                                statusFilter={smartFilters.openNow ? 'open' : 'all'}
-                                savedIds={savedIds}
-                                onToggleSave={toggleSaved}
-                                stealthMode={stealthMode}
-                                externalFocus={mapFocus}
-                                liveStatus={liveStatus}
-                                isPartner={isPartner}
-                                onReport={(item: any) => setReportTarget({ name: item.name, id: item.id })}
-                                onCategoryChange={(cat: string) => { setFilters(prev => ({ ...prev, category: cat, area: 'All' })); setSearchQuery(''); }}
-                            />
-                        </Suspense>
-                    </div>
-                )}
             </div>
-
-            {/* Bottom Nav */}
-            <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[50] bg-slate-900/90 backdrop-blur-md text-white px-6 py-4 rounded-full shadow-2xl flex items-center gap-6 border border-white/10 w-auto">
-                <button onClick={() => setView('home')} className={`relative group ${view === 'home' ? 'text-indigo-400' : 'text-slate-400 hover:text-white'}`}><Icon name="home" size={24} />{view === 'home' && <span className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-1 h-1 bg-indigo-400 rounded-full"></span>}</button>
-                <button onClick={() => setView('map')} className={`relative group ${view === 'map' ? 'text-indigo-400' : 'text-slate-400 hover:text-white'}`}><Icon name="mapPin" size={24} />{view === 'map' && <span className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-1 h-1 bg-indigo-400 rounded-full"></span>}</button>
-                <button onClick={() => setView('list')} className={`relative group ${view === 'list' ? 'text-indigo-400' : 'text-slate-400 hover:text-white'}`}><Icon name="search" size={24} />{view === 'list' && <span className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-1 h-1 bg-indigo-400 rounded-full"></span>}</button>
-                <div className="w-px h-6 bg-white/20"></div>
-                <button onClick={() => setShowCrisis(true)} className="text-rose-500 hover:text-rose-400 animate-pulse"><Icon name="lifebuoy" size={24} /></button>
-            </div>
-
-            {/* Modals & Overlays */}
-            <TipsModal isOpen={showTips} onClose={() => setShowTips(false)} />
-            <CrisisModal isOpen={showCrisis} onClose={() => setShowCrisis(false)} />
-            <PrivacyShield onAccept={() => console.log('Privacy accepted')} />
-            <SmartNotifications
-                notifications={notifications}
-                onDismiss={(id) => setNotifications(prev => prev.filter(n => n.id !== id))}
-                onClearAll={() => setNotifications([])}
-                onAction={(resourceId) => {
-                    const resource = dynamicData.find(r => r.id === resourceId);
-                    if (resource) {
-                        setMapFocus({ lat: resource.location.lat, lng: resource.location.lng, label: resource.name, id: resource.id });
-                        setView('map');
-                    }
-                }}
-            />
-
-            {showPartnerLogin && <div className="fixed inset-0 z-[100] flex items-center justify-center p-5 bg-slate-900/40 backdrop-blur-sm animate-fade-in"><div className="w-full max-w-md"><PartnerLogin onClose={() => setShowPartnerLogin(false)} onRequestAccess={() => { setShowPartnerLogin(false); setShowPartnerRequest(true); }} /></div></div>}
-
-            <ReportModal isOpen={!!reportTarget} onClose={() => setReportTarget(null)} resourceName={reportTarget?.name || ''} resourceId={reportTarget?.id || ''} />
-            <PartnerRequestModal isOpen={showPartnerRequest} onClose={() => setShowPartnerRequest(false)} />
-
-            <TutorialModal
-                isOpen={showTutorial}
-                onClose={() => {
-                    setShowTutorial(false);
-                    localStorage.setItem('seen_tutorial', 'true');
-                }}
-            />
-
-            {showDisclaimer && (
-                <div className="fixed bottom-24 left-4 right-4 z-[90] bg-slate-900 text-white p-4 rounded-3xl shadow-2xl flex items-center justify-between gap-4 animate-fade-in-up border border-white/10">
-                    <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-indigo-500 rounded-2xl flex items-center justify-center shrink-0">
-                            <Icon name="shield" size={20} />
-                        </div>
-                        <p className="text-[10px] font-bold leading-tight uppercase tracking-tight">
-                            We store data on your device to work offline. No personal tracking.
-                        </p>
-                    </div>
-                    <button
-                        onClick={() => { setShowDisclaimer(false); localStorage.setItem('seen_disclaimer', 'true'); }}
-                        className="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all"
-                    >
-                        Got it
-                    </button>
-                </div>
-            )}
-
-            {showWizard && <Suspense fallback={<PageLoader />}><CrisisWizard data={filteredData} userLocation={userLocation} onClose={() => setShowWizard(false)} savedIds={savedIds} onToggleSave={toggleSaved} /></Suspense>}
-
-            {(journeyItems.length > 0 || compareItems.length > 0) && (
-                <div className="fixed bottom-24 left-5 z-[50] flex flex-col gap-3">
-                    {journeyItems.length > 0 && (<button onClick={() => setView('planner')} className="bg-indigo-600 text-white p-4 rounded-full shadow-2xl hover:bg-indigo-700 transition-all active:scale-95 relative"><Icon name="mapPin" size={20} /><div className="absolute -top-1 -right-1 w-6 h-6 bg-emerald-500 rounded-full border-2 border-white flex items-center justify-center"><span className="text-xs font-black">{journeyItems.length}</span></div></button>)}
-                    {compareItems.length > 0 && (<button onClick={() => setView('compare')} className="bg-emerald-600 text-white p-4 rounded-full shadow-2xl hover:bg-emerald-700 transition-all active:scale-95 relative"><Icon name="shield" size={20} /><div className="absolute -top-1 -right-1 w-6 h-6 bg-indigo-500 rounded-full border-2 border-white flex items-center justify-center"><span className="text-xs font-black">{compareItems.length}</span></div></button>)}
-                </div>
-            )}
-
-            {view === 'planner' && journeyItems.length > 0 && (
-                <div className="fixed inset-0 z-50 bg-black/20 backdrop-blur-sm flex items-end" onClick={() => setView('home')}>
-                    <div className="w-full max-w-lg mx-auto animate-slide-up" onClick={(e) => e.stopPropagation()}>
-                        <Suspense fallback={<PageLoader />}>
-                            <JourneyPlanner
-                                items={filteredData.filter(r => journeyItems.includes(r.id))}
-                                userLocation={userLocation}
-                                onRemove={(id) => setJourneyItems(prev => prev.filter(i => i !== id))}
-                                onClear={() => { setJourneyItems([]); setView('home'); }}
-                            />
-                        </Suspense>
-                    </div>
-                </div>
-            )}
-            {showConnectCalculator && (
-                <div className="fixed inset-0 z-[60] bg-black/40 backdrop-blur-sm flex items-center justify-center p-5 animate-fade-in">
-                    <div className="w-full max-w-lg">
-                        <Suspense fallback={<PageLoader />}>
-                            <ConnectCalculatorView
-                                initialData={connectInput}
-                                policy={policyConfig}
-                                onComplete={(res, input) => {
-                                    setConnectResult(res);
-                                    setConnectInput(input);
-                                    localStorage.setItem('bridge_connect_input', JSON.stringify(input));
-                                    setShowConnectCalculator(false);
-                                    // Notifications based on alerts
-                                    if (res.alerts.length > 0) {
-                                        const newNotifs = res.alerts.map((a: any, i: number) => ({
-                                            id: `connect-${Date.now()}-${i}`,
-                                            type: a.type === 'warning' ? 'important' : 'info',
-                                            message: a.title,
-                                            time: 'Just now'
-                                        }));
-                                        setNotifications(prev => [...newNotifs, ...prev]);
-                                    }
-                                }}
-                                onClose={() => setShowConnectCalculator(false)}
-                            />
-                        </Suspense>
-                    </div>
-                </div>
-            )}
-
-            {connectResult && !showConnectCalculator && (
-                <div className="fixed bottom-32 right-5 z-40">
-                    <button
-                        onClick={() => setView('connect')}
-                        className="w-14 h-14 bg-indigo-600 text-white rounded-full shadow-2xl flex items-center justify-center animate-bounce hover:animate-none border-4 border-white"
-                    >
-                        <Icon name="zap" size={24} />
-                    </button>
-                </div>
-            )}
-
-            {view === 'connect' && connectResult && (
-                <div className="fixed inset-0 z-[60] bg-black/40 backdrop-blur-sm flex items-center justify-center p-5">
-                    <div className="w-full max-w-lg">
-                        <Suspense fallback={<PageLoader />}>
-                            <ConnectDashboardView
-                                result={connectResult}
-                                onReset={() => {
-                                    setConnectResult(null);
-                                    setShowConnectCalculator(true);
-                                }}
-                                onClose={() => setView('home')}
-                            />
-                        </Suspense>
-                    </div>
-                </div>
-            )}
-        </div>
+        </Router>
     );
 };
 

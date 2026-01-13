@@ -33,19 +33,19 @@ export default defineConfig({
             options: {
               cacheName: 'osm-tiles-cache',
               expiration: {
-                maxEntries: 500,
-                maxAgeSeconds: 60 * 60 * 24 * 30
+                maxEntries: 1000,
+                maxAgeSeconds: 60 * 60 * 24 * 90 // 90 days
               },
               cacheableResponse: { statuses: [0, 200] }
             }
           },
           {
-            urlPattern: /\.(?:png|jpg|jpeg|svg|gif|webp)$/i,
+            urlPattern: /\.(?:png|jpg|jpeg|svg|gif|webp|ico)$/i,
             handler: 'CacheFirst',
             options: {
               cacheName: 'images-cache',
               expiration: {
-                maxEntries: 100,
+                maxEntries: 200,
                 maxAgeSeconds: 60 * 60 * 24 * 30
               }
             }
@@ -55,10 +55,21 @@ export default defineConfig({
             handler: 'NetworkFirst',
             options: {
               cacheName: 'firebase-cache',
-              networkTimeoutSeconds: 10,
+              networkTimeoutSeconds: 5,
+              expiration: {
+                maxEntries: 100,
+                maxAgeSeconds: 60 * 60 * 24
+              }
+            }
+          },
+          {
+            urlPattern: /^https:\/\/firebasestorage\.googleapis\.com\/.*/i,
+            handler: 'StaleWhileRevalidate',
+            options: {
+              cacheName: 'firebase-storage-cache',
               expiration: {
                 maxEntries: 50,
-                maxAgeSeconds: 60 * 60
+                maxAgeSeconds: 60 * 60 * 24 * 30
               }
             }
           }
@@ -89,11 +100,11 @@ export default defineConfig({
   optimizeDeps: {
     // 預先打包這些模組，解決 Rollup 解析問題
     include: [
-      'firebase/app', 
-      'firebase/firestore', 
-      'firebase/auth', 
+      'firebase/app',
+      'firebase/firestore',
+      'firebase/auth',
       '@firebase/app',
-      '@firebase/firestore', 
+      '@firebase/firestore',
       '@firebase/auth'
     ]
   },

@@ -1,17 +1,18 @@
 import { useState } from 'react';
 import Icon from './Icon';
-import { calculateConnectBenefits, type ConnectInput, type ConnectResult } from '../services/ConnectLogic';
-import { PolicyConfig } from '../config/policy_2026';
+import { type ConnectInput, type ConnectResult } from '../services/ConnectLogic';
+import { httpsCallable } from 'firebase/functions';
+import { functions } from '../lib/firebase';
 
 interface ConnectCalculatorProps {
     onComplete: (result: ConnectResult, input: ConnectInput) => void;
     onClose: () => void;
     initialData?: ConnectInput | null;
-    policy: PolicyConfig;
 }
 
-const ConnectCalculator = ({ onComplete, onClose, initialData, policy }: ConnectCalculatorProps) => {
+const ConnectCalculator = ({ onComplete, onClose, initialData }: ConnectCalculatorProps) => {
     const [step, setStep] = useState(1);
+    const [isCalculating, setIsCalculating] = useState(false);
     const [formData, setFormData] = useState<ConnectInput>(initialData || {
         postcode: '',
         tenure: 'rent_private',
@@ -31,9 +32,18 @@ const ConnectCalculator = ({ onComplete, onClose, initialData, policy }: Connect
     const handleNext = () => setStep(s => s + 1);
     const handleBack = () => setStep(s => s - 1);
 
-    const handleSubmit = () => {
-        const result = calculateConnectBenefits(formData, policy);
-        onComplete(result, formData);
+    const handleSubmit = async () => {
+        setIsCalculating(true);
+        try {
+            const calculateBenefits = httpsCallable<ConnectInput, ConnectResult>(functions, 'calculateBenefits');
+            const result = await calculateBenefits(formData);
+            onComplete(result.data, formData);
+        } catch (error) {
+            console.error("Calculation failed:", error);
+            alert("Calculation failed. Please try again later.");
+        } finally {
+            setIsCalculating(false);
+        }
     };
 
     return (
@@ -197,7 +207,13 @@ const ConnectCalculator = ({ onComplete, onClose, initialData, policy }: Connect
                 {step < 3 ? (
                     <button onClick={handleNext} className="flex-[2] py-4 bg-indigo-600 text-white rounded-2xl text-sm font-black uppercase shadow-xl shadow-indigo-100">Next Step</button>
                 ) : (
-                    <button onClick={handleSubmit} className="flex-[2] py-4 bg-emerald-600 text-white rounded-2xl text-sm font-black uppercase shadow-xl shadow-emerald-100">Calculate Results</button>
+                    <button
+                        onClick={handleSubmit}
+                        disabled={isCalculating}
+                        className="flex-[2] py-4 bg-emerald-600 text-white rounded-2xl text-sm font-black uppercase shadow-xl shadow-emerald-100 disabled:opacity-50"
+                    >
+                        {isCalculating ? 'Processing...' : 'Calculate Results'}
+                    </button>
                 )}
             </div>
         </div>
