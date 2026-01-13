@@ -1,17 +1,17 @@
 import { useState } from 'react';
-import { ALL_DATA } from '../data';
 import { checkStatus, getDistance } from '../utils';
 import Icon from './Icon';
 import ResourceCard from './ResourceCard';
 
 interface CrisisWizardProps {
+    data: any[]; // Resource shaped data
     userLocation: { lat: number; lng: number } | null;
     onClose: () => void;
     onToggleSave: (id: string) => void;
     savedIds: string[];
 }
 
-const CrisisWizard = ({ userLocation, onClose, onToggleSave, savedIds }: CrisisWizardProps) => {
+const CrisisWizard = ({ data, userLocation, onClose, onToggleSave, savedIds }: CrisisWizardProps) => {
     const [step, setStep] = useState<'need' | 'urgency' | 'result'>('need');
     const [selectedNeed, setSelectedNeed] = useState<string>('');
     const [results, setResults] = useState<any[]>([]);
@@ -28,7 +28,7 @@ const CrisisWizard = ({ userLocation, onClose, onToggleSave, savedIds }: CrisisW
     const handleNeedSelect = (needId: string) => {
         setSelectedNeed(needId);
         // Instant calculation for "Best Option"
-        let matches = ALL_DATA.filter(item => {
+        let matches = data.filter(item => {
             if (needId === 'mental_health') return item.tags.includes('mental_health');
             if (needId === 'food') return item.category === 'food' && item.tags.includes('free');
             return item.category === needId;
@@ -103,7 +103,7 @@ const CrisisWizard = ({ userLocation, onClose, onToggleSave, savedIds }: CrisisW
 
                         <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-1">
                             {results.length > 0 ? (
-                                results.map(item => (
+                                results.map((item: any) => (
                                     <ResourceCard
                                         key={item.id}
                                         item={item}

@@ -1,0 +1,2121 @@
+[
+  {
+    "id": "f1",
+    "name": "FoodCycle Portsmouth",
+    "category": "food",
+    "location": {
+      "lat": 50.7993,
+      "lng": -1.1002,
+      "address": "John Pounds Centre, 23 Queen St, Portsea, PO1 3HN",
+      "area": "PO1"
+    },
+    "thresholdInfo": {
+      "idRequired": false,
+      "queueStatus": "Light",
+      "entrancePhotoUrl": "https://images.unsplash.com/photo-1599059813005-11265ba4b4ce?auto=format&fit=crop&q=80&w=300"
+    },
+    "liveStatus": {
+      "isOpen": false,
+      "capacity": "High",
+      "lastUpdated": "2026-01-13T15:52:14.249Z",
+      "message": ""
+    },
+    "description": "A free, hot 3-course vegetarian meal for the community. No questions asked. Just turn up.",
+    "tags": [
+      "free",
+      "hot_meal",
+      "no_referral",
+      "vegetarian",
+      "community"
+    ],
+    "phone": "023 9289 2010",
+    "website": "",
+    "schedule": {
+      "0": "Closed",
+      "1": "Closed",
+      "2": "18:00-19:30",
+      "3": "Closed",
+      "4": "Closed",
+      "5": "Closed",
+      "6": "Closed"
+    },
+    "trustScore": 100
+  },
+  {
+    "id": "f2",
+    "name": "Portsea Pantry",
+    "category": "food",
+    "location": {
+      "lat": 50.7993,
+      "lng": -1.1002,
+      "address": "John Pounds Centre, 23 Queen St, Portsea, PO1 3HN",
+      "area": "PO1"
+    },
+    "thresholdInfo": {
+      "idRequired": true,
+      "queueStatus": "Empty",
+      "entrancePhotoUrl": null
+    },
+    "liveStatus": {
+      "isOpen": false,
+      "capacity": "High",
+      "lastUpdated": "2026-01-13T15:52:14.250Z",
+      "message": ""
+    },
+    "description": "Your local pantry. Pay a weekly membership (£5) for a choice of groceries valued £15+.",
+    "tags": [
+      "membership",
+      "fresh_food",
+      "community"
+    ],
+    "phone": "023 9289 2010",
+    "website": "",
+    "schedule": {
+      "0": "Closed",
+      "1": "10:00-14:00",
+      "2": "10:00-14:00",
+      "3": "10:00-14:00",
+      "4": "10:00-14:00",
+      "5": "Closed",
+      "6": "Closed"
+    },
+    "trustScore": 98
+  },
+  {
+    "id": "f3",
+    "name": "LifeHouse Southsea",
+    "category": "food",
+    "location": {
+      "lat": 50.7853,
+      "lng": -1.0772,
+      "address": "153 Albert Rd, Southsea, PO4 0JW",
+      "area": "PO4"
+    },
+    "thresholdInfo": {
+      "idRequired": false,
+      "queueStatus": "Busy",
+      "entrancePhotoUrl": null
+    },
+    "liveStatus": {
+      "isOpen": false,
+      "capacity": "High",
+      "lastUpdated": "2026-01-13T15:52:14.250Z",
+      "message": ""
+    },
+    "description": "Hot food, support, and community for the homeless and vulnerable.",
+    "tags": [
+      "hot_meal",
+      "no_referral",
+      "pets",
+      "support",
+      "free"
+    ],
+    "phone": "07800 933 983",
+    "website": "",
+    "schedule": {
+      "0": "Closed",
+      "1": "Closed",
+      "2": "09:00-11:30",
+      "3": "09:00-11:30",
+      "4": "18:00-20:00",
+      "5": "Closed",
+      "6": "Closed"
+    },
+    "trustScore": 100
+  },
+  {
+    "id": "f4",
+    "name": "North End Pantry",
+    "category": "food",
+    "location": {
+      "lat": 50.8122,
+      "lng": -1.0712,
+      "address": "North End Baptist Church, 195 Powerscourt Rd, PO2 7JH",
+      "area": "PO2"
+    },
+    "thresholdInfo": {
+      "idRequired": false,
+      "queueStatus": "Empty",
+      "entrancePhotoUrl": null
+    },
+    "liveStatus": {
+      "isOpen": false,
+      "capacity": "High",
+      "lastUpdated": "2026-01-13T15:52:14.250Z",
+      "message": ""
+    },
+    "description": "Community pantry. Reduce waste, save money. £5 for selection valued ~£20.",
+    "tags": [
+      "membership",
+      "fresh_food"
+    ],
+    "phone": "07733 624248",
+    "website": "",
+    "schedule": {
+      "0": "Closed",
+      "1": "16:30-18:00",
+      "2": "14:30-16:00",
+      "3": "Closed",
+      "4": "13:00-15:00",
+      "5": "10:00-12:00",
+      "6": "Closed"
+    },
+    "trustScore": 95
+  },
+  {
+    "id": "f5",
+    "name": "Portsmouth Foodbank (Hope Church)",
+    "category": "food",
+    "location": {
+      "lat": 50.7935,
+      "lng": -1.0841,
+      "address": "Hope Church, Somers Road, Southsea, PO5 4QA",
+      "area": "PO5"
+    },
+    "thresholdInfo": {
+      "idRequired": true,
+      "queueStatus": "Busy",
+      "entrancePhotoUrl": null
+    },
+    "liveStatus": {
+      "isOpen": false,
+      "capacity": "High",
+      "lastUpdated": "2026-01-13T15:52:14.250Z",
+      "message": ""
+    },
+    "description": "Emergency food parcels. Requires a referral voucher.",
+    "tags": [
+      "referral",
+      "emergency"
+    ],
+    "phone": "023 9298 7976",
+    "website": "",
+    "schedule": {
+      "0": "Closed",
+      "1": "11:00-13:00",
+      "2": "Closed",
+      "3": "11:00-13:00",
+      "4": "Closed",
+      "5": "11:00-13:00",
+      "6": "Closed"
+    },
+    "trustScore": 100
+  },
+  {
+    "id": "f5_b",
+    "name": "City Life Church (Foodbank)",
+    "category": "food",
+    "location": {
+      "lat": 50.8068,
+      "lng": -1.0595,
+      "address": "85 Tangier Road, Baffins, PO3 6JH",
+      "area": "PO3"
+    },
+    "thresholdInfo": {
+      "idRequired": false,
+      "queueStatus": "Empty",
+      "entrancePhotoUrl": null
+    },
+    "liveStatus": {
+      "isOpen": false,
+      "capacity": "High",
+      "lastUpdated": "2026-01-13T15:52:14.250Z",
+      "message": ""
+    },
+    "description": "Satellite food bank location. Voucher required.",
+    "tags": [
+      "referral",
+      "emergency"
+    ],
+    "phone": null,
+    "website": "",
+    "schedule": {
+      "0": "Closed",
+      "1": "Closed",
+      "2": "10:00-11:00",
+      "3": "Closed",
+      "4": "Closed",
+      "5": "Closed",
+      "6": "Closed"
+    },
+    "trustScore": 95
+  },
+  {
+    "id": "f6",
+    "name": "Sunday Suppers",
+    "category": "food",
+    "location": {
+      "lat": 50.8035,
+      "lng": -1.089,
+      "address": "All Saints Church, Commercial Road, PO1 4BT",
+      "area": "PO1"
+    },
+    "thresholdInfo": {
+      "idRequired": false,
+      "queueStatus": "Empty",
+      "entrancePhotoUrl": null
+    },
+    "liveStatus": {
+      "isOpen": false,
+      "capacity": "High",
+      "lastUpdated": "2026-01-13T15:52:14.250Z",
+      "message": ""
+    },
+    "description": "Hot meal for the homeless every Sunday evening.",
+    "tags": [
+      "hot_meal",
+      "free",
+      "no_referral"
+    ],
+    "phone": null,
+    "website": "",
+    "schedule": {
+      "0": "17:00-18:00",
+      "1": "Closed",
+      "2": "Closed",
+      "3": "Closed",
+      "4": "Closed",
+      "5": "Closed",
+      "6": "Closed"
+    },
+    "trustScore": 95
+  },
+  {
+    "id": "f7",
+    "name": "St Mag's Pantry",
+    "category": "food",
+    "location": {
+      "lat": 50.787,
+      "lng": -1.0658,
+      "address": "St Margaret's Community Church, Highland Rd, Southsea, PO4 9DD",
+      "area": "PO4"
+    },
+    "thresholdInfo": {
+      "idRequired": false,
+      "queueStatus": "Empty",
+      "entrancePhotoUrl": null
+    },
+    "liveStatus": {
+      "isOpen": false,
+      "capacity": "High",
+      "lastUpdated": "2026-01-13T15:52:14.250Z",
+      "message": ""
+    },
+    "description": "Your local pantry. £5 weekly for £15-£20 of groceries.",
+    "tags": [
+      "membership",
+      "fresh_food"
+    ],
+    "phone": null,
+    "website": "",
+    "schedule": {
+      "0": "Closed",
+      "1": "15:00-16:30",
+      "2": "15:00-16:30",
+      "3": "10:00-11:30",
+      "4": "Closed",
+      "5": "Closed",
+      "6": "Closed"
+    },
+    "trustScore": 98
+  },
+  {
+    "id": "f8",
+    "name": "Eastney Coffee Pot",
+    "category": "food",
+    "location": {
+      "lat": 50.7925,
+      "lng": -1.0655,
+      "address": "21 Eastney Road, Portsmouth, PO4 9JA",
+      "area": "PO4"
+    },
+    "thresholdInfo": {
+      "idRequired": false,
+      "queueStatus": "Empty",
+      "entrancePhotoUrl": null
+    },
+    "liveStatus": {
+      "isOpen": false,
+      "capacity": "High",
+      "lastUpdated": "2026-01-13T15:52:14.250Z",
+      "message": ""
+    },
+    "description": "A warm welcome with free tea/coffee and a light meal.",
+    "tags": [
+      "free",
+      "warmth",
+      "hot_meal",
+      "no_referral"
+    ],
+    "phone": null,
+    "website": "",
+    "schedule": {
+      "0": "Closed",
+      "1": "Closed",
+      "2": "Closed",
+      "3": "Closed",
+      "4": "Closed",
+      "5": "10:00-12:00",
+      "6": "Closed"
+    },
+    "trustScore": 100
+  },
+  {
+    "id": "f9",
+    "name": "Baffins Community Pantry",
+    "category": "food",
+    "location": {
+      "lat": 50.8085,
+      "lng": -1.061,
+      "address": "24 Tangier Road, Portsmouth, PO3 6JL",
+      "area": "PO3"
+    },
+    "thresholdInfo": {
+      "idRequired": false,
+      "queueStatus": "Empty",
+      "entrancePhotoUrl": null
+    },
+    "liveStatus": {
+      "isOpen": false,
+      "capacity": "High",
+      "lastUpdated": "2026-01-13T15:52:14.250Z",
+      "message": ""
+    },
+    "description": "£5 for a weekly shop. Open to residents of Baffins ward.",
+    "tags": [
+      "membership",
+      "fresh_food"
+    ],
+    "phone": null,
+    "website": "",
+    "schedule": {
+      "0": "Closed",
+      "1": "10:00-12:00",
+      "2": "Closed",
+      "3": "Closed",
+      "4": "Closed",
+      "5": "16:00-18:00",
+      "6": "Closed"
+    },
+    "trustScore": 98
+  },
+  {
+    "id": "f10",
+    "name": "Paulsgrove Community Pantry",
+    "category": "food",
+    "location": {
+      "lat": 50.849,
+      "lng": -1.095,
+      "address": "St Michael and All Angels Church, Hempsted Rd, Paulsgrove, PO6 4AS",
+      "area": "PO6"
+    },
+    "thresholdInfo": {
+      "idRequired": false,
+      "queueStatus": "Empty",
+      "entrancePhotoUrl": null
+    },
+    "liveStatus": {
+      "isOpen": false,
+      "capacity": "High",
+      "lastUpdated": "2026-01-13T15:52:14.250Z",
+      "message": ""
+    },
+    "description": "Membership pantry for Paulsgrove residents. £5 for approx £20 value.",
+    "tags": [
+      "membership",
+      "fresh_food",
+      "community"
+    ],
+    "phone": "023 9237 8194",
+    "website": "",
+    "schedule": {
+      "0": "Closed",
+      "1": "Closed",
+      "2": "09:30-11:30",
+      "3": "Closed",
+      "4": "Closed",
+      "5": "Closed",
+      "6": "Closed"
+    },
+    "trustScore": 97
+  },
+  {
+    "id": "f11",
+    "name": "Spark Community Space",
+    "category": "support",
+    "location": {
+      "lat": 50.7965,
+      "lng": -1.072,
+      "address": "The Pompey Centre, Unit 12, Fratton Way, Southsea, PO4 8SL",
+      "area": "PO4"
+    },
+    "thresholdInfo": {
+      "idRequired": false,
+      "queueStatus": "Empty",
+      "entrancePhotoUrl": null
+    },
+    "liveStatus": {
+      "isOpen": false,
+      "capacity": "High",
+      "lastUpdated": "2026-01-13T15:52:14.250Z",
+      "message": ""
+    },
+    "description": "Safe place for those isolated. Pay-what-you-can cafe.",
+    "tags": [
+      "community",
+      "coffee",
+      "free",
+      "support",
+      "no_referral"
+    ],
+    "phone": null,
+    "website": "",
+    "schedule": {
+      "0": "Closed",
+      "1": "Closed",
+      "2": "11:00-14:00",
+      "3": "11:00-14:00",
+      "4": "11:00-14:00",
+      "5": "Closed",
+      "6": "11:00-14:00"
+    },
+    "trustScore": 100
+  },
+  {
+    "id": "f12",
+    "name": "Salvation Army Southsea",
+    "category": "food",
+    "location": {
+      "lat": 50.7864,
+      "lng": -1.082,
+      "address": "84 Albert Rd, Southsea, PO5 2SN",
+      "area": "PO5"
+    },
+    "thresholdInfo": {
+      "idRequired": false,
+      "queueStatus": "Empty",
+      "entrancePhotoUrl": null
+    },
+    "liveStatus": {
+      "isOpen": false,
+      "capacity": "High",
+      "lastUpdated": "2026-01-13T15:52:14.250Z",
+      "message": ""
+    },
+    "description": "Emergency food support and advice.",
+    "tags": [
+      "referral",
+      "emergency"
+    ],
+    "phone": "023 9282 1164",
+    "website": "",
+    "schedule": {
+      "0": "Closed",
+      "1": "10:00-12:00",
+      "2": "10:00-12:00",
+      "3": "Closed",
+      "4": "Closed",
+      "5": "10:00-12:00",
+      "6": "Closed"
+    },
+    "trustScore": 98
+  },
+  {
+    "id": "sh1",
+    "name": "Housing Options (Civic Offices)",
+    "category": "shelter",
+    "location": {
+      "lat": 50.7997,
+      "lng": -1.0934,
+      "address": "Civic Offices, Guildhall Square, PO1 2AL",
+      "area": "PO1"
+    },
+    "thresholdInfo": {
+      "idRequired": false,
+      "queueStatus": "Empty",
+      "entrancePhotoUrl": null
+    },
+    "liveStatus": {
+      "isOpen": false,
+      "capacity": "High",
+      "lastUpdated": "2026-01-13T15:52:14.250Z",
+      "message": ""
+    },
+    "description": "First point of contact for homelessness prevention.",
+    "tags": [
+      "emergency",
+      "support",
+      "advice",
+      "no_referral"
+    ],
+    "phone": "023 9283 4989",
+    "website": "",
+    "schedule": {
+      "0": "Closed",
+      "1": "08:30-17:00",
+      "2": "08:30-17:00",
+      "3": "08:30-17:00",
+      "4": "08:30-17:00",
+      "5": "08:30-16:00",
+      "6": "Closed"
+    },
+    "trustScore": 100
+  },
+  {
+    "id": "sh2",
+    "name": "Hope House",
+    "category": "shelter",
+    "location": {
+      "lat": 50.7981,
+      "lng": -1.0665,
+      "address": "32-34 Milton Road, Portsmouth, PO3 6BA",
+      "area": "PO3"
+    },
+    "thresholdInfo": {
+      "idRequired": false,
+      "queueStatus": "Empty",
+      "entrancePhotoUrl": null
+    },
+    "liveStatus": {
+      "isOpen": false,
+      "capacity": "High",
+      "lastUpdated": "2026-01-13T15:52:14.250Z",
+      "message": ""
+    },
+    "description": "Supported accommodation for single homeless people.",
+    "tags": [
+      "referral",
+      "support"
+    ],
+    "phone": null,
+    "website": "",
+    "schedule": {
+      "0": "24/7",
+      "1": "24/7",
+      "2": "24/7",
+      "3": "24/7",
+      "4": "24/7",
+      "5": "24/7",
+      "6": "24/7"
+    },
+    "trustScore": 98
+  },
+  {
+    "id": "sh3",
+    "name": "Portsmouth Rough Sleeping Hub",
+    "category": "shelter",
+    "location": {
+      "lat": 50.7997,
+      "lng": -1.1025,
+      "address": "6 Queen Street, Portsmouth, PO1 3HL",
+      "area": "PO1"
+    },
+    "thresholdInfo": {
+      "idRequired": false,
+      "queueStatus": "Empty",
+      "entrancePhotoUrl": null
+    },
+    "liveStatus": {
+      "isOpen": false,
+      "capacity": "High",
+      "lastUpdated": "2026-01-13T15:52:14.250Z",
+      "message": ""
+    },
+    "description": "Breakfast (8-12), showers, laundry, and housing advice. Closed 12-1pm daily.",
+    "tags": [
+      "shower",
+      "laundry",
+      "hot_meal",
+      "support",
+      "no_referral"
+    ],
+    "phone": "023 9288 2689",
+    "website": "",
+    "schedule": {
+      "0": "08:00-16:00",
+      "1": "08:00-16:00",
+      "2": "08:00-16:00",
+      "3": "08:00-16:00",
+      "4": "08:00-16:00",
+      "5": "08:00-16:00",
+      "6": "08:00-16:00"
+    },
+    "trustScore": 100
+  },
+  {
+    "id": "w1",
+    "name": "Portsmouth Central Library",
+    "category": "warmth",
+    "location": {
+      "lat": 50.799,
+      "lng": -1.0933,
+      "address": "Guildhall Square, PO1 2DX",
+      "area": "PO1"
+    },
+    "thresholdInfo": {
+      "idRequired": false,
+      "queueStatus": "Empty",
+      "entrancePhotoUrl": null
+    },
+    "liveStatus": {
+      "isOpen": false,
+      "capacity": "High",
+      "lastUpdated": "2026-01-13T15:52:14.250Z",
+      "message": ""
+    },
+    "description": "Warm, safe space. Free WiFi, computers, books.",
+    "tags": [
+      "free",
+      "wifi",
+      "charging",
+      "toilet",
+      "learning",
+      "digital_support",
+      "no_referral"
+    ],
+    "phone": null,
+    "website": "",
+    "schedule": {
+      "0": "Closed",
+      "1": "09:30-17:00",
+      "2": "09:30-17:00",
+      "3": "09:30-17:00",
+      "4": "09:30-17:00",
+      "5": "09:30-17:00",
+      "6": "10:00-15:30"
+    },
+    "trustScore": 100
+  },
+  {
+    "id": "lib2",
+    "name": "Southsea Library",
+    "category": "warmth",
+    "location": {
+      "lat": 50.786,
+      "lng": -1.091,
+      "address": "19-21 Palmerston Rd, PO5 3QQ",
+      "area": "PO5"
+    },
+    "thresholdInfo": {
+      "idRequired": false,
+      "queueStatus": "Empty",
+      "entrancePhotoUrl": null
+    },
+    "liveStatus": {
+      "isOpen": false,
+      "capacity": "High",
+      "lastUpdated": "2026-01-13T15:52:14.250Z",
+      "message": ""
+    },
+    "description": "Community hub with WiFi and children's areas.",
+    "tags": [
+      "free",
+      "wifi",
+      "family",
+      "learning",
+      "no_referral"
+    ],
+    "phone": null,
+    "website": "",
+    "schedule": {
+      "0": "Closed",
+      "1": "09:30-17:30",
+      "2": "09:30-17:30",
+      "3": "09:30-17:30",
+      "4": "09:30-17:30",
+      "5": "09:30-17:00",
+      "6": "10:00-16:00"
+    },
+    "trustScore": 98
+  },
+  {
+    "id": "lib3",
+    "name": "North End Library",
+    "category": "warmth",
+    "location": {
+      "lat": 50.8125,
+      "lng": -1.077,
+      "address": "Gladys Avenue, North End, PO2 9AX",
+      "area": "PO2"
+    },
+    "thresholdInfo": {
+      "idRequired": false,
+      "queueStatus": "Empty",
+      "entrancePhotoUrl": null
+    },
+    "liveStatus": {
+      "isOpen": false,
+      "capacity": "High",
+      "lastUpdated": "2026-01-13T15:52:14.250Z",
+      "message": ""
+    },
+    "description": "Large library with public computers and community events.",
+    "tags": [
+      "free",
+      "wifi",
+      "learning",
+      "digital_support",
+      "no_referral"
+    ],
+    "phone": null,
+    "website": "",
+    "schedule": {
+      "0": "Closed",
+      "1": "09:30-17:00",
+      "2": "09:30-17:00",
+      "3": "09:30-17:00",
+      "4": "09:30-17:00",
+      "5": "09:30-17:00",
+      "6": "10:00-15:30"
+    },
+    "trustScore": 98
+  },
+  {
+    "id": "lib4",
+    "name": "Cosham Library",
+    "category": "warmth",
+    "location": {
+      "lat": 50.846,
+      "lng": -1.066,
+      "address": "Spur Road, Cosham, PO6 3EB",
+      "area": "PO6"
+    },
+    "thresholdInfo": {
+      "idRequired": false,
+      "queueStatus": "Empty",
+      "entrancePhotoUrl": null
+    },
+    "liveStatus": {
+      "isOpen": false,
+      "capacity": "High",
+      "lastUpdated": "2026-01-13T15:52:14.250Z",
+      "message": ""
+    },
+    "description": "Key hub for the north of the city. WiFi and advice.",
+    "tags": [
+      "free",
+      "wifi",
+      "learning",
+      "community",
+      "no_referral"
+    ],
+    "phone": null,
+    "website": "",
+    "schedule": {
+      "0": "Closed",
+      "1": "09:30-18:00",
+      "2": "09:30-18:00",
+      "3": "09:30-18:00",
+      "4": "09:30-18:00",
+      "5": "09:30-17:00",
+      "6": "10:00-15:30"
+    },
+    "trustScore": 98
+  },
+  {
+    "id": "lib5",
+    "name": "Beddow Library",
+    "category": "warmth",
+    "location": {
+      "lat": 50.796,
+      "lng": -1.06,
+      "address": "Milton Road, Southsea, PO4 8PR",
+      "area": "PO4"
+    },
+    "thresholdInfo": {
+      "idRequired": false,
+      "queueStatus": "Empty",
+      "entrancePhotoUrl": null
+    },
+    "liveStatus": {
+      "isOpen": false,
+      "capacity": "High",
+      "lastUpdated": "2026-01-13T15:52:14.250Z",
+      "message": ""
+    },
+    "description": "Located within Milton Park. Peaceful space for reading and warmth.",
+    "tags": [
+      "free",
+      "wifi",
+      "learning",
+      "no_referral"
+    ],
+    "phone": null,
+    "website": "",
+    "schedule": {
+      "0": "Closed",
+      "1": "09:30-17:00",
+      "2": "09:30-17:00",
+      "3": "Closed",
+      "4": "09:30-19:00",
+      "5": "09:30-17:00",
+      "6": "10:00-15:30"
+    },
+    "trustScore": 96
+  },
+  {
+    "id": "lib6",
+    "name": "Alderman Lacey Library",
+    "category": "warmth",
+    "location": {
+      "lat": 50.8065,
+      "lng": -1.059,
+      "address": "Tangier Road, Baffins, PO3 6HU",
+      "area": "PO3"
+    },
+    "thresholdInfo": {
+      "idRequired": false,
+      "queueStatus": "Empty",
+      "entrancePhotoUrl": null
+    },
+    "liveStatus": {
+      "isOpen": false,
+      "capacity": "High",
+      "lastUpdated": "2026-01-13T15:52:14.250Z",
+      "message": ""
+    },
+    "description": "Community library near Baffins Pond.",
+    "tags": [
+      "free",
+      "wifi",
+      "learning",
+      "no_referral"
+    ],
+    "phone": null,
+    "website": "",
+    "schedule": {
+      "0": "Closed",
+      "1": "09:30-17:00",
+      "2": "09:30-17:00",
+      "3": "Closed",
+      "4": "09:30-17:00",
+      "5": "09:30-17:00",
+      "6": "10:00-15:30"
+    },
+    "trustScore": 96
+  },
+  {
+    "id": "lib7",
+    "name": "Carnegie Library",
+    "category": "warmth",
+    "location": {
+      "lat": 50.8015,
+      "lng": -1.082,
+      "address": "Fratton Road, Fratton, PO1 5EZ",
+      "area": "PO1"
+    },
+    "thresholdInfo": {
+      "idRequired": false,
+      "queueStatus": "Empty",
+      "entrancePhotoUrl": null
+    },
+    "liveStatus": {
+      "isOpen": false,
+      "capacity": "High",
+      "lastUpdated": "2026-01-13T15:52:14.250Z",
+      "message": ""
+    },
+    "description": "Historic library building offering warmth and digital access.",
+    "tags": [
+      "free",
+      "wifi",
+      "learning",
+      "no_referral"
+    ],
+    "phone": null,
+    "website": "",
+    "schedule": {
+      "0": "Closed",
+      "1": "Closed",
+      "2": "09:30-17:00",
+      "3": "09:30-17:00",
+      "4": "09:30-17:00",
+      "5": "09:30-17:00",
+      "6": "10:00-15:30"
+    },
+    "trustScore": 97
+  },
+  {
+    "id": "cc1",
+    "name": "Fratton Community Centre",
+    "category": "support",
+    "location": {
+      "lat": 50.798,
+      "lng": -1.085,
+      "address": "Trafalgar Place, Fratton, PO1 5JJ",
+      "area": "PO1"
+    },
+    "thresholdInfo": {
+      "idRequired": false,
+      "queueStatus": "Empty",
+      "entrancePhotoUrl": null
+    },
+    "liveStatus": {
+      "isOpen": false,
+      "capacity": "High",
+      "lastUpdated": "2026-01-13T15:52:14.250Z",
+      "message": ""
+    },
+    "description": "Large centre with cafe, gym, and various support groups.",
+    "tags": [
+      "community",
+      "activities",
+      "learning",
+      "no_referral"
+    ],
+    "phone": null,
+    "website": "",
+    "schedule": {
+      "0": "09:00-13:00",
+      "1": "08:30-21:30",
+      "2": "08:30-21:30",
+      "3": "08:30-21:30",
+      "4": "08:30-21:30",
+      "5": "08:30-21:00",
+      "6": "09:00-16:00"
+    },
+    "trustScore": 98
+  },
+  {
+    "id": "cc2",
+    "name": "Buckland Community Centre",
+    "category": "support",
+    "location": {
+      "lat": 50.806,
+      "lng": -1.088,
+      "address": "Malins Road, Buckland, PO2 7BL",
+      "area": "PO2"
+    },
+    "thresholdInfo": {
+      "idRequired": false,
+      "queueStatus": "Empty",
+      "entrancePhotoUrl": null
+    },
+    "liveStatus": {
+      "isOpen": false,
+      "capacity": "High",
+      "lastUpdated": "2026-01-13T15:52:14.250Z",
+      "message": ""
+    },
+    "description": "Heart of the Buckland community. Senior clubs, bingo, and advice.",
+    "tags": [
+      "community",
+      "activities",
+      "senior",
+      "no_referral"
+    ],
+    "phone": null,
+    "website": "",
+    "schedule": {
+      "0": "Closed",
+      "1": "09:00-21:00",
+      "2": "09:00-21:00",
+      "3": "09:00-21:00",
+      "4": "09:00-21:00",
+      "5": "09:00-21:00",
+      "6": "Closed"
+    },
+    "trustScore": 97
+  },
+  {
+    "id": "cc3",
+    "name": "Stacey Community Centre",
+    "category": "support",
+    "location": {
+      "lat": 50.814,
+      "lng": -1.062,
+      "address": "Walsall Road, Copnor, PO3 6DN",
+      "area": "PO3"
+    },
+    "thresholdInfo": {
+      "idRequired": false,
+      "queueStatus": "Empty",
+      "entrancePhotoUrl": null
+    },
+    "liveStatus": {
+      "isOpen": false,
+      "capacity": "High",
+      "lastUpdated": "2026-01-13T15:52:14.250Z",
+      "message": ""
+    },
+    "description": "Vibrant centre with garden, library access, and play groups.",
+    "tags": [
+      "community",
+      "family",
+      "activities",
+      "no_referral"
+    ],
+    "phone": null,
+    "website": "",
+    "schedule": {
+      "0": "Closed",
+      "1": "09:00-22:00",
+      "2": "09:00-22:00",
+      "3": "09:00-22:00",
+      "4": "09:00-22:00",
+      "5": "09:00-22:00",
+      "6": "Closed"
+    },
+    "trustScore": 96
+  },
+  {
+    "id": "cc4",
+    "name": "Eastney Community Centre",
+    "category": "support",
+    "location": {
+      "lat": 50.789,
+      "lng": -1.055,
+      "address": "Bransbury Park, Bransbury Rd, PO4 9SU",
+      "area": "PO4"
+    },
+    "thresholdInfo": {
+      "idRequired": false,
+      "queueStatus": "Empty",
+      "entrancePhotoUrl": null
+    },
+    "liveStatus": {
+      "isOpen": false,
+      "capacity": "High",
+      "lastUpdated": "2026-01-13T15:52:14.250Z",
+      "message": ""
+    },
+    "description": "Located in the park. Cafe, dog friendly areas, and halls.",
+    "tags": [
+      "community",
+      "pets",
+      "activities",
+      "no_referral"
+    ],
+    "phone": null,
+    "website": "",
+    "schedule": {
+      "0": "09:00-13:00",
+      "1": "09:00-21:00",
+      "2": "09:00-21:00",
+      "3": "09:00-21:00",
+      "4": "09:00-21:00",
+      "5": "09:00-17:00",
+      "6": "Closed"
+    },
+    "trustScore": 97
+  },
+  {
+    "id": "job1",
+    "name": "Jobcentre Plus (Arundel St)",
+    "category": "support",
+    "location": {
+      "lat": 50.8,
+      "lng": -1.089,
+      "address": "Old Portsmouth Station, Arundel St, PO1 1LB",
+      "area": "PO1"
+    },
+    "thresholdInfo": {
+      "idRequired": false,
+      "queueStatus": "Empty",
+      "entrancePhotoUrl": null
+    },
+    "liveStatus": {
+      "isOpen": false,
+      "capacity": "High",
+      "lastUpdated": "2026-01-13T15:52:14.250Z",
+      "message": ""
+    },
+    "description": "Government employment advice and benefit support.",
+    "tags": [
+      "support",
+      "skills",
+      "advice"
+    ],
+    "phone": null,
+    "website": "",
+    "schedule": {
+      "0": "Closed",
+      "1": "09:00-17:00",
+      "2": "09:00-17:00",
+      "3": "10:00-17:00",
+      "4": "09:00-17:00",
+      "5": "09:00-17:00",
+      "6": "Closed"
+    },
+    "trustScore": 100
+  },
+  {
+    "id": "job2",
+    "name": "Jobcentre Plus (Cosham)",
+    "category": "support",
+    "location": {
+      "lat": 50.847,
+      "lng": -1.067,
+      "address": "Wulfrun House, High St, Cosham, PO6 3AX",
+      "area": "PO6"
+    },
+    "thresholdInfo": {
+      "idRequired": false,
+      "queueStatus": "Empty",
+      "entrancePhotoUrl": null
+    },
+    "liveStatus": {
+      "isOpen": false,
+      "capacity": "High",
+      "lastUpdated": "2026-01-13T15:52:14.250Z",
+      "message": ""
+    },
+    "description": "Employment support for the north of the city.",
+    "tags": [
+      "support",
+      "skills",
+      "advice"
+    ],
+    "phone": null,
+    "website": "",
+    "schedule": {
+      "0": "Closed",
+      "1": "09:00-17:00",
+      "2": "09:00-17:00",
+      "3": "10:00-17:00",
+      "4": "09:00-17:00",
+      "5": "09:00-17:00",
+      "6": "Closed"
+    },
+    "trustScore": 100
+  },
+  {
+    "id": "sup_ca",
+    "name": "Citizens Advice Portsmouth",
+    "category": "support",
+    "location": {
+      "lat": 50.7965,
+      "lng": -1.0915,
+      "address": "Ark Royal House, Winston Churchill Ave, Portsmouth PO1 2GF",
+      "area": "PO1"
+    },
+    "thresholdInfo": {
+      "idRequired": false,
+      "queueStatus": "Empty",
+      "entrancePhotoUrl": null
+    },
+    "liveStatus": {
+      "isOpen": false,
+      "capacity": "High",
+      "lastUpdated": "2026-01-13T15:52:14.250Z",
+      "message": ""
+    },
+    "description": "Free, confidential and impartial advice on debt, benefits, housing, legal and more.",
+    "tags": [
+      "support",
+      "advice",
+      "legal",
+      "debt",
+      "free",
+      "no_referral"
+    ],
+    "phone": "0800 144 8848",
+    "website": "",
+    "schedule": {
+      "0": "Closed",
+      "1": "09:00-16:00",
+      "2": "09:00-16:00",
+      "3": "09:00-16:00",
+      "4": "09:00-16:00",
+      "5": "09:00-16:00",
+      "6": "Closed"
+    },
+    "trustScore": 99
+  },
+  {
+    "id": "s1",
+    "name": "Advice Portsmouth",
+    "category": "support",
+    "location": {
+      "lat": 50.8123,
+      "lng": -1.084,
+      "address": "Focus Point, 116 Kingston Crescent, Portsmouth, PO2 8AL",
+      "area": "PO2"
+    },
+    "thresholdInfo": {
+      "idRequired": false,
+      "queueStatus": "Empty",
+      "entrancePhotoUrl": null
+    },
+    "liveStatus": {
+      "isOpen": false,
+      "capacity": "High",
+      "lastUpdated": "2026-01-13T15:52:14.250Z",
+      "message": ""
+    },
+    "description": "Free, confidential advice on benefits, debt, housing.",
+    "tags": [
+      "free",
+      "advice",
+      "no_referral",
+      "support"
+    ],
+    "phone": null,
+    "website": "",
+    "schedule": {
+      "0": "Closed",
+      "1": "09:00-17:00",
+      "2": "09:00-17:00",
+      "3": "09:00-17:00",
+      "4": "13:00-19:30",
+      "5": "09:00-16:30",
+      "6": "Closed"
+    },
+    "trustScore": 98
+  },
+  {
+    "id": "s2",
+    "name": "Recovery Hub",
+    "category": "support",
+    "location": {
+      "lat": 50.8123,
+      "lng": -1.0845,
+      "address": "Campdam House, 44-46 Kingston Crescent, Portsmouth, PO2 8AJ",
+      "area": "PO2"
+    },
+    "thresholdInfo": {
+      "idRequired": false,
+      "queueStatus": "Empty",
+      "entrancePhotoUrl": null
+    },
+    "liveStatus": {
+      "isOpen": false,
+      "capacity": "High",
+      "lastUpdated": "2026-01-13T15:52:14.250Z",
+      "message": ""
+    },
+    "description": "Support for drug and alcohol recovery. Self-referral accepted.",
+    "tags": [
+      "addiction",
+      "health",
+      "free",
+      "no_referral"
+    ],
+    "phone": null,
+    "website": "",
+    "schedule": {
+      "0": "Closed",
+      "1": "09:00-17:00",
+      "2": "09:00-17:00",
+      "3": "09:00-17:00",
+      "4": "09:00-17:00",
+      "5": "09:00-17:00",
+      "6": "Closed"
+    },
+    "trustScore": 95
+  },
+  {
+    "id": "s3",
+    "name": "Positive Minds",
+    "category": "support",
+    "location": {
+      "lat": 50.792,
+      "lng": -1.0925,
+      "address": "22 Middle St, Southsea, PO5 4BG",
+      "area": "PO5"
+    },
+    "thresholdInfo": {
+      "idRequired": false,
+      "queueStatus": "Empty",
+      "entrancePhotoUrl": null
+    },
+    "liveStatus": {
+      "isOpen": false,
+      "capacity": "High",
+      "lastUpdated": "2026-01-13T15:52:14.250Z",
+      "message": ""
+    },
+    "description": "Emotional support for residents facing difficult times.",
+    "tags": [
+      "mental_health",
+      "free",
+      "support",
+      "no_referral"
+    ],
+    "phone": "023 9282 4795",
+    "website": "",
+    "schedule": {
+      "0": "Closed",
+      "1": "09:30-16:00",
+      "2": "09:30-16:00",
+      "3": "09:30-16:00",
+      "4": "09:30-16:00",
+      "5": "09:30-16:00",
+      "6": "Closed"
+    },
+    "trustScore": 100
+  },
+  {
+    "id": "s4",
+    "name": "Talking Change",
+    "category": "support",
+    "location": {
+      "lat": 50.797,
+      "lng": -1.0715,
+      "address": "The Pompey Centre, Fratton Way, PO4 8TA",
+      "area": "PO3"
+    },
+    "thresholdInfo": {
+      "idRequired": false,
+      "queueStatus": "Empty",
+      "entrancePhotoUrl": null
+    },
+    "liveStatus": {
+      "isOpen": false,
+      "capacity": "High",
+      "lastUpdated": "2026-01-13T15:52:14.250Z",
+      "message": ""
+    },
+    "description": "NHS talking therapies. Self-referral via website/phone.",
+    "tags": [
+      "mental_health",
+      "medical",
+      "free",
+      "no_referral"
+    ],
+    "phone": null,
+    "website": "",
+    "schedule": {
+      "0": "Closed",
+      "1": "08:00-17:00",
+      "2": "08:00-17:00",
+      "3": "08:00-17:00",
+      "4": "08:00-17:00",
+      "5": "08:00-16:30",
+      "6": "Closed"
+    },
+    "trustScore": 100
+  },
+  {
+    "id": "fam1",
+    "name": "Buckland Family Hub",
+    "category": "family",
+    "location": {
+      "lat": 50.8038,
+      "lng": -1.0877,
+      "address": "Turner Road, Portsmouth, PO1 4PN",
+      "area": "PO1"
+    },
+    "thresholdInfo": {
+      "idRequired": false,
+      "queueStatus": "Empty",
+      "entrancePhotoUrl": null
+    },
+    "liveStatus": {
+      "isOpen": false,
+      "capacity": "High",
+      "lastUpdated": "2026-01-13T15:52:14.250Z",
+      "message": ""
+    },
+    "description": "Support for families with children 0-19.",
+    "tags": [
+      "free",
+      "community",
+      "children",
+      "medical",
+      "no_referral"
+    ],
+    "phone": null,
+    "website": "",
+    "schedule": {
+      "0": "Closed",
+      "1": "08:30-17:00",
+      "2": "08:30-17:00",
+      "3": "08:30-17:00",
+      "4": "08:30-17:00",
+      "5": "08:30-16:30",
+      "6": "Closed"
+    },
+    "trustScore": 100
+  },
+  {
+    "id": "fam2",
+    "name": "Somerstown Family Hub",
+    "category": "family",
+    "location": {
+      "lat": 50.7954,
+      "lng": -1.0905,
+      "address": "Omega Street, Somerstown, PO5 4LP",
+      "area": "PO5"
+    },
+    "thresholdInfo": {
+      "idRequired": false,
+      "queueStatus": "Empty",
+      "entrancePhotoUrl": null
+    },
+    "liveStatus": {
+      "isOpen": false,
+      "capacity": "High",
+      "lastUpdated": "2026-01-13T15:52:14.250Z",
+      "message": ""
+    },
+    "description": "Child development checks, breastfeeding support.",
+    "tags": [
+      "free",
+      "community",
+      "children",
+      "no_referral"
+    ],
+    "phone": null,
+    "website": "",
+    "schedule": {
+      "0": "Closed",
+      "1": "08:30-17:00",
+      "2": "08:30-17:00",
+      "3": "08:30-17:00",
+      "4": "08:30-17:00",
+      "5": "08:30-16:30",
+      "6": "Closed"
+    },
+    "trustScore": 100
+  },
+  {
+    "id": "fam2_b",
+    "name": "Milton Park Family Hub",
+    "category": "family",
+    "location": {
+      "lat": 50.796,
+      "lng": -1.0605,
+      "address": "Perth Road, Southsea, PO4 8EU",
+      "area": "PO4"
+    },
+    "thresholdInfo": {
+      "idRequired": false,
+      "queueStatus": "Empty",
+      "entrancePhotoUrl": null
+    },
+    "liveStatus": {
+      "isOpen": false,
+      "capacity": "High",
+      "lastUpdated": "2026-01-13T15:52:14.250Z",
+      "message": ""
+    },
+    "description": "Support for families in Milton/Eastney area.",
+    "tags": [
+      "free",
+      "community",
+      "children",
+      "no_referral"
+    ],
+    "phone": null,
+    "website": "",
+    "schedule": {
+      "0": "Closed",
+      "1": "08:30-17:00",
+      "2": "08:30-17:00",
+      "3": "08:30-17:00",
+      "4": "08:30-17:00",
+      "5": "08:30-16:30",
+      "6": "Closed"
+    },
+    "trustScore": 100
+  },
+  {
+    "id": "fam10",
+    "name": "Northern Parade Family Hub",
+    "category": "family",
+    "location": {
+      "lat": 50.8245,
+      "lng": -1.077,
+      "address": "Doyle Avenue, Portsmouth, PO2 9NE",
+      "area": "PO2"
+    },
+    "thresholdInfo": {
+      "idRequired": false,
+      "queueStatus": "Empty",
+      "entrancePhotoUrl": null
+    },
+    "liveStatus": {
+      "isOpen": false,
+      "capacity": "High",
+      "lastUpdated": "2026-01-13T15:52:14.250Z",
+      "message": ""
+    },
+    "description": "Support for families in Hilsea/North End.",
+    "tags": [
+      "free",
+      "children",
+      "community",
+      "medical",
+      "no_referral"
+    ],
+    "phone": null,
+    "website": "",
+    "schedule": {
+      "0": "Closed",
+      "1": "08:30-17:00",
+      "2": "08:30-17:00",
+      "3": "08:30-17:00",
+      "4": "08:30-17:00",
+      "5": "08:30-16:30",
+      "6": "Closed"
+    },
+    "trustScore": 99
+  },
+  {
+    "id": "fam11",
+    "name": "Paulsgrove Family Hub",
+    "category": "family",
+    "location": {
+      "lat": 50.8495,
+      "lng": -1.094,
+      "address": "Cheltenham Road, Paulsgrove, PO6 3PL",
+      "area": "PO6"
+    },
+    "thresholdInfo": {
+      "idRequired": false,
+      "queueStatus": "Empty",
+      "entrancePhotoUrl": null
+    },
+    "liveStatus": {
+      "isOpen": false,
+      "capacity": "High",
+      "lastUpdated": "2026-01-13T15:52:14.250Z",
+      "message": ""
+    },
+    "description": "Integrated family support.",
+    "tags": [
+      "free",
+      "children",
+      "community",
+      "no_referral"
+    ],
+    "phone": null,
+    "website": "",
+    "schedule": {
+      "0": "Closed",
+      "1": "08:30-17:00",
+      "2": "08:30-17:00",
+      "3": "08:30-17:00",
+      "4": "08:30-17:00",
+      "5": "08:30-16:30",
+      "6": "Closed"
+    },
+    "trustScore": 99
+  },
+  {
+    "id": "fam8",
+    "name": "Landport Adventure Playground",
+    "category": "family",
+    "location": {
+      "lat": 50.7993,
+      "lng": -1.0816,
+      "address": "Arundel Street, PO1 1PH",
+      "area": "PO1"
+    },
+    "thresholdInfo": {
+      "idRequired": false,
+      "queueStatus": "Empty",
+      "entrancePhotoUrl": null
+    },
+    "liveStatus": {
+      "isOpen": false,
+      "capacity": "High",
+      "lastUpdated": "2026-01-13T15:52:14.250Z",
+      "message": ""
+    },
+    "description": "Staffed adventure playground for ages 6-13. Free entry.",
+    "tags": [
+      "free",
+      "children",
+      "community",
+      "no_referral"
+    ],
+    "phone": null,
+    "website": "",
+    "schedule": {
+      "0": "Closed",
+      "1": "15:30-18:00",
+      "2": "15:30-18:00",
+      "3": "15:30-18:00",
+      "4": "15:30-18:00",
+      "5": "15:30-18:00",
+      "6": "11:00-16:00"
+    },
+    "trustScore": 98
+  },
+  {
+    "id": "fam9",
+    "name": "Paulsgrove Adventure Playground",
+    "category": "family",
+    "location": {
+      "lat": 50.8482,
+      "lng": -1.0937,
+      "address": "Marsden Road, Paulsgrove, PO6 4JB",
+      "area": "PO6"
+    },
+    "thresholdInfo": {
+      "idRequired": false,
+      "queueStatus": "Empty",
+      "entrancePhotoUrl": null
+    },
+    "liveStatus": {
+      "isOpen": false,
+      "capacity": "High",
+      "lastUpdated": "2026-01-13T15:52:14.250Z",
+      "message": ""
+    },
+    "description": "Large adventure play area with structures and activities for children 6-13.",
+    "tags": [
+      "free",
+      "children",
+      "community",
+      "no_referral"
+    ],
+    "phone": null,
+    "website": "",
+    "schedule": {
+      "0": "Closed",
+      "1": "15:30-18:00",
+      "2": "15:30-18:00",
+      "3": "15:30-18:00",
+      "4": "15:30-18:00",
+      "5": "15:30-18:00",
+      "6": "11:00-16:00"
+    },
+    "trustScore": 98
+  },
+  {
+    "id": "c1",
+    "name": "Rowans Hospice (Palmerston)",
+    "category": "support",
+    "location": {
+      "lat": 50.786,
+      "lng": -1.091,
+      "address": "15 Palmerston Rd, Southsea, PO5 3QQ",
+      "area": "PO5"
+    },
+    "thresholdInfo": {
+      "idRequired": false,
+      "queueStatus": "Empty",
+      "entrancePhotoUrl": null
+    },
+    "liveStatus": {
+      "isOpen": false,
+      "capacity": "High",
+      "lastUpdated": "2026-01-13T15:52:14.250Z",
+      "message": ""
+    },
+    "description": "Clothing, books, and homeware.",
+    "tags": [
+      "charity",
+      "shopping",
+      "no_referral"
+    ],
+    "phone": null,
+    "website": "",
+    "schedule": {
+      "0": "10:00-16:00",
+      "1": "09:00-17:00",
+      "2": "09:00-17:00",
+      "3": "09:00-17:00",
+      "4": "09:00-17:00",
+      "5": "09:00-17:00",
+      "6": "09:00-17:00"
+    },
+    "trustScore": 95
+  },
+  {
+    "id": "c2",
+    "name": "Oxfam Books & Music",
+    "category": "support",
+    "location": {
+      "lat": 50.7858,
+      "lng": -1.0912,
+      "address": "47 Palmerston Rd, Southsea, PO5 3QQ",
+      "area": "PO5"
+    },
+    "thresholdInfo": {
+      "idRequired": false,
+      "queueStatus": "Empty",
+      "entrancePhotoUrl": null
+    },
+    "liveStatus": {
+      "isOpen": false,
+      "capacity": "High",
+      "lastUpdated": "2026-01-13T15:52:14.250Z",
+      "message": ""
+    },
+    "description": "Specialist charity shop focusing on second-hand books and vinyl.",
+    "tags": [
+      "charity",
+      "shopping",
+      "learning",
+      "no_referral"
+    ],
+    "phone": null,
+    "website": "",
+    "schedule": {
+      "0": "11:00-16:00",
+      "1": "09:30-17:30",
+      "2": "09:30-17:30",
+      "3": "09:30-17:30",
+      "4": "09:30-17:30",
+      "5": "09:30-17:30",
+      "6": "09:30-17:30"
+    },
+    "trustScore": 98
+  },
+  {
+    "id": "c3",
+    "name": "British Heart Foundation",
+    "category": "support",
+    "location": {
+      "lat": 50.7861,
+      "lng": -1.091,
+      "address": "17 Palmerston Rd, Southsea, PO5 3QQ",
+      "area": "PO5"
+    },
+    "thresholdInfo": {
+      "idRequired": false,
+      "queueStatus": "Empty",
+      "entrancePhotoUrl": null
+    },
+    "liveStatus": {
+      "isOpen": false,
+      "capacity": "High",
+      "lastUpdated": "2026-01-13T15:52:14.250Z",
+      "message": ""
+    },
+    "description": "Clothing, shoes, and accessories.",
+    "tags": [
+      "charity",
+      "shopping",
+      "no_referral"
+    ],
+    "phone": null,
+    "website": "",
+    "schedule": {
+      "0": "10:00-16:00",
+      "1": "09:30-17:00",
+      "2": "09:30-17:00",
+      "3": "09:30-17:00",
+      "4": "09:30-17:00",
+      "5": "09:30-17:00",
+      "6": "09:30-17:00"
+    },
+    "trustScore": 95
+  },
+  {
+    "id": "c4",
+    "name": "Cancer Research UK",
+    "category": "support",
+    "location": {
+      "lat": 50.7859,
+      "lng": -1.0911,
+      "address": "33 Palmerston Rd, Southsea, PO5 3QQ",
+      "area": "PO5"
+    },
+    "thresholdInfo": {
+      "idRequired": false,
+      "queueStatus": "Empty",
+      "entrancePhotoUrl": null
+    },
+    "liveStatus": {
+      "isOpen": false,
+      "capacity": "High",
+      "lastUpdated": "2026-01-13T15:52:14.250Z",
+      "message": ""
+    },
+    "description": "High-quality second-hand clothing and homeware.",
+    "tags": [
+      "charity",
+      "shopping",
+      "no_referral"
+    ],
+    "phone": null,
+    "website": "",
+    "schedule": {
+      "0": "10:00-16:00",
+      "1": "09:00-17:30",
+      "2": "09:00-17:30",
+      "3": "09:00-17:30",
+      "4": "09:00-17:30",
+      "5": "09:00-17:30",
+      "6": "09:00-17:30"
+    },
+    "trustScore": 95
+  },
+  {
+    "id": "c5",
+    "name": "Barnardo's Southsea",
+    "category": "support",
+    "location": {
+      "lat": 50.7865,
+      "lng": -1.083,
+      "address": "73 Albert Rd, Southsea, PO5 2SG",
+      "area": "PO4"
+    },
+    "thresholdInfo": {
+      "idRequired": false,
+      "queueStatus": "Empty",
+      "entrancePhotoUrl": null
+    },
+    "liveStatus": {
+      "isOpen": false,
+      "capacity": "High",
+      "lastUpdated": "2026-01-13T15:52:14.250Z",
+      "message": ""
+    },
+    "description": "Supporting vulnerable children. Clothing, bric-a-brac, and toys.",
+    "tags": [
+      "charity",
+      "shopping",
+      "family",
+      "no_referral"
+    ],
+    "phone": null,
+    "website": "",
+    "schedule": {
+      "0": "10:00-16:00",
+      "1": "09:00-17:00",
+      "2": "09:00-17:00",
+      "3": "09:00-17:00",
+      "4": "09:00-17:00",
+      "5": "09:00-17:00",
+      "6": "09:00-17:00"
+    },
+    "trustScore": 94
+  },
+  {
+    "id": "c5_b",
+    "name": "Salvation Army Shop",
+    "category": "support",
+    "location": {
+      "lat": 50.7864,
+      "lng": -1.082,
+      "address": "84-86 Albert Rd, Southsea, PO5 2SN",
+      "area": "PO4"
+    },
+    "thresholdInfo": {
+      "idRequired": false,
+      "queueStatus": "Empty",
+      "entrancePhotoUrl": null
+    },
+    "liveStatus": {
+      "isOpen": false,
+      "capacity": "High",
+      "lastUpdated": "2026-01-13T15:52:14.250Z",
+      "message": ""
+    },
+    "description": "Furniture and clothing.",
+    "tags": [
+      "charity",
+      "shopping",
+      "no_referral"
+    ],
+    "phone": null,
+    "website": "",
+    "schedule": {
+      "0": "Closed",
+      "1": "09:00-17:00",
+      "2": "09:00-17:00",
+      "3": "09:00-17:00",
+      "4": "09:00-17:00",
+      "5": "09:00-17:00",
+      "6": "09:00-17:00"
+    },
+    "trustScore": 95
+  },
+  {
+    "id": "c6",
+    "name": "Debra",
+    "category": "support",
+    "location": {
+      "lat": 50.7863,
+      "lng": -1.0815,
+      "address": "105 Albert Rd, Southsea, PO5 2SG",
+      "area": "PO4"
+    },
+    "thresholdInfo": {
+      "idRequired": false,
+      "queueStatus": "Empty",
+      "entrancePhotoUrl": null
+    },
+    "liveStatus": {
+      "isOpen": false,
+      "capacity": "High",
+      "lastUpdated": "2026-01-13T15:52:14.250Z",
+      "message": ""
+    },
+    "description": "Often has furniture and larger household items.",
+    "tags": [
+      "charity",
+      "shopping",
+      "no_referral"
+    ],
+    "phone": null,
+    "website": "",
+    "schedule": {
+      "0": "10:00-16:00",
+      "1": "09:00-17:00",
+      "2": "09:00-17:00",
+      "3": "09:00-17:00",
+      "4": "09:00-17:00",
+      "5": "09:00-17:00",
+      "6": "09:00-17:00"
+    },
+    "trustScore": 92
+  },
+  {
+    "id": "c9",
+    "name": "PDSA Charity Shop",
+    "category": "support",
+    "location": {
+      "lat": 50.8105,
+      "lng": -1.0838,
+      "address": "71 London Rd, North End, PO2 0BH",
+      "area": "PO2"
+    },
+    "thresholdInfo": {
+      "idRequired": false,
+      "queueStatus": "Empty",
+      "entrancePhotoUrl": null
+    },
+    "liveStatus": {
+      "isOpen": false,
+      "capacity": "High",
+      "lastUpdated": "2026-01-13T15:52:14.250Z",
+      "message": ""
+    },
+    "description": "Supporting veterinary care. Clothing and books.",
+    "tags": [
+      "charity",
+      "shopping",
+      "pets",
+      "no_referral"
+    ],
+    "phone": null,
+    "website": "",
+    "schedule": {
+      "0": "10:00-16:00",
+      "1": "09:00-17:00",
+      "2": "09:00-17:00",
+      "3": "09:00-17:00",
+      "4": "09:00-17:00",
+      "5": "09:00-17:00",
+      "6": "09:00-17:00"
+    },
+    "trustScore": 95
+  },
+  {
+    "id": "c10",
+    "name": "Scope (North End)",
+    "category": "support",
+    "location": {
+      "lat": 50.811,
+      "lng": -1.0837,
+      "address": "47 London Rd, North End, PO2 0BH",
+      "area": "PO2"
+    },
+    "thresholdInfo": {
+      "idRequired": false,
+      "queueStatus": "Empty",
+      "entrancePhotoUrl": null
+    },
+    "liveStatus": {
+      "isOpen": false,
+      "capacity": "High",
+      "lastUpdated": "2026-01-13T15:52:14.250Z",
+      "message": ""
+    },
+    "description": "Disability equality charity. Good range of clothing.",
+    "tags": [
+      "charity",
+      "shopping",
+      "no_referral"
+    ],
+    "phone": null,
+    "website": "",
+    "schedule": {
+      "0": "10:00-16:00",
+      "1": "09:00-17:00",
+      "2": "09:00-17:00",
+      "3": "09:00-17:00",
+      "4": "09:00-17:00",
+      "5": "09:00-17:00",
+      "6": "09:00-17:00"
+    },
+    "trustScore": 94
+  },
+  {
+    "id": "c11",
+    "name": "British Red Cross (Cosham)",
+    "category": "support",
+    "location": {
+      "lat": 50.8465,
+      "lng": -1.068,
+      "address": "48 High St, Cosham, PO6 3AG",
+      "area": "PO6"
+    },
+    "thresholdInfo": {
+      "idRequired": false,
+      "queueStatus": "Empty",
+      "entrancePhotoUrl": null
+    },
+    "liveStatus": {
+      "isOpen": false,
+      "capacity": "High",
+      "lastUpdated": "2026-01-13T15:52:14.250Z",
+      "message": ""
+    },
+    "description": "Furniture and electrical items alongside clothing.",
+    "tags": [
+      "charity",
+      "shopping",
+      "no_referral"
+    ],
+    "phone": null,
+    "website": "",
+    "schedule": {
+      "0": "Closed",
+      "1": "09:00-17:00",
+      "2": "09:00-17:00",
+      "3": "09:00-17:00",
+      "4": "09:00-17:00",
+      "5": "09:00-17:00",
+      "6": "09:00-17:00"
+    },
+    "trustScore": 93
+  },
+  {
+    "id": "c12",
+    "name": "Naomi House (Cosham)",
+    "category": "support",
+    "location": {
+      "lat": 50.8468,
+      "lng": -1.0675,
+      "address": "68 High St, Cosham, PO6 3AJ",
+      "area": "PO6"
+    },
+    "thresholdInfo": {
+      "idRequired": false,
+      "queueStatus": "Empty",
+      "entrancePhotoUrl": null
+    },
+    "liveStatus": {
+      "isOpen": false,
+      "capacity": "High",
+      "lastUpdated": "2026-01-13T15:52:14.250Z",
+      "message": ""
+    },
+    "description": "Supporting hospices for children and young adults.",
+    "tags": [
+      "charity",
+      "shopping",
+      "no_referral"
+    ],
+    "phone": null,
+    "website": "",
+    "schedule": {
+      "0": "10:00-16:00",
+      "1": "09:00-17:00",
+      "2": "09:00-17:00",
+      "3": "09:00-17:00",
+      "4": "09:00-17:00",
+      "5": "09:00-17:00",
+      "6": "09:00-17:00"
+    },
+    "trustScore": 95
+  }
+]

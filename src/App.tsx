@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo, Suspense, lazy, useRef, useCallback } fro
 import Fuse from 'fuse.js';
 import { collection, onSnapshot } from 'firebase/firestore';
 import { db } from './lib/firebase';
-import { ALL_DATA, AREAS, TAG_ICONS, COMMUNITY_DEALS, GIFT_EXCHANGE, PROGRESS_TIPS } from './data';
+import { AREAS, TAG_ICONS, COMMUNITY_DEALS, GIFT_EXCHANGE, PROGRESS_TIPS, MAP_BOUNDS } from './data';
 import { checkStatus, playSuccessSound, getDistance } from './utils';
 import { fetchLiveStatus, type LiveStatus } from './services/LiveStatusService';
 
@@ -22,6 +22,7 @@ import logo from './assets/images/logo.png';
 
 // --- AUTHENTICATION ---
 import { useAuth } from './contexts/AuthContext';
+import { useData } from './contexts/DataContext';
 import PartnerLogin from './components/PartnerLogin';
 
 // --- LAZY LOAD COMPONENTS ---
@@ -94,8 +95,7 @@ const App = () => {
 
     // Data
     const { currentUser, isPartner, loading: authLoading } = useAuth();
-    const [sheetStatus, setSheetStatus] = useState<Record<string, LiveStatus>>({});
-    const [firebaseStatus, setFirebaseStatus] = useState<Record<string, LiveStatus>>({});
+    const { data: dynamicData, loading: dataLoading, error: dataError } = useData();
     const [userLocation, setUserLocation] = useState<{ lat: number, lng: number } | null>(null);
 
     // Features
@@ -136,8 +136,6 @@ const App = () => {
 
     // 2. Initial Setup
     useEffect(() => {
-        setTimeout(() => setLoading(false), 800);
-
         const seenTutorial = localStorage.getItem('seen_tutorial');
         if (!seenTutorial) setShowTutorial(true);
 
@@ -152,44 +150,7 @@ const App = () => {
         window.addEventListener('online', handleStatus);
         window.addEventListener('offline', handleStatus);
 
-        const loadSheetData = async () => {
-            try {
-                const data = await fetchLiveStatus();
-                if (Object.keys(data).length) {
-                    setSheetStatus(data);
-                    // 這裡可以選擇是否緩存，目前保持原有邏輯
-                    localStorage.setItem('cached_live_status', JSON.stringify(data));
-                }
-            } catch (e) {
-                const cached = localStorage.getItem('cached_live_status');
-                if (cached) setSheetStatus(JSON.parse(cached));
-            }
-        };
-        loadSheetData();
-        const intervalId = setInterval(loadSheetData, 5 * 60 * 1000);
-
-        const unsubscribe = onSnapshot(collection(db, 'services'), (snapshot) => {
-            if (snapshot && !snapshot.empty) {
-                const fbData: Record<string, LiveStatus> = {};
-                snapshot.docs.forEach(doc => {
-                    const d = doc.data();
-                    if (d.liveStatus) {
-                        fbData[doc.id] = {
-                            id: doc.id,
-                            status: d.liveStatus.isOpen ? 'Open' : 'Closed',
-                            urgency: (d.liveStatus.capacity === 'Low' || d.liveStatus.capacity === 'Critical') ? 'High' : 'Normal',
-                            message: d.liveStatus.message || '',
-                            lastUpdated: d.liveStatus.lastUpdated
-                        };
-                    }
-                });
-                setFirebaseStatus(fbData);
-            }
-        }, (err) => console.error("Firebase Snapshot Error:", err));
-
         return () => {
-            clearInterval(intervalId);
-            unsubscribe();
             window.removeEventListener('online', handleStatus);
             window.removeEventListener('offline', handleStatus);
         };
@@ -322,21 +283,39 @@ const App = () => {
         }
     }, []);
 
-    // --- DATA MEMOIZATION ---
-    const liveStatus = useMemo(() => ({ ...sheetStatus, ...firebaseStatus }), [sheetStatus, firebaseStatus]);
+    const liveStatus = useMemo(() => {
+        const statuses: Record<string, any> = {};
+        dynamicData.forEach(item => {
+            statuses[item.id] = {
+                id: item.id,
+                status: item.liveStatus.isOpen ? 'Open' : 'Closed',
+                urgency: (item.liveStatus.capacity === 'Low' || item.liveStatus.capacity === 'Full') ? 'High' : 'Normal',
+                message: item.liveStatus.message || '',
+                lastUpdated: item.liveStatus.lastUpdated
+            };
+        });
+        return statuses;
+    }, [dynamicData]);
 
     const filteredData = useMemo(() => {
-        let mergedData = ALL_DATA.map(item => {
-            const status = liveStatus[item.id];
-            if (status) {
-                return {
-                    ...item,
-                    description: status.message ? `[${status.status}] ${status.message}` : item.description,
-                    capacityLevel: (status.urgency === 'High' ? 'low' : 'high') as 'low' | 'high',
-                };
-            }
-            return item;
-        });
+        let mergedData = dynamicData.map(item => ({
+            ...item,
+            lat: item.location.lat,
+            lng: item.location.lng,
+            address: item.location.address,
+            area: item.location.area,
+            type: item.category === 'food' ? 'Pantry' : (item.category.charAt(0).toUpperCase() + item.category.slice(1)),
+            eligibility: (item.tags.includes('no_referral') ? 'open' : 'referral') as 'open' | 'referral',
+            requirements: "",
+            thanksCount: 0,
+            phone: item.phone || undefined,
+            entranceMeta: {
+                imageUrl: item.thresholdInfo.entrancePhotoUrl || undefined,
+                idRequired: item.thresholdInfo.idRequired,
+                queueStatus: item.thresholdInfo.queueStatus.toLowerCase() as any
+            },
+            capacityLevel: item.liveStatus.capacity.toLowerCase() as any
+        }));
 
         if (searchQuery) {
             const fuse = new Fuse(mergedData, {
@@ -344,7 +323,7 @@ const App = () => {
                 threshold: 0.3,
                 ignoreLocation: true
             });
-            mergedData = fuse.search(searchQuery).map(result => result.item);
+            mergedData = fuse.search(searchQuery).map(result => result.item as any);
         }
 
         const data = mergedData.filter(item => {
@@ -378,10 +357,10 @@ const App = () => {
             // Then prioritise by trustScore
             return (b.trustScore || 0) - (a.trustScore || 0);
         });
-    }, [filters, userLocation, searchQuery, smartFilters, liveStatus]);
+    }, [filters, userLocation, searchQuery, smartFilters, dynamicData, liveStatus]);
 
-    if (loading) return <PageLoader />;
-    if (showPrint) return <Suspense fallback={<PageLoader />}><PrintView data={ALL_DATA} onClose={() => setShowPrint(false)} /></Suspense>;
+    if (loading || dataLoading) return <PageLoader />;
+    if (showPrint) return <Suspense fallback={<PageLoader />}><PrintView data={filteredData} onClose={() => setShowPrint(false)} /></Suspense>;
 
     return (
         <div className={`app-container min-h-screen font-sans text-slate-900 selection:bg-indigo-200 selection:text-indigo-900 ${highContrast ? 'high-contrast' : ''}`}>
@@ -532,9 +511,9 @@ const App = () => {
                 {view === 'faq' && <FAQSection onClose={() => setView('home')} onNavigate={handleFAQNavigate} />}
 
                 {/* --- LAZY VIEWS --- */}
-                {view === 'community-plan' && <Suspense fallback={<PageLoader />}><UnifiedSchedule category="food" title="Weekly Food Support" data={ALL_DATA} onNavigate={(id) => { const item = ALL_DATA.find(i => i.id === id); if (item) { setMapFocus({ lat: item.lat, lng: item.lng, label: item.name, id: item.id }); setView('map'); } }} onSave={toggleSaved} savedIds={savedIds} /></Suspense>}
-                {view === 'safe-sleep-plan' && <Suspense fallback={<PageLoader />}><UnifiedSchedule category="shelter" title="Safe Sleep" data={ALL_DATA} onNavigate={(id) => { const item = ALL_DATA.find(i => i.id === id); if (item) { setMapFocus({ lat: item.lat, lng: item.lng, label: item.name, id: item.id }); setView('map'); } }} onSave={toggleSaved} savedIds={savedIds} /></Suspense>}
-                {view === 'warm-spaces-plan' && <Suspense fallback={<PageLoader />}><UnifiedSchedule category="warmth" title="Warm Spaces" data={ALL_DATA} onNavigate={(id) => { const item = ALL_DATA.find(i => i.id === id); if (item) { setMapFocus({ lat: item.lat, lng: item.lng, label: item.name, id: item.id }); setView('map'); } }} onSave={toggleSaved} savedIds={savedIds} /></Suspense>}
+                {view === 'community-plan' && <Suspense fallback={<PageLoader />}><UnifiedSchedule category="food" title="Weekly Food Support" data={dynamicData as any} onNavigate={(id) => { const item = dynamicData.find(i => i.id === id); if (item) { setMapFocus({ lat: item.location.lat, lng: item.location.lng, label: item.name, id: item.id }); setView('map'); } }} onSave={toggleSaved} savedIds={savedIds} /></Suspense>}
+                {view === 'safe-sleep-plan' && <Suspense fallback={<PageLoader />}><UnifiedSchedule category="shelter" title="Safe Sleep" data={dynamicData as any} onNavigate={(id) => { const item = dynamicData.find(i => i.id === id); if (item) { setMapFocus({ lat: item.location.lat, lng: item.location.lng, label: item.name, id: item.id }); setView('map'); } }} onSave={toggleSaved} savedIds={savedIds} /></Suspense>}
+                {view === 'warm-spaces-plan' && <Suspense fallback={<PageLoader />}><UnifiedSchedule category="warmth" title="Warm Spaces" data={dynamicData as any} onNavigate={(id) => { const item = dynamicData.find(i => i.id === id); if (item) { setMapFocus({ lat: item.location.lat, lng: item.location.lng, label: item.name, id: item.id }); setView('map'); } }} onSave={toggleSaved} savedIds={savedIds} /></Suspense>}
                 {view === 'partner-dashboard' && <Suspense fallback={<PageLoader />}><PartnerDashboard /></Suspense>}
                 {view === 'analytics' && <Suspense fallback={<PageLoader />}><PulseMap /></Suspense>}
                 {view === 'data-migration' && <Suspense fallback={<PageLoader />}><DataMigration /></Suspense>}
@@ -554,7 +533,7 @@ const App = () => {
                             <button onClick={() => setView('home')} className="p-3 bg-slate-100 rounded-2xl"><Icon name="x" size={20} /></button>
                         </div>
                         <Suspense fallback={<PageLoader />}>
-                            <AreaScheduleView data={ALL_DATA.filter(item => savedIds.includes(item.id))} area={filters.area} category={filters.category} />
+                            <AreaScheduleView data={filteredData.filter(item => savedIds.includes(item.id))} area={filters.area} category={filters.category} />
                         </Suspense>
                     </div>
                 )}
@@ -563,7 +542,7 @@ const App = () => {
                     <div className="fixed inset-0 z-50 bg-black/20 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setView('home')}>
                         <div className="w-full max-w-4xl" onClick={e => e.stopPropagation()}>
                             <Suspense fallback={<PageLoader />}>
-                                <SmartCompare items={ALL_DATA.filter(i => compareItems.includes(i.id))} userLocation={userLocation} onRemove={toggleCompareItem} onNavigate={(id) => { const resource = ALL_DATA.find(r => r.id === id); if (resource) { window.open(`https://www.google.com/maps/dir/?api=1&destination=${resource.lat},${resource.lng}`, '_blank'); } }} onCall={(phone) => window.open(`tel:${phone}`)} />
+                                <SmartCompare items={filteredData.filter(i => compareItems.includes(i.id))} userLocation={userLocation} onRemove={toggleCompareItem} onNavigate={(id) => { const resource = filteredData.find(r => r.id === id); if (resource) { window.open(`https://www.google.com/maps/dir/?api=1&destination=${resource.lat},${resource.lng}`, '_blank'); } }} onCall={(phone) => window.open(`tel:${phone}`)} />
                             </Suspense>
                         </div>
                     </div>
@@ -681,9 +660,9 @@ const App = () => {
                 onDismiss={(id) => setNotifications(prev => prev.filter(n => n.id !== id))}
                 onClearAll={() => setNotifications([])}
                 onAction={(resourceId) => {
-                    const resource = ALL_DATA.find(r => r.id === resourceId);
+                    const resource = dynamicData.find(r => r.id === resourceId);
                     if (resource) {
-                        setMapFocus({ lat: resource.lat, lng: resource.lng, label: resource.name, id: resource.id });
+                        setMapFocus({ lat: resource.location.lat, lng: resource.location.lng, label: resource.name, id: resource.id });
                         setView('map');
                     }
                 }}
@@ -702,7 +681,7 @@ const App = () => {
                 }}
             />
 
-            {showWizard && <Suspense fallback={<PageLoader />}><CrisisWizard userLocation={userLocation} onClose={() => setShowWizard(false)} savedIds={savedIds} onToggleSave={toggleSaved} /></Suspense>}
+            {showWizard && <Suspense fallback={<PageLoader />}><CrisisWizard data={filteredData} userLocation={userLocation} onClose={() => setShowWizard(false)} savedIds={savedIds} onToggleSave={toggleSaved} /></Suspense>}
 
             {(journeyItems.length > 0 || compareItems.length > 0) && (
                 <div className="fixed bottom-24 left-5 z-[50] flex flex-col gap-3">
@@ -716,7 +695,7 @@ const App = () => {
                     <div className="w-full max-w-lg mx-auto animate-slide-up" onClick={(e) => e.stopPropagation()}>
                         <Suspense fallback={<PageLoader />}>
                             <JourneyPlanner
-                                items={ALL_DATA.filter(r => journeyItems.includes(r.id))}
+                                items={filteredData.filter(r => journeyItems.includes(r.id))}
                                 userLocation={userLocation}
                                 onRemove={(id) => setJourneyItems(prev => prev.filter(i => i !== id))}
                                 onClear={() => { setJourneyItems([]); setView('home'); }}
