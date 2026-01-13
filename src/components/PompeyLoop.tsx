@@ -16,6 +16,8 @@ interface LoopItem {
     timestamp: Timestamp | null;
 }
 
+const BANNED_WORDS = ['scam', 'crypto', 'investment', 'money', 'payment', 'piss', 'shit', 'fuck', 'bastard', 'crap'];
+
 const PompeyLoop = () => {
     const { currentUser } = useAuth();
     const [activeTab, setActiveTab] = useState<'all' | 'skills' | 'items'>('all');
@@ -36,11 +38,22 @@ const PompeyLoop = () => {
     useEffect(() => {
         const q = query(collection(db, 'community_posts'), orderBy('timestamp', 'desc'));
         const unsubscribe = onSnapshot(q, (snapshot) => {
-            const items = snapshot.docs.map(doc => ({
-                id: doc.id,
-                ...doc.data()
-            })) as LoopItem[];
-            setPosts(items);
+            const now = Date.now();
+            const sevenDaysMs = 7 * 24 * 60 * 60 * 1000;
+
+            const items = snapshot.docs
+                .map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
+                })) as LoopItem[];
+
+            // Auto-Expiry Logic: Only show posts from the last 7 days
+            const validItems = items.filter(item => {
+                if (!item.timestamp) return true; // Assume true for fresh server-side timestamps
+                return (now - item.timestamp.toMillis()) < sevenDaysMs;
+            });
+
+            setPosts(validItems);
         });
         return () => unsubscribe();
     }, []);
@@ -49,6 +62,17 @@ const PompeyLoop = () => {
         e.preventDefault();
         if (!currentUser) {
             alert('Please sign in to post to the Loop.');
+            return;
+        }
+
+        // Moderation Logic
+        const hasBannedWord = BANNED_WORDS.some(word =>
+            formData.title.toLowerCase().includes(word) ||
+            formData.description.toLowerCase().includes(word)
+        );
+
+        if (hasBannedWord) {
+            alert('Safety Alert: Your post contains flagged keywords. To maintain a safe and dignified environment, please review your text and ensure it is for community support.');
             return;
         }
 
@@ -158,8 +182,13 @@ const PompeyLoop = () => {
                             </div>
                             <div className="flex gap-2">
                                 {revealedContacts.includes(item.id) ? (
-                                    <div className="px-4 py-2 bg-indigo-50 text-indigo-600 rounded-xl text-[10px] font-black border border-indigo-100 animate-fade-in">
-                                        {item.contact}
+                                    <div className="flex flex-col items-end gap-2 animate-fade-in">
+                                        <div className="px-4 py-2 bg-indigo-50 text-indigo-600 rounded-xl text-[10px] font-black border border-indigo-100">
+                                            {item.contact}
+                                        </div>
+                                        <p className="text-[8px] font-black text-rose-500 uppercase tracking-widest italic flex items-center gap-1">
+                                            <Icon name="lifebuoy" size={10} /> Never send money online. Meet in public places.
+                                        </p>
                                     </div>
                                 ) : (
                                     <button
