@@ -1,4 +1,4 @@
-import { useState, useEffect, Suspense, lazy, useMemo } from 'react';
+import { useEffect, Suspense, lazy } from 'react';
 import { BrowserRouter as Router } from 'react-router-dom';
 import { useAuth } from './contexts/AuthContext';
 import { useData } from './contexts/DataContext';
@@ -25,28 +25,15 @@ const PageLoader = () => (
 
 const App = () => {
     // --- GLOBAL STORES ---
-    const { isPartner, loading: authLoading } = useAuth();
+    const { loading: authLoading } = useAuth();
     const { data: dynamicData, loading: dataLoading } = useData();
     const {
         highContrast, fontSize, savedIds, userLocation,
         notifications, setUserLocation, toggleSavedId,
-        clearNotifications
+        clearNotifications, isOffline, setIsOffline,
+        modals, setModal, reportTarget, setReportTarget,
+        connectInput, setConnectInput, setConnectResult
     } = useAppStore();
-
-    // --- LOCAL UI STATE ---
-    const [isOffline, setIsOffline] = useState(!navigator.onLine);
-    const [showTips, setShowTips] = useState(false);
-    const [showCrisis, setShowCrisis] = useState(false);
-    const [showPartnerLogin, setShowPartnerLogin] = useState(false);
-    const [showPartnerRequest, setShowPartnerRequest] = useState(false);
-    const [showTutorial, setShowTutorial] = useState(!localStorage.getItem('seen_tutorial'));
-    const [showWizard, setShowWizard] = useState(false);
-    const [reportTarget, setReportTarget] = useState<{ name: string, id: string } | null>(null);
-    const [showConnectCalculator, setShowConnectCalculator] = useState(false);
-
-    // Connect State
-    const [connectResult, setConnectResult] = useState<any>(null);
-    const [connectInput, setConnectInput] = useState<any>(null);
 
     // --- EFFECTS ---
     useEffect(() => {
@@ -74,20 +61,6 @@ const App = () => {
         root.classList.add(`fs-${fontSize}`);
     }, [fontSize]);
 
-    // --- HANDLERS ---
-    const liveStatus = useMemo(() => {
-        const statuses: Record<string, any> = {};
-        dynamicData.forEach(item => {
-            statuses[item.id] = {
-                id: item.id,
-                status: item.liveStatus.isOpen ? 'Open' : 'Closed',
-                urgency: item.liveStatus.capacity === 'Full' ? 'High' : 'Normal',
-                lastUpdated: item.liveStatus.lastUpdated
-            };
-        });
-        return statuses;
-    }, [dynamicData]);
-
     if (authLoading || dataLoading) return <PageLoader />;
 
     return (
@@ -96,23 +69,15 @@ const App = () => {
             <div className={`selection:bg-indigo-200 selection:text-indigo-900 ${highContrast ? 'high-contrast' : ''}`}>
                 <Layout
                     isOffline={isOffline}
-                    onShowCrisis={() => setShowCrisis(true)}
-                    onShowPartnerLogin={() => setShowPartnerLogin(true)}
+                    onShowCrisis={() => setModal('crisis', true)}
+                    onShowPartnerLogin={() => setModal('partnerLogin', true)}
                 >
-                    <AnimatedRoutes
-                        dynamicData={dynamicData as any}
-                        isPartner={isPartner}
-                        liveStatus={liveStatus}
-                        setReportTarget={setReportTarget}
-                        setShowWizard={setShowWizard}
-                        setShowConnectCalculator={setShowConnectCalculator}
-                        connectResult={connectResult}
-                    />
+                    <AnimatedRoutes />
                 </Layout>
 
                 {/* --- GLOBAL MODALS --- */}
-                <TipsModal isOpen={showTips} onClose={() => setShowTips(false)} />
-                <CrisisModal isOpen={showCrisis} onClose={() => setShowCrisis(false)} />
+                <TipsModal isOpen={modals.tips} onClose={() => setModal('tips', false)} />
+                <CrisisModal isOpen={modals.crisis} onClose={() => setModal('crisis', false)} />
                 <PrivacyShield onAccept={() => { }} />
                 <SmartNotifications
                     notifications={notifications}
@@ -121,28 +86,44 @@ const App = () => {
                     onAction={() => { }}
                 />
 
-                {showPartnerLogin && (
+                {modals.partnerLogin && (
                     <div className="fixed inset-0 z-[100] flex items-center justify-center p-5 bg-slate-900/40 backdrop-blur-sm animate-fade-in">
-                        <div className="w-full max-w-md">
+                        <div className="w-full max-md">
                             <PartnerLogin
-                                onClose={() => setShowPartnerLogin(false)}
-                                onRequestAccess={() => { setShowPartnerLogin(false); setShowPartnerRequest(true); }}
+                                onClose={() => setModal('partnerLogin', false)}
+                                onRequestAccess={() => { setModal('partnerLogin', false); setModal('partnerRequest', true); }}
                             />
                         </div>
                     </div>
                 )}
 
-                <ReportModal isOpen={!!reportTarget} onClose={() => setReportTarget(null)} resourceName={reportTarget?.name || ''} resourceId={reportTarget?.id || ''} />
-                <PartnerRequestModal isOpen={showPartnerRequest} onClose={() => setShowPartnerRequest(false)} />
-                <TutorialModal isOpen={showTutorial} onClose={() => { setShowTutorial(false); localStorage.setItem('seen_tutorial', 'true'); }} />
+                <ReportModal
+                    isOpen={!!reportTarget}
+                    onClose={() => setReportTarget(null)}
+                    resourceName={reportTarget?.name || ''}
+                    resourceId={reportTarget?.id || ''}
+                />
 
-                {showWizard && (
+                <PartnerRequestModal isOpen={modals.partnerRequest} onClose={() => setModal('partnerRequest', false)} />
+
+                <TutorialModal
+                    isOpen={modals.tutorial}
+                    onClose={() => { setModal('tutorial', false); localStorage.setItem('seen_tutorial', 'true'); }}
+                />
+
+                {modals.wizard && (
                     <Suspense fallback={<PageLoader />}>
-                        <CrisisWizard data={dynamicData as any} userLocation={userLocation} onClose={() => setShowWizard(false)} savedIds={savedIds} onToggleSave={toggleSavedId} />
+                        <CrisisWizard
+                            data={dynamicData as any}
+                            userLocation={userLocation}
+                            onClose={() => setModal('wizard', false)}
+                            savedIds={savedIds}
+                            onToggleSave={toggleSavedId}
+                        />
                     </Suspense>
                 )}
 
-                {showConnectCalculator && (
+                {modals.connectCalculator && (
                     <div className="fixed inset-0 z-[60] bg-black/40 backdrop-blur-sm flex items-center justify-center p-5 animate-fade-in">
                         <div className="w-full max-w-lg">
                             <Suspense fallback={<PageLoader />}>
@@ -151,9 +132,9 @@ const App = () => {
                                     onComplete={(res, input) => {
                                         setConnectResult(res);
                                         setConnectInput(input);
-                                        setShowConnectCalculator(false);
+                                        setModal('connectCalculator', false);
                                     }}
-                                    onClose={() => setShowConnectCalculator(false)}
+                                    onClose={() => setModal('connectCalculator', false)}
                                 />
                             </Suspense>
                         </div>

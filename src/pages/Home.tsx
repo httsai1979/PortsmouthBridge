@@ -6,17 +6,9 @@ import { TAG_ICONS, COMMUNITY_DEALS, GIFT_EXCHANGE, PROGRESS_TIPS } from '../dat
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 
-interface HomeProps {
-    onShowWizard: () => void;
-    onShowConnectCalculator: () => void;
-}
-
-const Home = ({
-    onShowWizard,
-    onShowConnectCalculator
-}: HomeProps) => {
+const Home = () => {
     const navigate = useNavigate();
-    const { savedIds } = useAppStore();
+    const { savedIds, setModal } = useAppStore();
 
     const handleBulletinClick = (id: string) => {
         if (id === '1') navigate('/map?status=open');
@@ -87,7 +79,7 @@ const Home = ({
                 ))}
             </motion.div>
 
-            <button onClick={onShowWizard} className="w-full mb-8 bg-rose-500 text-white p-1 rounded-[32px] shadow-xl shadow-rose-200 group transition-all hover:scale-[1.02] active:scale-95 pr-2">
+            <button onClick={() => setModal('wizard', true)} className="w-full mb-8 bg-rose-500 text-white p-1 rounded-[32px] shadow-xl shadow-rose-200 group transition-all hover:scale-[1.02] active:scale-95 pr-2">
                 <div className="flex items-center justify-between bg-white/10 rounded-[28px] p-4 border border-white/20">
                     <div className="flex items-center gap-4">
                         <div className="w-10 h-10 bg-white text-rose-600 rounded-full flex items-center justify-center animate-pulse shadow-sm">
@@ -108,7 +100,7 @@ const Home = ({
                     <div><h4 className="text-xs font-black text-slate-800">My Journey</h4><p className="text-[9px] text-slate-400 font-bold uppercase">{savedIds.length} Trusted Hubs</p></div>
                 </button>
 
-                <button onClick={onShowConnectCalculator} className="snap-start min-w-[140px] bg-white border border-slate-100 p-4 rounded-[24px] shadow-sm flex flex-col gap-2 hover:border-indigo-200">
+                <button onClick={() => setModal('connectCalculator', true)} className="snap-start min-w-[140px] bg-white border border-slate-100 p-4 rounded-[24px] shadow-sm flex flex-col gap-2 hover:border-indigo-200">
                     <div className="w-10 h-10 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center"><Icon name="cpu" size={18} /></div>
                     <div><h4 className="text-xs font-black text-slate-800">Connect Tool</h4><p className="text-[9px] text-slate-400 font-bold uppercase">Eligibility Check</p></div>
                 </button>

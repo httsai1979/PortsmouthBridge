@@ -1,5 +1,11 @@
+import { useMemo } from 'react';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AnimatePresence } from 'framer-motion';
+
+// --- STORES & CONTEXTS ---
+import { useAuth } from '../contexts/AuthContext';
+import { useData } from '../contexts/DataContext';
+import { useAppStore } from '../store/useAppStore';
 
 // --- COMPONENTS ---
 import PageTransition from './PageTransition';
@@ -16,46 +22,48 @@ import PlanPage from '../pages/PlanPage';
 import FAQPage from '../pages/FAQPage';
 import MyJourneyPage from '../pages/MyJourneyPage';
 
-interface AnimatedRoutesProps {
-    dynamicData: any[];
-    isPartner: boolean;
-    liveStatus: any;
-    setReportTarget: (target: any) => void;
-    setShowWizard: (show: boolean) => void;
-    setShowConnectCalculator: (show: boolean) => void;
-    connectResult: any;
-}
-
-const AnimatedRoutes = ({
-    dynamicData,
-    isPartner,
-    liveStatus,
-    setReportTarget,
-    setShowWizard,
-    setShowConnectCalculator,
-    connectResult
-}: AnimatedRoutesProps) => {
+const AnimatedRoutes = () => {
     const location = useLocation();
+    const { isPartner } = useAuth();
+    const { data: dynamicData } = useData();
+    const {
+        setModal, setReportTarget, connectResult
+    } = useAppStore();
+
+    // Derived Status Mapping
+    const liveStatus = useMemo(() => {
+        const statuses: Record<string, any> = {};
+        dynamicData.forEach(item => {
+            statuses[item.id] = {
+                id: item.id,
+                status: item.liveStatus.isOpen ? 'Open' : 'Closed',
+                urgency: item.liveStatus.capacity === 'Full' ? 'High' : 'Normal',
+                lastUpdated: item.liveStatus.lastUpdated
+            };
+        });
+        return statuses;
+    }, [dynamicData]);
 
     return (
         <AnimatePresence mode="wait">
             <Routes location={location} key={location.pathname}>
                 <Route path="/" element={
                     <PageTransition>
-                        <Home
-                            onShowWizard={() => setShowWizard(true)}
-                            onShowConnectCalculator={() => setShowConnectCalculator(true)}
-                        />
+                        <Home />
                     </PageTransition>
                 } />
                 <Route path="/list" element={
                     <PageTransition>
-                        <ResourceList data={dynamicData} isPartner={isPartner} onReport={setReportTarget} />
+                        <ResourceList
+                            data={dynamicData}
+                            isPartner={isPartner}
+                            onReport={setReportTarget}
+                        />
                     </PageTransition>
                 } />
                 <Route path="/map" element={
                     <PageTransition>
-                        <MapExplorer data={dynamicData} liveStatus={liveStatus} isPartner={isPartner} onReport={setReportTarget} />
+                        <MapExplorer />
                     </PageTransition>
                 } />
                 <Route path="/loop" element={
@@ -65,7 +73,11 @@ const AnimatedRoutes = ({
                 } />
                 <Route path="/connect" element={
                     <PageTransition>
-                        <ConnectPage connectResult={connectResult} onReset={() => setShowConnectCalculator(true)} onClose={() => { }} />
+                        <ConnectPage
+                            connectResult={connectResult}
+                            onReset={() => setModal('connectCalculator', true)}
+                            onClose={() => { }}
+                        />
                     </PageTransition>
                 } />
                 <Route path="/faq" element={

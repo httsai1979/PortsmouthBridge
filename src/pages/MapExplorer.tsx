@@ -1,21 +1,31 @@
-import { Suspense, lazy } from 'react';
+import { Suspense, lazy, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useAppStore } from '../store/useAppStore';
-import { ServiceDocument } from '../types/schema';
 import { useFilteredData } from '../hooks/useFilteredData';
+import { useAuth } from '../contexts/AuthContext';
+import { useData } from '../contexts/DataContext';
 
 const SimpleMap = lazy(() => import('../components/SimpleMap'));
 
-interface MapExplorerProps {
-    data: ServiceDocument[];
-    liveStatus: any;
-    isPartner: boolean;
-    onReport: (item: any) => void;
-}
-
-const MapExplorer = ({ data, liveStatus, isPartner, onReport }: MapExplorerProps) => {
+const MapExplorer = () => {
     const [searchParams, setSearchParams] = useSearchParams();
-    const { savedIds, stealthMode, toggleSavedId, userLocation } = useAppStore();
+    const { isPartner } = useAuth();
+    const { data } = useData();
+    const { savedIds, stealthMode, toggleSavedId, userLocation, setReportTarget } = useAppStore();
+
+    // Derived Status Mapping (consistent with AnimatedRoutes)
+    const liveStatus = useMemo(() => {
+        const statuses: Record<string, any> = {};
+        data.forEach(item => {
+            statuses[item.id] = {
+                id: item.id,
+                status: item.liveStatus.isOpen ? 'Open' : 'Closed',
+                urgency: item.liveStatus.capacity === 'Full' ? 'High' : 'Normal',
+                lastUpdated: item.liveStatus.lastUpdated
+            };
+        });
+        return statuses;
+    }, [data]);
 
     const category = searchParams.get('category') || 'all';
     const q = searchParams.get('q') || '';
@@ -84,7 +94,7 @@ const MapExplorer = ({ data, liveStatus, isPartner, onReport }: MapExplorerProps
                     externalFocus={mapFocus}
                     liveStatus={liveStatus}
                     isPartner={isPartner}
-                    onReport={onReport}
+                    onReport={setReportTarget}
                     onCategoryChange={(cat: string) => {
                         const newParams = new URLSearchParams(searchParams);
                         newParams.set('category', cat);
