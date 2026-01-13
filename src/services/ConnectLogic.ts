@@ -39,6 +39,10 @@ export interface ConnectResult {
     recommendations: Recommendation[];
 }
 
+/**
+ * Portsmouth Connect Logic Engine - 2025/26 Policy Update
+ * Based on Portsmouth Cost of Living Research Report
+ */
 export const calculateConnectBenefits = (input: ConnectInput): ConnectResult => {
     const results: ConnectResult = {
         monthlyShortfall: 0,
@@ -48,16 +52,40 @@ export const calculateConnectBenefits = (input: ConnectInput): ConnectResult => 
     };
 
     const annualIncome = input.netMonthlyIncome * 12;
+    const weeklyIncome = (input.netMonthlyIncome * 12) / 52;
 
-    // --- TIER 1: UNIVERSAL CREDIT ESTIMATION ---
-    // Using 2026/27 projected rates
-    let ucAllowance = input.adults > 1 ? 615 : 410;
-    ucAllowance += input.children * 290;
+    // --- TIER 1: UNIVERSAL CREDIT ESTIMATION (2025/26 Rates) ---
+    // Standard Allowance
+    let ucAllowance = 0;
+    if (input.adults === 1) {
+        ucAllowance = 400.14; // Single 25+
+    } else {
+        ucAllowance = 628.10; // Couple 25+
+    }
+
+    // Child Element (Simplified: assuming at least one born post-2017 for conservative estimate)
+    const childElement = input.children > 0 ? (292.81 * Math.min(input.children, 2)) : 0;
+    // Note: The 2-child limit is mentioned to be removed in 2026 in some reports, 
+    // but the policy doc says HSF helps those just above FSM threshold.
+
+    ucAllowance += childElement;
 
     let housingAllowance = 0;
     if (input.tenure.startsWith('rent')) {
-        // Portsmouth BRMA LHA rates (Approx 2026/27)
-        const lhaCap = input.children > 1 ? 1100 : (input.children === 1 ? 875 : 720);
+        // Portsmouth BRMA LHA Rates 2025/26 (Monthly)
+        let lhaCap = 0;
+        if (input.adults === 1 && input.children === 0) {
+            lhaCap = 695.00; // 1 Bed
+        } else if (input.children === 1) {
+            lhaCap = 845.00; // 2 Bed
+        } else if (input.children === 2) {
+            lhaCap = 1000.00; // 3 Bed
+        } else if (input.children >= 3) {
+            lhaCap = 1300.00; // 4 Bed
+        } else {
+            lhaCap = 695.00;
+        }
+
         housingAllowance = Math.min(input.rentAmount, lhaCap);
         const shortfall = input.rentAmount - housingAllowance;
         if (shortfall > 0) {
@@ -67,12 +95,12 @@ export const calculateConnectBenefits = (input: ConnectInput): ConnectResult => 
                 priority: 'high',
                 title: 'Discretionary Housing Payment (DHP)',
                 desc: `You have a housing shortfall of £${Math.round(shortfall)}/mo.`,
-                longDesc: 'DHP is a top-up payment from Portsmouth City Council for people whose benefits don\'t cover their full rent.',
+                longDesc: 'Portsmouth City Council uses DHP to fill gaps between benefits and rent, especially for those affected by the Benefit Cap or facing homelessness.',
                 steps: [
-                    'Gather your latest bank statements (last 2 months)',
-                    'Prepare your tenancy agreement',
-                    'Explain why your current housing is essential for your family',
-                    'Submit via the PCC online portal'
+                    'Apply via the Portsmouth City Council DHP portal',
+                    'Provide proof of rent and latest UC award',
+                    'Explain any medical or social reasons why you cannot move to cheaper housing',
+                    'DHP is usually for 3-6 months as a transition.'
                 ],
                 link: 'https://www.portsmouth.gov.uk/services/benefits/discretionary-housing-payments/',
                 authority: 'Portsmouth City Council'
@@ -82,130 +110,170 @@ export const calculateConnectBenefits = (input: ConnectInput): ConnectResult => 
 
     const totalUCMax = ucAllowance + housingAllowance;
     const taperRate = 0.55;
-    const earningsDisregard = input.children > 0 || input.isDisabled ? 420 : 0;
-    const countableEarnings = Math.max(0, input.netMonthlyIncome - earningsDisregard);
+    // Work Allowance 2025/26
+    const hasWorkAllowance = input.children > 0 || input.isDisabled;
+    const workAllowance = hasWorkAllowance ? (housingAllowance > 0 ? 411 : 684) : 0;
+
+    const countableEarnings = Math.max(0, input.netMonthlyIncome - workAllowance);
     const estimatedUC = Math.max(0, totalUCMax - (countableEarnings * taperRate));
 
-    if (!input.hasUC && estimatedUC > 20) {
+    if (!input.hasUC && estimatedUC > 50) {
         results.unclaimedValue += estimatedUC;
         results.recommendations.push({
             id: 'uc_apply',
             priority: 'high',
             title: 'Universal Credit Eligibility',
-            desc: `You might be missing out on £${Math.round(estimatedUC)} every month.`,
-            longDesc: 'Universal Credit is an all-in-one payment to help with your living costs if you\'re on a low income or out of work.',
+            desc: `Estimated support: £${Math.round(estimatedUC)}/mo.`,
+            longDesc: 'Based on 2025/2026 rates, you may be eligible for Universal Credit to support your household and housing costs.',
             steps: [
-                'Create a Government Gateway account',
-                'Verify your identity (using an ID or Post Office check)',
-                'Input your income and housing details accurately',
-                'Attend a meeting at the Portsmouth Jobcentre (Arundel St or Cosham)'
+                'Complete an online claim at GOV.UK',
+                'Verify your identity online or at a Jobcentre (Arundel St)',
+                'Keep track of your "To-Do" list in the UC journal',
+                'Wait 5 weeks for your first payment (advances available)'
             ],
             link: 'https://www.gov.uk/universal-credit/how-to-claim',
             authority: 'DWP'
         });
     }
 
-    // --- TIER 2: LOCAL OVERLAY ---
+    // --- TIER 2: LOCAL OVERLAY (Portsmouth CTS 2025/26 Banded Scheme) ---
 
-    // Council Tax banded income scheme (PCC 2026/27)
-    if (annualIncome < 26000) {
+    // CTS Calculation
+    // Apply £25/wk work disregard if working
+    let ctsWeeklyIncome = weeklyIncome;
+    if (input.netMonthlyIncome > 0) ctsWeeklyIncome = Math.max(0, ctsWeeklyIncome - 25);
+
+    let ctsDiscountRatio = 0;
+    // Decision matrix for Banding (Portsmouth 2025/26)
+    if (input.adults === 1) {
+        if (input.children === 0) {
+            if (ctsWeeklyIncome <= 100) ctsDiscountRatio = 0.9;
+            else if (ctsWeeklyIncome <= 180) ctsDiscountRatio = 0.65;
+            else if (ctsWeeklyIncome <= 220) ctsDiscountRatio = 0.4;
+            else if (ctsWeeklyIncome <= 260) ctsDiscountRatio = 0.15;
+        } else if (input.children === 1) {
+            if (ctsWeeklyIncome <= 180) ctsDiscountRatio = 0.9;
+            else if (ctsWeeklyIncome <= 260) ctsDiscountRatio = 0.65;
+            else if (ctsWeeklyIncome <= 300) ctsDiscountRatio = 0.4;
+            else if (ctsWeeklyIncome <= 340) ctsDiscountRatio = 0.15;
+        } else { // 2+ children
+            if (ctsWeeklyIncome <= 240) ctsDiscountRatio = 0.9;
+            else if (ctsWeeklyIncome <= 320) ctsDiscountRatio = 0.65;
+            else if (ctsWeeklyIncome <= 360) ctsDiscountRatio = 0.4;
+            else if (ctsWeeklyIncome <= 400) ctsDiscountRatio = 0.15;
+        }
+    } else { // Couples
+        if (input.children === 0) {
+            if (ctsWeeklyIncome <= 150) ctsDiscountRatio = 0.9;
+            else if (ctsWeeklyIncome <= 230) ctsDiscountRatio = 0.65;
+            else if (ctsWeeklyIncome <= 270) ctsDiscountRatio = 0.4;
+            else if (ctsWeeklyIncome <= 310) ctsDiscountRatio = 0.15;
+        } else if (input.children === 1) {
+            if (ctsWeeklyIncome <= 230) ctsDiscountRatio = 0.9;
+            else if (ctsWeeklyIncome <= 310) ctsDiscountRatio = 0.65;
+            else if (ctsWeeklyIncome <= 350) ctsDiscountRatio = 0.4;
+            else if (ctsWeeklyIncome <= 390) ctsDiscountRatio = 0.15;
+        } else { // 2+ children
+            if (ctsWeeklyIncome <= 300) ctsDiscountRatio = 0.9;
+            else if (ctsWeeklyIncome <= 380) ctsDiscountRatio = 0.65;
+            else if (ctsWeeklyIncome <= 420) ctsDiscountRatio = 0.4;
+            else if (ctsWeeklyIncome <= 460) ctsDiscountRatio = 0.15;
+        }
+    }
+
+    if (ctsDiscountRatio > 0) {
+        const estMonthlySaving = 120 * ctsDiscountRatio; // Average council tax saving
+        results.unclaimedValue += estMonthlySaving;
         results.alerts.push({
             type: 'opportunity',
-            title: 'Portsmouth Council Tax Support',
-            message: 'Portsmouth uses a "Banded Scheme." Your income level suggests an 80-100% reduction.',
-            detailedInfo: 'Portsmouth City Council allows low-income households to pay significantly less Council Tax. This is local, not part of Universal Credit.'
+            title: 'New CTS Banded Scheme (Apr 2025)',
+            message: `You qualify for a ${Math.round(ctsDiscountRatio * 100)}% reduction in Council Tax.`,
+            detailedInfo: `Portsmouth City Council's 2025 reform means the lowest earners now only pay 10% of their Council Tax bill.`
         });
-        results.unclaimedValue += 95;
         results.recommendations.push({
-            id: 'ctax_reduction',
+            id: 'cts_banded',
             priority: 'medium',
-            title: 'Council Tax Banded Scheme',
-            desc: 'Potential saving of approx. £1,100 per year.',
-            longDesc: 'PCC provides a simpler way to get support based on which income "band" you fall into.',
+            title: 'Council Tax Support Claim',
+            desc: `Potential saving of £${Math.round(estMonthlySaving)}/mo.`,
+            longDesc: 'The new Banded Scheme simplifies the process. If you receive UC, the council may already be aware, but a direct application ensures you get the full discount.',
             steps: [
-                'Find your latest Council Tax bill number',
-                'Have your income proof or UC award letter ready',
-                'Fill in the Banded Scheme application form'
+                'Check if your UC award includes Portsmouth CTS automatically',
+                'If not, use the PCC website to submit your weekly income details',
+                'Include any disability benefit proofs (PIP/DLA) to get additional disregards'
             ],
             link: 'https://www.portsmouth.gov.uk/services/benefits/council-tax-support/',
             authority: 'Portsmouth City Council'
         });
     }
 
-    // Southern Water Essentials
-    if (input.isSouthernWater && annualIncome < 22000) {
-        results.unclaimedValue += 25;
+    // Southern Water Essentials Tariff
+    if (input.isSouthernWater && annualIncome < 22020) {
+        results.unclaimedValue += 30; // Estimated avg saving
         results.recommendations.push({
             id: 'southern_water',
             priority: 'high',
-            title: 'Southern Water Essentials Tariff',
+            title: 'Southern Water Essentials',
             desc: 'Save up to 90% on your water bill.',
-            longDesc: 'Southern Water offers huge discounts for households with combined income below £21-22k.',
+            longDesc: 'If your annual household income is below £22,020, you can access the Essentials Tariff. Discounts are tiered (45%, 65%, 90%) based on total income.',
             steps: [
-                'Download the Essentials Tariff application form',
-                'Ask a local support worker (CAB or HIVE) to verify your income if possible',
-                'Submit via email or post'
+                'Download the Southern Water Essentials form',
+                'Check if you qualify for the 90% discount (if income < £16k approx)',
+                'Self-refer or ask Citizen\'s Advice to support your claim'
             ],
             link: 'https://www.southernwater.co.uk/account/help-with-paying-your-bill',
             authority: 'Southern Water'
         });
     }
 
-    // Energy Debt LEAP Support
-    if (input.isEnergyDebt || annualIncome < 21000) {
+    // Energy Support (LEAP & HUG)
+    if (input.isEnergyDebt || annualIncome < 36000) {
         results.recommendations.push({
-            id: 'leap_energy',
-            priority: 'high',
-            title: 'LEAP Energy Support',
-            desc: 'Free boiler repairs or insulation grants.',
-            longDesc: 'The Local Energy Advice Partnership (LEAP) provides free home energy visits and can help clear energy debts for Portsmouth residents.',
-            steps: [
-                'Book a free home visit via LEAP online',
-                'Check eligibility for a free boiler replacement',
-                'Get free "easy measures" like draught-proofing installed'
-            ],
-            link: 'https://applyforleap.org.uk/',
-            authority: 'LEAP Portsmouth'
-        });
-    }
-
-    // Pregnancy / New Baby Healthy Start
-    if (input.isPregnant || (input.children > 0 && input.childAges.some(a => a < 4))) {
-        results.recommendations.push({
-            id: 'healthy_start',
+            id: 'leap_portsmouth',
             priority: 'medium',
-            title: 'NHS Healthy Start Card',
-            desc: 'Free milk, fruit, and vegetables.',
-            longDesc: 'If you’re more than 10 weeks pregnant or have a child under 4, you may be entitled to help to buy healthy food and milk.',
+            title: 'Switched On Portsmouth (LEAP)',
+            desc: 'Free boiler repairs and energy upgrades.',
+            longDesc: 'Switched On Portsmouth offers the HUG grant for households earning under £36,000. LEAP provides immediate energy advice visits.',
             steps: [
-                'Check your Benefit Award letter (UC or Child Tax Credit)',
-                'Apply for the Healthy Start prepaid mastercard',
-                'Use at any grocer or pharmacy in the city'
+                'Call 0800 260 5907 to speak to the Portsmouth Energy Hub',
+                'Book a LEAP visit for free LED bulbs and insulation check',
+                'Apply for HUG funding if your home EPC is D or below'
             ],
-            link: 'https://www.healthystart.nhs.uk/',
-            authority: 'NHS'
+            link: 'https://switchedonportsmouth.co.uk/',
+            authority: 'Switched On Portsmouth'
         });
     }
 
-    // --- TIER 3: CLIFF WARNINGS ---
+    // --- TIER 3: CLIFF WARNINGS & HSF ---
+
+    // Family Voucher Scheme (HSF)
+    if (input.children > 0 && input.netMonthlyIncome < 1870) {
+        results.alerts.push({
+            type: 'opportunity',
+            title: 'HSF Family Vouchers',
+            message: 'Eligible for £30 per child for essentials.',
+            detailedInfo: 'The 2025/26 Household Support Fund provides vouchers for families earning under £1,870/mo who do NOT already get Free School Meals.'
+        });
+    }
+
+    // Free School Meals Cliff
     const fsmThreshold = 7400 / 12;
-    if (input.netMonthlyIncome > fsmThreshold && input.netMonthlyIncome < fsmThreshold + 150) {
+    if (input.netMonthlyIncome > fsmThreshold && input.netMonthlyIncome < fsmThreshold + 200) {
         results.alerts.push({
             type: 'warning',
-            title: 'FSM "Benefits Cliff" Risk',
-            message: 'A minor pay rise could cost you £900/year in Free School Meals value.',
-            detailedInfo: 'The eligibility for Free School Meals is linked to a hard earnings cap of £7,400. If you earn £7,401, you lose all school meals. This is the most dangerous "cliff" in the UK system.'
+            title: 'Immediate Benefits Cliff: FSM',
+            message: 'Earning over £616/mo could cost your family £900/year.',
+            detailedInfo: 'Eligibility for Free School Meals ends abruptly if net monthly earnings (excluding benefits) exceed £616.67.'
         });
         results.recommendations.push({
             id: 'pension_shield',
-            priority: 'medium',
+            priority: 'high',
             title: 'The Pension Contribution Shield',
-            desc: 'Strategy to retain Free School Meals eligibility.',
-            longDesc: 'Net earnings are calculated AFTER pension contributions. By increasing your pension by £10-20/mo, you can keep your school meals worth £900/yr.',
+            desc: 'Increase pension contributions to retain school meals.',
+            longDesc: 'Net earnings for UC/FSM are calculated AFTER pension deductions. Increasing your workplace pension by a small amount can pull your net earnings back below the cap, preserving eligibility for meals worth £900 per child.',
             steps: [
-                'Check your payslip for "Net Earnings for UC"',
-                'If close to £616/mo, ask your employer to increase your voluntary pension contribution',
-                'Notify UC of the change in net pay'
+                'Check your payslip for "Gross pay" and "Net earnings for UC"',
+                'Ask your employer to increase your voluntary pension contribution if you are close to the limit',
+                'Your total household wealth increases while keeping your school meal support'
             ],
             authority: 'Connect Intelligence'
         });
