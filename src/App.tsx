@@ -5,6 +5,7 @@ import { db } from './lib/firebase';
 import { AREAS, TAG_ICONS, COMMUNITY_DEALS, GIFT_EXCHANGE, PROGRESS_TIPS, MAP_BOUNDS } from './data';
 import { checkStatus, playSuccessSound, getDistance } from './utils';
 import { fetchLiveStatus, type LiveStatus } from './services/LiveStatusService';
+import { DEFAULT_POLICY_CONFIG, type PolicyParameters } from './data/policy_config';
 
 // --- COMPONENTS ---
 import Icon from './components/Icon';
@@ -120,6 +121,8 @@ const App = () => {
         } catch { return null; }
     });
 
+    const [policyConfig, setPolicyConfig] = useState<PolicyParameters>(DEFAULT_POLICY_CONFIG);
+
     // --- REFS ---
     const loadMoreRef = useRef<HTMLDivElement>(null);
     const topSentinelRef = useRef<HTMLDivElement>(null);
@@ -149,6 +152,21 @@ const App = () => {
         const handleStatus = () => setIsOffline(!navigator.onLine);
         window.addEventListener('online', handleStatus);
         window.addEventListener('offline', handleStatus);
+
+        // Remote Policy Fetching (Decoupling)
+        const fetchRemotePolicy = async () => {
+            try {
+                // Placeholder for future remote configuration endpoint
+                // const res = await fetch('https://raw.githubusercontent.com/httsai1979/PortsmouthBridge/main/policy_config.json');
+                // if (res.ok) {
+                //     const remotePolicy = await res.json();
+                //     setPolicyConfig(remotePolicy);
+                // }
+            } catch (error) {
+                console.warn('Could not fetch remote policy, using defaults.', error);
+            }
+        };
+        fetchRemotePolicy();
 
         return () => {
             window.removeEventListener('online', handleStatus);
@@ -710,6 +728,7 @@ const App = () => {
                         <Suspense fallback={<PageLoader />}>
                             <ConnectCalculatorView
                                 initialData={connectInput}
+                                policy={policyConfig}
                                 onComplete={(res, input) => {
                                     setConnectResult(res);
                                     setConnectInput(input);

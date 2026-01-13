@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { db } from '../lib/firebase';
-import { collection, doc, updateDoc, onSnapshot } from 'firebase/firestore';
+import { collection, doc, updateDoc, onSnapshot, serverTimestamp } from 'firebase/firestore';
 import { useAuth } from '../contexts/AuthContext';
 import type { ServiceDocument } from '../types/schema';
 import Icon from './Icon';
@@ -11,6 +11,14 @@ const PartnerDashboard = () => {
     const [loading, setLoading] = useState(true);
     const [updating, setUpdating] = useState<string | null>(null);
     const [searchTerm, setSearchTerm] = useState('');
+    const [editingService, setEditingService] = useState<ServiceDocument | null>(null);
+    const [editForm, setEditForm] = useState({
+        name: '',
+        address: '',
+        phone: '',
+        description: '',
+        website: ''
+    });
 
     useEffect(() => {
         if (!currentUser) return;
@@ -42,6 +50,43 @@ const PartnerDashboard = () => {
         } catch (error) {
             console.error("Error:", error);
             alert("Update failed. Please check your connection or permissions.");
+        } finally {
+            setUpdating(null);
+        }
+    };
+
+    const handleEditClick = (service: ServiceDocument) => {
+        setEditingService(service);
+        setEditForm({
+            name: service.name,
+            address: service.location.address,
+            phone: service.phone || '',
+            description: service.description,
+            website: service.website || ''
+        });
+    };
+
+    const handleSaveDetails = async () => {
+        if (!editingService || !currentUser) return;
+        setUpdating(editingService.id);
+
+        try {
+            const serviceRef = doc(db, 'services', editingService.id);
+            const updates = {
+                name: editForm.name,
+                'location.address': editForm.address,
+                phone: editForm.phone,
+                description: editForm.description,
+                website: editForm.website,
+                lastEditedBy: currentUser.email,
+                lastEditedAt: serverTimestamp()
+            };
+
+            await updateDoc(serviceRef, updates);
+            setEditingService(null);
+        } catch (error) {
+            console.error("Error saving details:", error);
+            alert("Failed to save details. Ensure you have partner permissions.");
         } finally {
             setUpdating(null);
         }
@@ -112,6 +157,12 @@ const PartnerDashboard = () => {
                                             {service.liveStatus.isOpen ? 'Open' : 'Closed'}
                                         </span>
                                         <span className="text-[9px] font-bold text-slate-300 uppercase">Updated: {new Date(service.liveStatus.lastUpdated).toLocaleTimeString()}</span>
+                                        <button
+                                            onClick={() => handleEditClick(service)}
+                                            className="px-3 py-1 bg-slate-50 text-indigo-600 rounded-full text-[9px] font-black uppercase tracking-wider hover:bg-slate-100 transition-colors"
+                                        >
+                                            Edit Details
+                                        </button>
                                     </div>
                                 </div>
 
@@ -166,6 +217,87 @@ const PartnerDashboard = () => {
                             </div>
                         </div>
                     ))}
+                </div>
+            )}
+
+            {/* Edit Modal */}
+            {editingService && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
+                    <div className="bg-white w-full max-w-lg rounded-[40px] p-8 shadow-2xl relative animate-scale-in max-h-[90vh] overflow-y-auto">
+                        <button
+                            onClick={() => setEditingService(null)}
+                            className="absolute top-6 right-6 p-2 text-slate-400 hover:text-slate-900 transition-colors"
+                        >
+                            <Icon name="x" size={24} />
+                        </button>
+
+                        <h3 className="text-2xl font-black uppercase tracking-tight mb-6">Edit Service Details</h3>
+
+                        <div className="space-y-4">
+                            <div className="space-y-1">
+                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Service Name</label>
+                                <input
+                                    className="w-full px-5 py-4 bg-slate-50 rounded-2xl border-2 border-transparent focus:border-indigo-500 focus:bg-white outline-none text-sm font-bold transition-all"
+                                    value={editForm.name}
+                                    onChange={e => setEditForm({ ...editForm, name: e.target.value })}
+                                />
+                            </div>
+
+                            <div className="space-y-1">
+                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Public Address</label>
+                                <input
+                                    className="w-full px-5 py-4 bg-slate-50 rounded-2xl border-2 border-transparent focus:border-indigo-500 focus:bg-white outline-none text-sm font-bold transition-all"
+                                    value={editForm.address}
+                                    onChange={e => setEditForm({ ...editForm, address: e.target.value })}
+                                />
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-1">
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Phone</label>
+                                    <input
+                                        className="w-full px-5 py-4 bg-slate-50 rounded-2xl border-2 border-transparent focus:border-indigo-500 focus:bg-white outline-none text-sm font-bold transition-all"
+                                        value={editForm.phone}
+                                        onChange={e => setEditForm({ ...editForm, phone: e.target.value })}
+                                    />
+                                </div>
+                                <div className="space-y-1">
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Website</label>
+                                    <input
+                                        className="w-full px-5 py-4 bg-slate-50 rounded-2xl border-2 border-transparent focus:border-indigo-500 focus:bg-white outline-none text-sm font-bold transition-all"
+                                        value={editForm.website}
+                                        onChange={e => setEditForm({ ...editForm, website: e.target.value })}
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="space-y-1">
+                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Public Description</label>
+                                <textarea
+                                    rows={4}
+                                    className="w-full px-5 py-4 bg-slate-50 rounded-2xl border-2 border-transparent focus:border-indigo-500 focus:bg-white outline-none text-sm font-bold transition-all"
+                                    value={editForm.description}
+                                    onChange={e => setEditForm({ ...editForm, description: e.target.value })}
+                                />
+                            </div>
+
+                            <div className="pt-4 flex gap-3">
+                                <button
+                                    onClick={() => setEditingService(null)}
+                                    className="flex-1 py-4 bg-slate-100 text-slate-400 rounded-2xl font-black text-xs uppercase tracking-widest active:scale-[0.98] transition-all"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={handleSaveDetails}
+                                    disabled={updating === editingService.id}
+                                    className="flex-[2] py-4 bg-indigo-600 text-white rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-indigo-600/20 active:scale-[0.98] transition-all disabled:opacity-50"
+                                >
+                                    {updating === editingService.id ? 'Saving...' : 'Save Changes'}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             )}
         </div>

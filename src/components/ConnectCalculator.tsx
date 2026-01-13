@@ -1,14 +1,16 @@
 import { useState } from 'react';
 import Icon from './Icon';
 import { calculateConnectBenefits, type ConnectInput, type ConnectResult } from '../services/ConnectLogic';
+import { PolicyParameters } from '../data/policy_config';
 
 interface ConnectCalculatorProps {
     onComplete: (result: ConnectResult, input: ConnectInput) => void;
     onClose: () => void;
     initialData?: ConnectInput | null;
+    policy: PolicyParameters;
 }
 
-const ConnectCalculator = ({ onComplete, onClose, initialData }: ConnectCalculatorProps) => {
+const ConnectCalculator = ({ onComplete, onClose, initialData, policy }: ConnectCalculatorProps) => {
     const [step, setStep] = useState(1);
     const [formData, setFormData] = useState<ConnectInput>(initialData || {
         postcode: '',
@@ -30,7 +32,7 @@ const ConnectCalculator = ({ onComplete, onClose, initialData }: ConnectCalculat
     const handleBack = () => setStep(s => s - 1);
 
     const handleSubmit = () => {
-        const result = calculateConnectBenefits(formData);
+        const result = calculateConnectBenefits(formData, policy);
         onComplete(result, formData);
     };
 
