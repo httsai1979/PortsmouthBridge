@@ -1,59 +1,98 @@
-# Portsmouth Bridge - Community Support Network
+Portsmouth Bridge 🌉
 
-Portsmouth Bridge is a high-performance, accessibility-first web application designed to connect vulnerable residents in Portsmouth, UK, with essential community resources.
+Bridging the Gap for the Working Poor. Empowering Communities. Zero Cost.
+A hyper-localized, AI-powered, offline-first Progressive Web App designed to tackle the Cost of Living crisis. It provides immediate, dignified access to food, warmth, and shelter in Portsmouth.
 
-## 🚀 Core Features
+🎯 The Mission: Tackling "Hidden Poverty"
 
-### 1. Unified Resource Directory
-- **Comprehensive Listings**: Detailed information on food banks, soup kitchens, emergency shelters, warm spaces, and family support hubs.
-- **Smart Search**: Powered by `Fuse.js` for fast, fuzzy search across names, tags, and descriptions.
-- **Dynamic Filtering**: Filter by area (PO1-PO6), category, and specific needs (e.g., "No Referral", "Free").
+Traditional charity directories fail because they ignore the reality of Time Poverty and Stigma. Portsmouth Bridge is built specifically for the exhausted dual-income family, the night-shift worker, and the vulnerable.
 
-### 2. Live Status & Real-time Data
-- **Dual-Source Sync**: Integrates real-time data from **Google Sheets** (volunteer-maintained) and **Firebase Firestore** (agency-maintained).
-- **Capacity Alerts**: Visual indicators for stock levels (Urgent Need vs. Good Stock).
-- **Opening Status**: Automatically calculates current status (Open, Closing Soon, Closed) based on complex weekly schedules.
+Zero Cognitive Load: "Open Now" and "After 5PM" filters replace tedious manual searching, serving those who need help outside of traditional 9-to-5 NGO hours.
 
-### 3. Progressive Navigation
-- **Interactive Map**: Custom Leaflet-based explorer with status-aware markers and "Near Me" geolocation support.
-- **Journey Planner**: Build an optimized route through multiple support points with automated Google Maps navigation.
-- **Smart Compare**: Side-by-side comparison for up to 3 resources to help users make informed choices.
+Dignity by Design: De-stigmatized language (e.g., "Community Market" instead of "Charity"). The app acts as a local lifestyle guide, not a handout directory.
 
-### 4. Smart Alerts & Notifications
-- **Proactive Notifications**: Reminders for bookmarked resource opening times and city-wide emergency alerts (e.g., Cold Weather shelter activation).
-- **Community Bulletin**: A dynamic dashboard for urgent announcements and verified daily market deals.
+Absolute Stealth: Built for domestic violence survivors and those valuing absolute discretion. Features a "Panic Button," cache-wiping mechanisms, and dynamic image blocking to prevent digital footprints.
 
-### 5. Accessibility & Safety
-- **Stealth Mode**: One-tap "Safe Compass" disguise for users in sensitive domestic situations.
-- **High Contrast Mode**: Enhanced visibility for users with visual impairments.
-- **Dynamic Font Sizing**: Adjust text size for readability.
-- **Offline First**: PWA support ensuring critical data is accessible even without an active data connection.
-- **Print View**: Generate simplified, PDF-friendly versions of resource lists for offline distribution.
+🧠 Powered by Google Gemini AI
 
-### 6. Partner & Agency Portal
-- **Dashboard**: Specialized view for verified partners to manage their service's live status.
-- **Analytics Pulse**: Visual data on resource gaps and community needs.
-- **Data Migration**: Automated tools to sync static local data with the live Firestore database.
+We utilize the free tier of the Google Gemini API to transform how people ask for help. Instead of clicking through rigid dropdowns, users can type natural phrases like:
 
-### 7. AI Assistant
-- **Intent Recognition**: Natural language interface to help users find support through simple conversational queries.
+"I just finished my night shift, I have my kids with me, and it's freezing. Where can we go?"
 
----
+Gemini's NLU (Natural Language Understanding) processes this into a structured JSON intent, immediately matching the user with Family Shelters and Warm Spaces that are currently open, acting as a digital, real-time social worker.
 
-## 🛠 Technology Stack
+🏛️ Why Policymakers & NGOs Love It
 
-- **Frontend**: React 18 + Vite
-- **Styling**: Tailwind CSS 4
-- **Database/Auth**: Firebase Firestore & Firebase Auth
-- **Mapping**: Leaflet + React Leaflet
-- **Search**: Fuse.js
-- **Icons**: Custom SVG-based Icon system
-- **Deployment**: Netlify / Firebase Hosting
+Zero-Cost Architecture: Operates 100% on free tiers (Netlify, Firebase Free, Google Sheets, Gemini Free Tier). No recurring server, database, or API costs for local councils.
 
-## 📦 Getting Started
+Zero-Admin Maintenance: NGOs don't need to learn a new dashboard. They update their status on a shared Google Sheet, and the App syncs automatically. Issue reporting routes directly to Google Forms.
+
+Real-Time Data: Live "Capacity" flags prevent "Phantom Referrals" (sending people to food banks that are already empty, destroying trust).
+
+🛠️ Technical Architecture
+
+Frontend: React 18, TypeScript, Vite, Tailwind CSS. (Optimized to run smoothly on older budget smartphones).
+
+Data Layer (Hybrid Cache):
+
+Google Sheets (CSV) for volunteer-friendly updates.
+
+Firebase Firestore with an aggressive 15-minute localStorage TTL to guarantee zero-cost scalability without hitting read limits, even during high-traffic crisis events.
+
+Offline-First: PWA Service Workers (vite-plugin-pwa) ensure the directory is accessible even without a data plan. Map views gracefully fallback to List Views when offline to prevent UI crashes.
+
+Maps: Leaflet + OpenStreetMap (No API key bottlenecks).
+
+🚀 Getting Started
+
+Prerequisites
+
+Node.js 18+
+
+A Firebase Project (Free Tier)
+
+Google Gemini API Key (Free Tier)
+
+Installation
+
+```bash
 
 1. Clone the repository
-2. Install dependencies: `npm install`
-3. Set up environment variables in `.env` (see `.env.example`)
-4. Start development server: `npm run dev`
-5. Build for production: `npm run build`
+
+git clone https://www.google.com/search?q=https://github.com/httsai1979/PortsmouthBridge.git
+cd PortsmouthBridge
+
+2. Install dependencies
+
+npm install
+
+3. Setup Environment Variables
+
+Copy .env.example to .env and add your Firebase & Gemini keys
+
+cp .env.example .env
+
+4. Start Development Server
+
+npm run dev
+```
+
+🛡️ Privacy & Stealth Implementation
+
+App Manifest: Installs to the home screen as "City Guide" with a neutral icon to avoid suspicion.
+
+No Image Caching: When Stealth Mode is activated, the app strips all <img> tags to prevent sensitive locations from being stored in the browser's hidden cache layer.
+
+No Accounts Required: 100% anonymous usage for end-users. No tracking pixels.
+
+🤝 Contributing
+
+We welcome civic hackers, social workers, and developers. Please look at our issues for:
+
+Enhancing accessibility (a11y) for screen readers.
+
+Expanding localized data for the wider Hampshire area.
+
+📄 License
+
+MIT License. Built for the community, by the community. Free to fork for any city worldwide.

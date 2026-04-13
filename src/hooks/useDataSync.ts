@@ -3,35 +3,37 @@ import { db } from '../lib/firebase';
 import { collection, query, where, onSnapshot } from 'firebase/firestore';
 import { ServiceDocument } from '../types/schema';
 import { useAppStore } from '../store/useAppStore';
+import { getCachedData, setCachedData } from '../services/StorageCache';
+
+const CACHE_KEY = 'bridge_cache';
 
 /**
  * Custom hook that implements the Hybrid Data Sync Strategy:
- * 1. Instant Start: Hydrate from bridge_cache (localStorage)
- * 2. Static Baseline: Load latest data.json from server
- * 3. Real-time Overlay: Patch with Firestore updates for any change AFTER the baseline
+ * 1. Instant Start: Hydrate from bridge_cache (localStorage) with 15m TTL
+ * 2. Static Baseline: Load latest data.json from server (if cache expired)
+ * 3. Real-time Overlay: Patch with Firestore updates (if cache expired)
  */
 export const useDataSync = () => {
-    const { setData, setSyncStatus, lastUpdated: currentLastUpdated } = useAppStore();
+    const { setData, setSyncStatus, data: storeData, lastUpdated: currentLastUpdated } = useAppStore();
 
     useEffect(() => {
         let isMounted = true;
+        let unsubscribe: (() => void) | undefined;
 
         const initializeData = async () => {
             try {
                 // Phase 1: Local Cache (Instant Hydration)
-                const cached = localStorage.getItem('bridge_cache');
+                const cached = getCachedData<{ data: ServiceDocument[], lastUpdated: string | null }>(CACHE_KEY);
+                
                 if (cached && isMounted) {
-                    try {
-                        const parsed = JSON.parse(cached);
-                        // Ensure we have valid data before setting
-                        if (parsed && Array.isArray(parsed.data)) {
-                            setData(parsed.data, parsed.lastUpdated);
-                            setSyncStatus({ loading: false });
-                        }
-                    } catch (e) {
-                        console.warn('Failed to parse cache', e);
-                    }
+                    console.log("Using cached Firestore data (15m TTL)");
+                    setData(cached.data, cached.lastUpdated);
+                    setSyncStatus({ loading: false });
+                    return; // Skip network fetch if cache is valid
                 }
+
+                // If no cache or expired, proceed to network
+                console.log("Cache missing or expired, fetching from network...");
 
                 // Phase 2: Static Baseline (/data.json) - The "Warm" Start
                 try {
@@ -57,7 +59,7 @@ export const useDataSync = () => {
                         where('liveStatus.lastUpdated', '>', staticTimestamp)
                     );
 
-                    const unsubscribe = onSnapshot(q, (snapshot) => {
+                    unsubscribe = onSnapshot(q, (snapshot) => {
                         if (!isMounted) return;
 
                         const patches = snapshot.docs.map(doc => ({
@@ -68,21 +70,36 @@ export const useDataSync = () => {
                         if (patches.length > 0) {
                             setData(patches);
                         }
+                        
+                        // After live sync, update cache to reset TTL
+                        const latestStore = useAppStore.getState();
+                        setCachedData(CACHE_KEY, {
+                            data: latestStore.data,
+                            lastUpdated: latestStore.lastUpdated
+                        });
+
                         setSyncStatus({ isHydrating: false });
                     }, (err) => {
                         console.warn('Live Hydration Error (Falling back to static):', err);
                         if (isMounted) setSyncStatus({ isHydrating: false });
                     });
 
-                    return unsubscribe;
                 } catch (fetchErr) {
                     console.error('Static data fetch failed:', fetchErr);
-                    // If fetch fails (offline), we rely on cache. 
-                    // We should still consider "loading" done if we have cache, or error if not.
+                    
+                    // Try to load any expired cache as fallback if truly offline
+                    const expiredCache = localStorage.getItem(CACHE_KEY);
+                    if (expiredCache && isMounted) {
+                        try {
+                            const parsed = JSON.parse(expiredCache).data;
+                            setData(parsed.data, parsed.lastUpdated);
+                        } catch (e) {}
+                    }
+
                     if (isMounted) {
                         setSyncStatus({
-                            loading: false, // Stop spinner so app shows
-                            error: !cached ? 'Offline and no cache' : null
+                            loading: false,
+                            error: !expiredCache ? 'Offline and no cache' : null
                         });
                     }
                 }
@@ -95,22 +112,22 @@ export const useDataSync = () => {
             }
         };
 
-        const unsubscribePromise = initializeData();
+        initializeData();
 
         return () => {
             isMounted = false;
-            unsubscribePromise.then(unsub => unsub && unsub());
+            if (unsubscribe) unsubscribe();
         };
     }, [setData, setSyncStatus]);
 
-    // Side effect: Persist store data to localStorage whenever it changes
+    // Side effect: Persist store data to localStorage whenever it changes (optional auto-refresh)
+    // We already do it in onSnapshot, but let's keep it robust for other updates if any.
     useEffect(() => {
-        const store = useAppStore.getState();
-        if (store.data.length > 0) {
-            localStorage.setItem('bridge_cache', JSON.stringify({
-                data: store.data,
-                lastUpdated: store.lastUpdated
-            }));
+        if (storeData.length > 0) {
+            setCachedData(CACHE_KEY, {
+                data: storeData,
+                lastUpdated: currentLastUpdated
+            });
         }
-    }, [currentLastUpdated]);
+    }, [currentLastUpdated, storeData]);
 };

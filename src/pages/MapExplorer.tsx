@@ -1,5 +1,5 @@
 import { Suspense, lazy, useMemo } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, Navigate } from 'react-router-dom';
 import { useAppStore } from '../store/useAppStore';
 import { useFilteredData } from '../hooks/useFilteredData';
 import { useAuth } from '../contexts/AuthContext';
@@ -10,7 +10,11 @@ const SimpleMap = lazy(() => import('../components/SimpleMap'));
 const MapExplorer = () => {
     const [searchParams, setSearchParams] = useSearchParams();
     const { isPartner } = useAuth();
-    const { data, savedIds, stealthMode, toggleSavedId, userLocation, setReportTarget } = useAppStore();
+    const { data, savedIds, stealthMode, toggleSavedId, userLocation, setReportTarget, isOffline } = useAppStore();
+
+    if (isOffline) {
+        return <Navigate to="/list" replace />;
+    }
 
     // Derived Status Mapping (consistent with AnimatedRoutes)
     const liveStatus = useMemo(() => {

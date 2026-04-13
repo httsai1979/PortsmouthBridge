@@ -14,6 +14,7 @@
     "@firebase/auth": "*",
     "@firebase/firestore": "*",
     "@firebase/functions": "*",
+    "@google/generative-ai": "^0.24.1",
     "@react-leaflet/core": "^2.1.0",
     "@types/leaflet": "^1.9.21",
     "@types/papaparse": "^5.5.2",

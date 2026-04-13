@@ -17,7 +17,7 @@ export default defineConfig({
         runtimeCaching: [
           {
             urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
-            handler: 'CacheFirst',
+            handler: 'StaleWhileRevalidate',
             options: {
               cacheName: 'google-fonts-cache',
               expiration: {
@@ -29,7 +29,7 @@ export default defineConfig({
           },
           {
             urlPattern: /^https:\/\/.*\.tile\.openstreetmap\.org\/.*/i,
-            handler: 'CacheFirst',
+            handler: 'StaleWhileRevalidate',
             options: {
               cacheName: 'osm-tiles-cache',
               expiration: {
@@ -40,10 +40,10 @@ export default defineConfig({
             }
           },
           {
-            urlPattern: /\.(?:png|jpg|jpeg|svg|gif|webp|ico)$/i,
-            handler: 'CacheFirst',
+            urlPattern: /\.(?:png|jpg|jpeg|svg|gif|webp|ico|woff2?|js|css)$/i,
+            handler: 'StaleWhileRevalidate',
             options: {
-              cacheName: 'images-cache',
+              cacheName: 'static-assets-cache',
               expiration: {
                 maxEntries: 200,
                 maxAgeSeconds: 60 * 60 * 24 * 30
@@ -51,10 +51,10 @@ export default defineConfig({
             }
           },
           {
-            urlPattern: /^https:\/\/firestore\.googleapis\.com\/.*/i,
+            urlPattern: ({ url }) => url.pathname.endsWith('.json') || url.hostname.includes('firestore.googleapis.com'),
             handler: 'NetworkFirst',
             options: {
-              cacheName: 'firebase-cache',
+              cacheName: 'api-json-cache',
               networkTimeoutSeconds: 5,
               expiration: {
                 maxEntries: 100,
