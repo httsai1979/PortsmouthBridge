@@ -1,5 +1,5 @@
 import { useEffect, Suspense, lazy } from 'react';
-import { BrowserRouter as Router, useNavigate, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, useNavigate } from 'react-router-dom';
 import { useAuth } from './contexts/AuthContext';
 import { useDataSync } from './hooks/useDataSync';
 import { useAppStore } from './store/useAppStore';
@@ -28,7 +28,6 @@ const PageLoader = () => (
 
 const AppContent = () => {
     const navigate = useNavigate();
-    const location = useLocation();
     const { loading: authLoading } = useAuth();
     const {
         data: dynamicData,
@@ -36,7 +35,7 @@ const AppContent = () => {
         setData,
         highContrast, fontSize, savedIds, userLocation,
         notifications, setUserLocation, toggleSavedId,
-        clearNotifications, isOffline, setIsOffline,
+        clearNotifications,
         modals, setModal, reportTarget, setReportTarget,
         connectInput, setConnectInput, setConnectResult,
         stealthMode
@@ -51,7 +50,7 @@ const AppContent = () => {
         if ("geolocation" in navigator) {
             navigator.geolocation.getCurrentPosition(
                 (pos) => setUserLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
-                (err) => console.log('Location access denied', err)
+                () => console.log('Location access denied')
             );
         }
     }, [setUserLocation]);
@@ -62,11 +61,11 @@ const AppContent = () => {
             if (navigator.onLine) {
                 const statuses = await fetchLiveStatus();
                 if (Object.keys(statuses).length > 0) {
-                    const patches = Object.values(statuses).map(s => ({
+                    const patches: Partial<ServiceDocument>[] = Object.values(statuses).map(s => ({
                         id: s.id,
                         liveStatus: {
                             isOpen: s.status === 'Open' || s.status === 'Low Stock' || s.status === 'Busy',
-                            capacity: s.status,
+                            capacity: s.status as any, // Cast temporarily to match broader ServiceDocument capacity
                             lastUpdated: s.lastUpdated || new Date().toISOString(),
                             message: s.message
                         }
@@ -85,7 +84,7 @@ const AppContent = () => {
         const params = new URLSearchParams();
         if (intent.category !== 'all') params.set('category', intent.category);
         if (intent.timeContext === 'now') params.set('openNow', 'true');
-        
+
         navigate({
             pathname: '/list',
             search: params.toString()
@@ -104,7 +103,7 @@ const AppContent = () => {
     return (
         <div className={`selection:bg-indigo-200 selection:text-indigo-900 ${highContrast ? 'high-contrast' : ''}`}>
             <MetaData />
-            
+
 
             <Layout
                 onShowCrisis={() => setModal('crisis', true)}
@@ -170,7 +169,7 @@ const AppContent = () => {
             {modals.wizard && (
                 <Suspense fallback={<PageLoader />}>
                     <CrisisWizard
-                        data={dynamicData as any}
+                        data={dynamicData}
                         userLocation={userLocation}
                         onClose={() => setModal('wizard', false)}
                         savedIds={savedIds}

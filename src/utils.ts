@@ -44,7 +44,7 @@ export const getTagConfig = (tag: string, tagIcons: Record<string, { icon: strin
 // Phase 13: Sensory Revolution Helper
 export const playSuccessSound = () => {
     try {
-        const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+        const audioCtx = new (window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext)();
         const oscillator = audioCtx.createOscillator();
         const gainNode = audioCtx.createGain();
 
@@ -60,7 +60,7 @@ export const playSuccessSound = () => {
 
         oscillator.start();
         oscillator.stop(audioCtx.currentTime + 0.1);
-    } catch (e) {
+    } catch {
         console.log("Audio feedback not supported or blocked");
     }
 };

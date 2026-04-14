@@ -12,10 +12,6 @@ const MapExplorer = () => {
     const { isPartner } = useAuth();
     const { data, savedIds, stealthMode, toggleSavedId, userLocation, setReportTarget, isOffline } = useAppStore();
 
-    if (isOffline) {
-        return <Navigate to="/list" replace />;
-    }
-
     // Derived Status Mapping (consistent with AnimatedRoutes)
     const liveStatus = useMemo(() => {
         const statuses: Record<string, any> = {};
@@ -42,6 +38,10 @@ const MapExplorer = () => {
         verified: false,
         nearMe: false
     }, userLocation);
+
+    if (isOffline) {
+        return <Navigate to="/list" replace />;
+    }
 
     const lat = searchParams.get('lat');
     const lng = searchParams.get('lng');

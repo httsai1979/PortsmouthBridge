@@ -18,7 +18,7 @@ const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 const ConnectPage = ({ connectResult, onReset, onClose }: ConnectPageProps) => {
     const navigate = useNavigate();
     const [toolMode, setToolMode] = useState<'dashboard' | 'shield' | 'nursery'>(connectResult ? 'dashboard' : 'dashboard');
-    
+
     // Emergency Shield State
     const [shieldLoading, setShieldLoading] = useState(false);
     const [smsText, setSmsText] = useState('');
@@ -37,7 +37,7 @@ const ConnectPage = ({ connectResult, onReset, onClose }: ConnectPageProps) => {
             The SMS MUST explicitly invoke 'Section 57A of the Employment Rights Act 1996' (Statutory Time Off for Dependants). 
             Keep it professional but urgent. Include placeholders for [Child Name] and [Boss Name].
             Respond ONLY with the SMS text.`;
-            
+
             const result = await model.generateContent(prompt);
             setSmsText(result.response.text());
         } catch (e) {
@@ -59,7 +59,7 @@ const ConnectPage = ({ connectResult, onReset, onClose }: ConnectPageProps) => {
             
             Generate a simple 3-step checklist to claim 15 or 30 free nursery hours. 
             Respond ONLY with a JSON array of 3 strings.`;
-            
+
             const result = await model.generateContent(prompt);
             const text = result.response.text().replace(/```json|```/g, '');
             setNurseryChecklist(JSON.parse(text));
@@ -135,8 +135,8 @@ const ConnectPage = ({ connectResult, onReset, onClose }: ConnectPageProps) => {
                         </div>
 
                         {!smsText ? (
-                            <button 
-                                onClick={generateLeaveSMS} 
+                            <button
+                                onClick={generateLeaveSMS}
                                 disabled={shieldLoading}
                                 className="w-full py-6 bg-slate-900 text-white rounded-[32px] font-black uppercase text-xs tracking-widest shadow-xl flex items-center justify-center gap-3 disabled:opacity-50"
                             >
@@ -201,7 +201,7 @@ const ConnectPage = ({ connectResult, onReset, onClose }: ConnectPageProps) => {
                                         </div>
                                     </div>
                                 </div>
-                                <button 
+                                <button
                                     onClick={generateNurseryChecklist}
                                     disabled={!nurseryData.income || !nurseryData.hasUC || nurseryLoading}
                                     className="w-full py-6 bg-emerald-600 text-white rounded-[32px] font-black uppercase text-xs tracking-widest shadow-xl flex items-center justify-center gap-3 disabled:opacity-50"

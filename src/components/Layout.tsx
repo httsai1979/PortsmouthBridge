@@ -97,8 +97,8 @@ const Layout = ({ children, onShowCrisis, onShowPartnerLogin }: LayoutProps) => 
             {/* Bottom Nav */}
             <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[50] bg-slate-900/90 backdrop-blur-md text-white px-6 py-4 rounded-full shadow-2xl flex items-center gap-6 border border-white/10 w-auto">
                 <button onClick={() => navigate('/')} className={`relative group ${isHome ? 'text-indigo-400' : 'text-slate-400 hover:text-white'}`}><Icon name="home" size={24} />{isHome && <span className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-1 h-1 bg-indigo-400 rounded-full"></span>}</button>
-                <button 
-                    onClick={() => !isOffline && navigate('/map')} 
+                <button
+                    onClick={() => !isOffline && navigate('/map')}
                     className={`relative group ${isMap ? 'text-indigo-400' : 'text-slate-400 hover:text-white'} ${isOffline ? 'opacity-30 cursor-not-allowed' : ''}`}
                     disabled={isOffline}
                 >

@@ -15,7 +15,7 @@ export const migrateData = async () => {
             // mapping broad categories to the new specific union
             category: (['food', 'shelter', 'warmth', 'support', 'family'].includes(resource.category)
                 ? resource.category
-                : 'support') as any,
+                : 'support') as ServiceDocument['category'],
             location: {
                 lat: resource.lat,
                 lng: resource.lng,
@@ -25,7 +25,7 @@ export const migrateData = async () => {
             thresholdInfo: {
                 idRequired: resource.entranceMeta?.idRequired ?? false,
                 queueStatus: resource.entranceMeta?.queueStatus
-                    ? (resource.entranceMeta.queueStatus.charAt(0).toUpperCase() + resource.entranceMeta.queueStatus.slice(1)) as any
+                    ? (resource.entranceMeta.queueStatus.charAt(0).toUpperCase() + resource.entranceMeta.queueStatus.slice(1)) as ServiceDocument['thresholdInfo']['queueStatus']
                     : 'Empty',
                 entrancePhotoUrl: resource.entranceMeta?.imageUrl
             },

@@ -1,5 +1,8 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { ServiceDocument } from '../types/schema';
+import { ConnectInput, ConnectResult } from '../services/ConnectLogic';
+import { Notification } from '../components/SmartNotifications';
 
 interface AppState {
     // Accessibility & UI
@@ -29,26 +32,26 @@ interface AppState {
     setReportTarget: (target: { name: string, id: string } | null) => void;
 
     // User Data & Session
-    data: any[];
+    data: ServiceDocument[];
     loading: boolean;
     error: string | null;
     isHydrating: boolean;
     lastUpdated: string | null;
-    setData: (data: any[], lastUpdated?: string | null) => void;
+    setData: (data: Partial<ServiceDocument>[], lastUpdated?: string | null) => void;
     setSyncStatus: (status: Partial<{ loading: boolean, error: string | null, isHydrating: boolean }>) => void;
 
     savedIds: string[];
     toggleSavedId: (id: string) => void;
     userLocation: { lat: number, lng: number } | null;
     setUserLocation: (loc: { lat: number, lng: number } | null) => void;
-    connectInput: any | null;
-    setConnectInput: (input: any) => void;
-    connectResult: any | null;
-    setConnectResult: (result: any) => void;
+    connectInput: ConnectInput | null;
+    setConnectInput: (input: ConnectInput) => void;
+    connectResult: ConnectResult | null;
+    setConnectResult: (result: ConnectResult) => void;
 
     // Notifications
-    notifications: any[];
-    addNotification: (n: any) => void;
+    notifications: Notification[];
+    addNotification: (n: Notification) => void;
     clearNotifications: () => void;
 }
 
@@ -95,7 +98,12 @@ export const useAppStore = create<AppState>()(
 
             setData: (newData, lastUpdated) => set((state) => {
                 const merged = new Map(state.data.map(i => [i.id, i]));
-                newData.forEach(item => merged.set(item.id, { ...merged.get(item.id), ...item }));
+                newData.forEach(item => {
+                    if (item.id) {
+                        const existing = merged.get(item.id);
+                        merged.set(item.id, { ...(existing || {}), ...item } as ServiceDocument);
+                    }
+                });
                 return {
                     data: Array.from(merged.values()),
                     lastUpdated: lastUpdated || state.lastUpdated

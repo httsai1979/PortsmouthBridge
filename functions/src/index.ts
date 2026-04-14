@@ -139,7 +139,7 @@ const DEFAULT_POLICY_CONFIG: PolicyConfig = {
 };
 
 // --- CORE FUNCTION: calculateBenefits ---
-export const calculateBenefits = functions.https.onCall(async (data: ConnectInput, context: functions.https.CallableContext) => {
+export const calculateBenefits = functions.https.onCall(async (data: ConnectInput, _context: functions.https.CallableContext) => {
     // 1. Fetch current policy from Firestore
     let policy = DEFAULT_POLICY_CONFIG;
     try {

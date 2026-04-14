@@ -179,10 +179,14 @@ export const ReportModal = ({ isOpen, onClose, resourceName, resourceId }: { isO
 
     useEffect(() => {
         if (isOpen) {
-            setStatus('idle');
-            setDetails('');
-            setReason('Closed when stated open');
-            setHoneypot('');
+            // Use setTimeout to avoid synchronous setState inside Effect (cascading render warning)
+            const timer = setTimeout(() => {
+                setStatus('idle');
+                setDetails('');
+                setReason('Closed when stated open');
+                setHoneypot('');
+            }, 0);
+            return () => clearTimeout(timer);
         }
     }, [isOpen]);
 
@@ -200,7 +204,7 @@ export const ReportModal = ({ isOpen, onClose, resourceName, resourceId }: { isO
             });
             localStorage.setItem('last_report_time', Date.now().toString());
             setStatus('success'); setTimeout(onClose, 2000);
-        } catch (e) { console.error(e); setStatus('error'); }
+        } catch (_e) { console.error(_e); setStatus('error'); }
     };
 
     if (!isOpen) return null;
@@ -229,7 +233,7 @@ export const PartnerRequestModal = ({ isOpen, onClose }: { isOpen: boolean; onCl
     const [formData, setFormData] = useState({ orgName: '', email: '', phone: '' });
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault(); setStatus('sending');
-        try { await addDoc(collection(db, 'partner_requests'), { ...formData, timestamp: serverTimestamp(), status: 'new' }); setStatus('success'); setTimeout(() => { onClose(); setStatus('idle'); setFormData({ orgName: '', email: '', phone: '' }); }, 2000); } catch (e) { setStatus('idle'); }
+        try { await addDoc(collection(db, 'partner_requests'), { ...formData, timestamp: serverTimestamp(), status: 'new' }); setStatus('success'); setTimeout(() => { onClose(); setStatus('idle'); setFormData({ orgName: '', email: '', phone: '' }); }, 2000); } catch (_e) { setStatus('idle'); }
     };
     if (!isOpen) return null;
     return (

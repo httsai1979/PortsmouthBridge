@@ -2,7 +2,7 @@ import { useAppStore } from '../store/useAppStore';
 import Icon from '../components/Icon';
 import CommunityBulletin from '../components/CommunityBulletin';
 import ProgressTimeline from '../components/ProgressTimeline';
-import { TAG_ICONS, COMMUNITY_DEALS, GIFT_EXCHANGE, PROGRESS_TIPS } from '../data';
+import { COMMUNITY_DEALS, GIFT_EXCHANGE, PROGRESS_TIPS } from '../data';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 
@@ -17,10 +17,7 @@ const Home = () => {
         else if (id === '4') navigate('/faq');
     };
 
-    const handleCategorySearch = (catId: string) => {
-        if (catId === 'faq') navigate('/faq');
-        else navigate(`/list?category=${catId}`);
-    };
+
 
     return (
         <div className="animate-fade-in-up">
@@ -84,7 +81,7 @@ const Home = () => {
                     whileTap={{ scale: 0.98 }}
                     onClick={() => {
                         setModal('translatorMode', true);
-                        setModal('aiAssistant', true); 
+                        setModal('aiAssistant', true);
                     }}
                     className="flex justify-between items-center p-6 bg-slate-900 text-white rounded-[32px] shadow-lg shadow-slate-200 group active:bg-black transition-all text-left"
                 >

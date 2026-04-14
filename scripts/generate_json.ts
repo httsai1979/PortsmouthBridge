@@ -9,8 +9,8 @@ import { ServiceDocument } from '../src/types/schema';
  */
 
 const mapCategory = (cat: string): ServiceDocument['category'] => {
-    const valid = ['food', 'shelter', 'warmth', 'support', 'family'];
-    return (valid.includes(cat) ? cat : 'support') as any;
+    const valid: Array<ServiceDocument['category']> = ['food', 'shelter', 'warmth', 'support', 'family', 'mental_health'];
+    return (valid.includes(cat as any) ? cat : 'support') as ServiceDocument['category'];
 };
 
 const mapQueueStatus = (status?: string): ServiceDocument['thresholdInfo']['queueStatus'] => {
@@ -19,7 +19,7 @@ const mapQueueStatus = (status?: string): ServiceDocument['thresholdInfo']['queu
     if (s === 'light') return 'Light';
     if (s === 'busy') return 'Busy';
     if (s === 'long') return 'Long';
-    return 'Empty';
+    return 'unknown';
 };
 
 const mapCapacity = (cap?: string): ServiceDocument['liveStatus']['capacity'] => {
@@ -28,7 +28,7 @@ const mapCapacity = (cap?: string): ServiceDocument['liveStatus']['capacity'] =>
     if (c === 'medium') return 'Medium';
     if (c === 'low') return 'Low';
     if (c === 'full') return 'Full';
-    return 'Medium';
+    return 'unknown';
 };
 
 console.log('🚀 Starting Static Data Generation...');
@@ -39,6 +39,14 @@ const serviceDocuments: ServiceDocument[] = ALL_DATA.map(item => {
         id: item.id,
         name: item.name || 'Unnamed Service',
         category: mapCategory(item.category),
+        type: item.type || '',
+        area: item.area || '',
+        address: item.address || '',
+        requirements: item.requirements || '',
+        description: item.description || '',
+        tags: item.tags || [],
+        lat: item.lat || 50.8000,
+        lng: item.lng || -1.0800,
         location: {
             lat: item.lat || 50.8000,
             lng: item.lng || -1.0800,
@@ -56,10 +64,8 @@ const serviceDocuments: ServiceDocument[] = ALL_DATA.map(item => {
             lastUpdated: new Date().toISOString(),
             message: '',
         },
-        description: item.description || '',
-        tags: item.tags || [],
         phone: item.phone || null,
-        website: (item as any).website || '',
+        website: (item as typeof item & { website?: string }).website || '',
         schedule: item.schedule || {},
         trustScore: item.trustScore || 0,
     };

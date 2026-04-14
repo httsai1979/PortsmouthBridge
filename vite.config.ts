@@ -51,8 +51,8 @@ export default defineConfig({
             }
           },
           {
-            urlPattern: ({ url }) => 
-              url.pathname.endsWith('.json') || 
+            urlPattern: ({ url }) =>
+              url.pathname.endsWith('.json') ||
               url.hostname.includes('firestore.googleapis.com') ||
               url.hostname.includes('docs.google.com') && url.pathname.includes('/export'),
             handler: 'NetworkFirst',

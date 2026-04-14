@@ -130,18 +130,22 @@ const SimpleMap = ({
         if (externalFocus?.id) {
             const item = data.find(i => i.id === externalFocus.id);
             if (item) {
-                setSelectedItem(item);
-                setShowHours(true);
+                const timer = setTimeout(() => {
+                    setSelectedItem(item);
+                    setShowHours(true);
+                }, 0);
+                return () => clearTimeout(timer);
             }
         }
     }, [externalFocus, data]);
 
     const filteredPoints = useMemo(() => {
         return data.filter(item => {
+            const statusFilterValue = statusFilter === 'open' ? 'open' : 'all'; // simplified check
             const status = checkStatus(item.schedule).status;
             return statusFilter === 'all' || (status === 'open' || status === 'closing');
         });
-    }, [data, category, statusFilter]);
+    }, [data, statusFilter]);
 
     const categories = [
         { id: 'all', label: 'All Needs', icon: 'search' },

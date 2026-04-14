@@ -64,9 +64,17 @@ const DataMigration = () => {
                 const docData: ServiceDocument = {
                     id: resource.id,
                     name: resource.name || 'Unnamed Resource',
-                    category: (['food', 'shelter', 'warmth', 'support', 'family'].includes(resource.category)
+                    category: (['food', 'shelter', 'warmth', 'support', 'family', 'mental_health'].includes(resource.category)
                         ? resource.category
-                        : 'support') as any,
+                        : 'support') as ServiceDocument['category'],
+                    type: resource.type || '',
+                    area: resource.area || '',
+                    address: resource.address || '',
+                    requirements: resource.requirements || '',
+                    description: resource.description || 'No description provided.',
+                    tags: resource.tags || [],
+                    lat: resource.lat ?? 50.8000,
+                    lng: resource.lng ?? -1.0800,
                     location: {
                         lat: resource.lat ?? 50.8000,
                         lng: resource.lng ?? -1.0800,
@@ -76,26 +84,24 @@ const DataMigration = () => {
                     thresholdInfo: {
                         idRequired: resource.entranceMeta?.idRequired ?? false,
                         queueStatus: resource.entranceMeta?.queueStatus
-                            ? (resource.entranceMeta.queueStatus.charAt(0).toUpperCase() + resource.entranceMeta.queueStatus.slice(1)) as any
-                            : 'Empty',
+                            ? (resource.entranceMeta.queueStatus.charAt(0).toUpperCase() + resource.entranceMeta.queueStatus.slice(1)) as ServiceDocument['thresholdInfo']['queueStatus']
+                            : 'unknown',
                         entrancePhotoUrl: resource.entranceMeta?.imageUrl ?? null
                     },
                     liveStatus: {
                         isOpen: true,
-                        capacity: (resource.capacityLevel && (resource.capacityLevel === 'low' || resource.capacityLevel === 'medium' || resource.capacityLevel === 'high'))
-                            ? (resource.capacityLevel.charAt(0).toUpperCase() + resource.capacityLevel.slice(1)) as any
-                            : 'Medium',
+                        capacity: (resource.capacityLevel && (resource.capacityLevel === 'low' || resource.capacityLevel === 'medium' || resource.capacityLevel === 'high' || resource.capacityLevel === 'full'))
+                            ? (resource.capacityLevel.charAt(0).toUpperCase() + resource.capacityLevel.slice(1)) as ServiceDocument['liveStatus']['capacity']
+                            : 'unknown',
                         lastUpdated: new Date().toISOString(),
-                        message: (resource as any).status?.message ?? ""
+                        message: (resource as typeof resource & { status?: { message: string } }).status?.message ?? ""
                     },
                     b2bData: {
                         internalPhone: resource.phone || 'N/A',
                         partnerNotes: "System migrated from central static dataset."
                     },
-                    description: resource.description || 'No description provided.',
-                    tags: resource.tags || [],
                     phone: resource.phone ?? null,
-                    website: (resource as any).website ?? "",
+                    website: (resource as typeof resource & { website?: string }).website ?? "",
                     schedule: resource.schedule || {},
                     trustScore: resource.trustScore ?? 0
                 };
@@ -103,10 +109,11 @@ const DataMigration = () => {
                 await setDoc(doc(servicesCollection, resource.id), docData);
                 success++;
                 addLog(`✓ Sanitised & Uploaded: ${resource.name}`);
-            } catch (error: any) {
+            } catch (error: unknown) {
                 failed++;
+                const errMsg = error instanceof Error ? error.message : 'Unknown error';
                 console.error(`Record failure - ${resource.id}:`, error);
-                addLog(`❌ Failed record: ${resource.name} - ${error.message}`);
+                addLog(`❌ Failed record: ${resource.name} - ${errMsg}`);
             }
         }
 

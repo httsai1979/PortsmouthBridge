@@ -27,16 +27,16 @@ export const fetchLiveStatus = async (): Promise<Record<string, LiveStatus>> => 
         if (expired) {
             try {
                 return JSON.parse(expired).data;
-            } catch (e) { return {}; }
+            } catch { return {}; }
         }
         return {};
     }
 
     console.log("CACHE MISS: Fetching fresh live status from Google Sheets...");
-    
+
     try {
         const response = await fetch(LIVE_SHEET_URL);
-        
+
         if (!response.ok) {
             throw new Error(`HTTP ${response.status}`);
         }
@@ -45,12 +45,12 @@ export const fetchLiveStatus = async (): Promise<Record<string, LiveStatus>> => 
 
         return new Promise((resolve) => {
             Papa.parse(csvText, {
-                header: true, 
+                header: true,
                 skipEmptyLines: true,
-                complete: (results: any) => {
+                complete: (results: Papa.ParseResult<Record<string, string>>) => {
                     const statusMap: Record<string, LiveStatus> = {};
-                    
-                    results.data.forEach((row: any) => {
+
+                    results.data.forEach((row) => {
                         if (row.ID) {
                             statusMap[row.ID] = {
                                 id: row.ID,
@@ -61,15 +61,15 @@ export const fetchLiveStatus = async (): Promise<Record<string, LiveStatus>> => 
                             };
                         }
                     });
-                    
+
                     // Update cache for 15m
                     setCachedData(CACHE_KEY, statusMap);
                     console.log(`CACHE UPDATE: Persisted ${Object.keys(statusMap).length} status items`);
                     resolve(statusMap);
                 },
-                error: (err: any) => {
+                error: (err: Error) => {
                     console.error("CSV Parse Error:", err);
-                    resolve({}); 
+                    resolve({});
                 }
             });
         });
@@ -80,8 +80,8 @@ export const fetchLiveStatus = async (): Promise<Record<string, LiveStatus>> => 
         if (expired) {
             try {
                 return JSON.parse(expired).data;
-            } catch (e) { return {}; }
+            } catch { return {}; }
         }
-        return {}; 
+        return {};
     }
 };

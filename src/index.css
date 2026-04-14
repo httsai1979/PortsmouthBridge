@@ -31,6 +31,8 @@ body {
   /* IE and Edge */
   scrollbar-width: none;
   /* Firefox */
+}
+
 /* 動態字體控制系統 */
 
 /* 等級 0: 預設 (16px) */
@@ -58,5 +60,4 @@ html.fs-2 p, html.fs-2 span, html.fs-2 div {
 button {
   height: auto;
   min-height: 44px;
-}
 }

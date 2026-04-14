@@ -21,7 +21,7 @@ interface AIAssistantProps {
 
 // Initialize Gemini API
 const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY || '');
-const model = genAI.getGenerativeModel({ 
+const model = genAI.getGenerativeModel({
     model: "gemini-2.5-flash-preview-09-2025"
 });
 
@@ -33,7 +33,7 @@ const AIAssistant = ({ onIntent }: AIAssistantProps) => {
     const [query, setQuery] = useState('');
     const [loading, setLoading] = useState(false);
     const [translationResult, setTranslationResult] = useState<TranslationResult | null>(null);
-    const inputRef = useRef<HTMLInputElement>(null);
+    const inputRef = useRef<HTMLTextAreaElement>(null);
 
     useEffect(() => {
         if (isOpen && inputRef.current) {
@@ -116,7 +116,7 @@ const AIAssistant = ({ onIntent }: AIAssistantProps) => {
             const response = await result.response;
             const textResponse = response.text().replace(/```json|```/g, '');
             const intent: AIIntent = JSON.parse(textResponse);
-            
+
             onIntent(intent);
             setModal('aiAssistant', false);
         } catch (error) {
@@ -165,7 +165,7 @@ const AIAssistant = ({ onIntent }: AIAssistantProps) => {
                         <div className="p-6 space-y-6">
                             <form onSubmit={handleSearch} className="relative">
                                 <textarea
-                                    ref={inputRef as any}
+                                    ref={inputRef}
                                     rows={isTranslatorMode ? 4 : 2}
                                     value={query}
                                     disabled={loading}
@@ -194,7 +194,7 @@ const AIAssistant = ({ onIntent }: AIAssistantProps) => {
                                         <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-1">3. Call for help</p>
                                         <p className="text-lg font-black text-indigo-900">{translationResult.contactPhone}</p>
                                     </div>
-                                    <button 
+                                    <button
                                         onClick={closeAssistant}
                                         className="w-full py-4 text-xs font-black text-slate-400 uppercase tracking-widest border-2 border-slate-100 rounded-2xl hover:bg-slate-50"
                                     >

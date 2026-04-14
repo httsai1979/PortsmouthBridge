@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import Icon from './Icon';
 
-interface Notification {
+export interface Notification {
     id: string;
-    type: 'opening_soon' | 'favorite' | 'weather' | 'info';
+    title?: string;
+    type: 'opening_soon' | 'favorite' | 'weather' | 'info' | 'warning' | 'success';
     message: string;
     timestamp: number;
     resourceId?: string;

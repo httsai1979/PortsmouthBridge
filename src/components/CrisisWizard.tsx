@@ -2,9 +2,10 @@ import { useState } from 'react';
 import { checkStatus, getDistance } from '../utils';
 import Icon from './Icon';
 import ResourceCard from './ResourceCard';
+import { ServiceDocument } from '../types/schema';
 
 interface CrisisWizardProps {
-    data: any[]; // Resource shaped data
+    data: ServiceDocument[];
     userLocation: { lat: number; lng: number } | null;
     onClose: () => void;
     onToggleSave: (id: string) => void;
@@ -14,7 +15,7 @@ interface CrisisWizardProps {
 const CrisisWizard = ({ data, userLocation, onClose, onToggleSave, savedIds }: CrisisWizardProps) => {
     const [step, setStep] = useState<'need' | 'urgency' | 'result'>('need');
     const [selectedNeed, setSelectedNeed] = useState<string>('');
-    const [results, setResults] = useState<any[]>([]);
+    const [results, setResults] = useState<ServiceDocument[]>([]);
 
     const needs = [
         { id: 'food', label: 'I need food', icon: 'utensils', color: 'bg-emerald-500' },
@@ -28,7 +29,7 @@ const CrisisWizard = ({ data, userLocation, onClose, onToggleSave, savedIds }: C
     const handleNeedSelect = (needId: string) => {
         setSelectedNeed(needId);
         // Instant calculation for "Best Option"
-        let matches = data.filter(item => {
+        const matches = data.filter(item => {
             if (needId === 'mental_health') return item.tags.includes('mental_health');
             if (needId === 'food') return item.category === 'food' && item.tags.includes('free');
             return item.category === needId;
@@ -37,7 +38,7 @@ const CrisisWizard = ({ data, userLocation, onClose, onToggleSave, savedIds }: C
         // 1. Filter by Open Now (Crucial for crisis)
         const openNow = matches.filter(item => checkStatus(item.schedule).isOpen);
 
-        let finalResults = openNow.length > 0 ? openNow : matches;
+        const finalResults = openNow.length > 0 ? openNow : matches;
 
         // 2. Sort by Distance if available
         if (userLocation) {
@@ -103,10 +104,10 @@ const CrisisWizard = ({ data, userLocation, onClose, onToggleSave, savedIds }: C
 
                         <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-1">
                             {results.length > 0 ? (
-                                results.map((item: any) => (
+                                results.map((item) => (
                                     <ResourceCard
                                         key={item.id}
-                                        item={item}
+                                        item={item as any}
                                         isSaved={savedIds.includes(item.id)}
                                         onToggleSave={() => onToggleSave(item.id)}
                                     />
