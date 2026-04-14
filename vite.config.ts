@@ -51,14 +51,20 @@ export default defineConfig({
             }
           },
           {
-            urlPattern: ({ url }) => url.pathname.endsWith('.json') || url.hostname.includes('firestore.googleapis.com'),
+            urlPattern: ({ url }) => 
+              url.pathname.endsWith('.json') || 
+              url.hostname.includes('firestore.googleapis.com') ||
+              url.hostname.includes('docs.google.com') && url.pathname.includes('/export'),
             handler: 'NetworkFirst',
             options: {
-              cacheName: 'api-json-cache',
+              cacheName: 'api-data-cache',
               networkTimeoutSeconds: 5,
               expiration: {
                 maxEntries: 100,
-                maxAgeSeconds: 60 * 60 * 24
+                maxAgeSeconds: 60 * 60 * 24 // 24 hours for fallback
+              },
+              cacheableResponse: {
+                statuses: [0, 200]
               }
             }
           },

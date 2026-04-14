@@ -54,26 +54,7 @@ const AppContent = () => {
                 (err) => console.log('Location access denied', err)
             );
         }
-
-        const handleOnline = () => setIsOffline(false);
-        const handleOffline = () => {
-            setIsOffline(true);
-            if (location.pathname === '/map') {
-                navigate('/list');
-            }
-        };
-
-        window.addEventListener('online', handleOnline);
-        window.addEventListener('offline', handleOffline);
-
-        // Initial check
-        if (!navigator.onLine) handleOffline();
-
-        return () => {
-            window.removeEventListener('online', handleOnline);
-            window.removeEventListener('offline', handleOffline);
-        };
-    }, [navigate, location.pathname, setIsOffline, setUserLocation]);
+    }, [setUserLocation]);
 
     // Live Status Polling (Sheets Layer)
     useEffect(() => {
@@ -124,15 +105,8 @@ const AppContent = () => {
         <div className={`selection:bg-indigo-200 selection:text-indigo-900 ${highContrast ? 'high-contrast' : ''}`}>
             <MetaData />
             
-            {/* Offline Banner */}
-            {isOffline && (
-                <div className="fixed top-0 left-0 right-0 z-[2000] bg-orange-600 text-white p-2 text-center text-[10px] font-black uppercase tracking-widest animate-pulse shadow-lg">
-                    Offline Mode: Showing cached data
-                </div>
-            )}
 
             <Layout
-                isOffline={isOffline}
                 onShowCrisis={() => setModal('crisis', true)}
                 onShowPartnerLogin={() => setModal('partnerLogin', true)}
             >

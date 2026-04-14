@@ -49,35 +49,55 @@ const Home = () => {
                 </div>
             </div>
 
-            <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.1 }}
-                className="grid grid-cols-4 gap-3 mb-8"
-            >
-                {[
-                    { id: 'food', ...TAG_ICONS.food }, { id: 'shelter', ...TAG_ICONS.shelter }, { id: 'warmth', ...TAG_ICONS.warmth }, { id: 'support', ...TAG_ICONS.support },
-                    { id: 'family', ...TAG_ICONS.family }, { id: 'skills', ...TAG_ICONS.skills }, { id: 'charity', ...TAG_ICONS.charity }, { id: 'faq', label: 'Guide', icon: 'help-circle' }
-                ].map((cat, idx) => (
-                    <motion.button
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                        initial={{ opacity: 0, scale: 0.8 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        transition={{ delay: 0.1 + (idx * 0.05) }}
-                        key={cat.id || cat.label}
-                        onClick={() => handleCategorySearch(cat.id || 'all')}
-                        className="flex flex-col items-center gap-2 group"
-                    >
-                        <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shadow-sm transition-all group-active:scale-90 bg-white text-slate-500 border-2 border-slate-50`}>
-                            <Icon name={cat.icon} size={20} />
+            <div className="grid grid-cols-1 gap-4 mb-8">
+                <motion.button
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => navigate('/list?category=food&openNow=true')}
+                    className="flex justify-between items-center p-6 bg-amber-500 text-white rounded-[32px] shadow-lg shadow-amber-200 group active:bg-amber-600 transition-all text-left"
+                >
+                    <div className="flex items-center gap-4">
+                        <span className="text-3xl">🍲</span>
+                        <div>
+                            <h3 className="text-xl font-black leading-none mb-1">Hot Meals Tonight</h3>
+                            <p className="text-[10px] font-bold text-amber-100 uppercase tracking-widest">Places open right now</p>
                         </div>
-                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-tight truncate w-full px-1">
-                            {cat.label.replace(' Support', '').replace(' Hub', '')}
-                        </span>
-                    </motion.button>
-                ))}
-            </motion.div>
+                    </div>
+                    <Icon name="arrow-right" size={24} className="text-amber-100" />
+                </motion.button>
+
+                <motion.button
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => navigate('/list?category=warmth')}
+                    className="flex justify-between items-center p-6 bg-indigo-600 text-white rounded-[32px] shadow-lg shadow-indigo-200 group active:bg-indigo-700 transition-all text-left"
+                >
+                    <div className="flex items-center gap-4">
+                        <span className="text-3xl">⚡</span>
+                        <div>
+                            <h3 className="text-xl font-black leading-none mb-1">Energy Voucher Help</h3>
+                            <p className="text-[10px] font-bold text-indigo-100 uppercase tracking-widest">Bills, Vouchers & Warmth</p>
+                        </div>
+                    </div>
+                    <Icon name="arrow-right" size={24} className="text-indigo-100" />
+                </motion.button>
+
+                <motion.button
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => {
+                        setModal('translatorMode', true);
+                        setModal('aiAssistant', true); 
+                    }}
+                    className="flex justify-between items-center p-6 bg-slate-900 text-white rounded-[32px] shadow-lg shadow-slate-200 group active:bg-black transition-all text-left"
+                >
+                    <div className="flex items-center gap-4">
+                        <span className="text-3xl">📄</span>
+                        <div>
+                            <h3 className="text-xl font-black leading-none mb-1">Letter Translator</h3>
+                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Explain Council/NHS letters</p>
+                        </div>
+                    </div>
+                    <Icon name="arrow-right" size={24} className="text-slate-400" />
+                </motion.button>
+            </div>
 
             <button onClick={() => setModal('wizard', true)} className="w-full mb-8 bg-rose-500 text-white p-1 rounded-[32px] shadow-xl shadow-rose-200 group transition-all hover:scale-[1.02] active:scale-95 pr-2">
                 <div className="flex items-center justify-between bg-white/10 rounded-[28px] p-4 border border-white/20">

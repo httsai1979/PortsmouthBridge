@@ -21,6 +21,8 @@ interface AppState {
         tutorial: boolean;
         wizard: boolean;
         connectCalculator: boolean;
+        aiAssistant: boolean;
+        translatorMode: boolean;
     };
     setModal: (key: keyof AppState['modals'], isOpen: boolean) => void;
     reportTarget: { name: string, id: string } | null;
@@ -66,6 +68,8 @@ export const useAppStore = create<AppState>()(
                 tutorial: !localStorage.getItem('seen_tutorial'),
                 wizard: false,
                 connectCalculator: false,
+                aiAssistant: false,
+                translatorMode: false,
             },
             reportTarget: null,
             data: [],
