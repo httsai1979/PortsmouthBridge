@@ -9,7 +9,7 @@ export const migrateData = async () => {
 
     for (const resource of ALL_DATA) {
         // Basic mapping with default values for new Phase 1 fields
-        const docData: ServiceDocument = {
+        const docData = {
             id: resource.id,
             name: resource.name,
             // mapping broad categories to the new specific union
@@ -47,7 +47,7 @@ export const migrateData = async () => {
         };
 
         try {
-            await setDoc(doc(servicesCollection, resource.id), docData);
+            await setDoc(doc(servicesCollection, resource.id), docData as unknown as ServiceDocument);
             console.log(`Migrated: ${resource.name}`);
         } catch (error) {
             console.error(`Error migrating ${resource.name}:`, error);

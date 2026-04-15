@@ -3,7 +3,7 @@ import { db } from '../lib/firebase';
 import { collection, setDoc, doc, getDocs } from 'firebase/firestore';
 import { ALL_DATA } from '../data';
 import type { ServiceDocument } from '../types/schema';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '../contexts/AuthContextBase';
 
 // Hardcoded verified Admin UIDs for sensitive data operations
 const VERIFIED_ADMIN_UIDS = ['3mC8w2S9pZ0', 'ADMIN_V1_MASTER'];

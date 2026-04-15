@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { auth } from '../lib/firebase';
 import { signInWithEmailAndPassword, signOut } from 'firebase/auth';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '../contexts/AuthContextBase';
 import Icon from './Icon';
 
 interface PartnerLoginProps {

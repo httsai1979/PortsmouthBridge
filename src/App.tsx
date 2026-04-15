@@ -1,9 +1,10 @@
 import { useEffect, Suspense, lazy } from 'react';
 import { BrowserRouter as Router, useNavigate } from 'react-router-dom';
-import { useAuth } from './contexts/AuthContext';
+import { useAuth } from './contexts/AuthContextBase';
 import { useDataSync } from './hooks/useDataSync';
 import { useAppStore } from './store/useAppStore';
 import { fetchLiveStatus } from './services/LiveStatusService';
+import type { ServiceDocument } from './types/schema';
 
 // --- COMPONENTS ---
 import Layout from './components/Layout';
@@ -65,7 +66,7 @@ const AppContent = () => {
                         id: s.id,
                         liveStatus: {
                             isOpen: s.status === 'Open' || s.status === 'Low Stock' || s.status === 'Busy',
-                            capacity: s.status as any, // Cast temporarily to match broader ServiceDocument capacity
+                            capacity: s.status as ServiceDocument['liveStatus']['capacity'], // Cast to ServiceDocument capacity
                             lastUpdated: s.lastUpdated || new Date().toISOString(),
                             message: s.message
                         }

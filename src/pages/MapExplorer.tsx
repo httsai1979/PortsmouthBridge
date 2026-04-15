@@ -2,7 +2,7 @@ import { Suspense, lazy, useMemo } from 'react';
 import { useSearchParams, Navigate } from 'react-router-dom';
 import { useAppStore } from '../store/useAppStore';
 import { useFilteredData } from '../hooks/useFilteredData';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '../contexts/AuthContextBase';
 
 
 const SimpleMap = lazy(() => import('../components/SimpleMap'));

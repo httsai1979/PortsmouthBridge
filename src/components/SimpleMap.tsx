@@ -141,7 +141,6 @@ const SimpleMap = ({
 
     const filteredPoints = useMemo(() => {
         return data.filter(item => {
-            const statusFilterValue = statusFilter === 'open' ? 'open' : 'all'; // simplified check
             const status = checkStatus(item.schedule).status;
             return statusFilter === 'all' || (status === 'open' || status === 'closing');
         });

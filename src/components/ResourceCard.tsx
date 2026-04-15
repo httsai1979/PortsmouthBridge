@@ -6,7 +6,7 @@ import type { Resource } from '../data';
 import { TAG_ICONS } from '../data';
 import { db } from '../lib/firebase';
 import { doc, updateDoc, serverTimestamp } from 'firebase/firestore';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '../contexts/AuthContextBase';
 import { useAppStore } from '../store/useAppStore';
 
 interface ResourceCardProps {

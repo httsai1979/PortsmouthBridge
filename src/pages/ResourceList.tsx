@@ -7,7 +7,7 @@ import { useAppStore } from '../store/useAppStore';
 
 import { useFilteredData } from '../hooks/useFilteredData';
 
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '../contexts/AuthContextBase';
 
 const ResourceList = () => {
     const [searchParams, setSearchParams] = useSearchParams();
@@ -35,7 +35,7 @@ const ResourceList = () => {
     }, userLocation);
 
     useEffect(() => {
-        setVisibleCount(10);
+        setTimeout(() => setVisibleCount(10), 0);
     }, [category, area, q, openNow, verified, nearMe]);
 
     useEffect(() => {
@@ -157,7 +157,7 @@ const ResourceList = () => {
                 {filteredData.slice(0, visibleCount).map(item => (
                     <ResourceCard
                         key={item.id}
-                        item={item as any}
+                        item={item as unknown as import('../data').Resource}
                         isSaved={savedIds.includes(item.id)}
                         onToggleSave={() => toggleSavedId(item.id)}
                         highContrast={highContrast}

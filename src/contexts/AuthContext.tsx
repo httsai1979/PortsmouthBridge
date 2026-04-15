@@ -1,10 +1,10 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import { auth } from '../lib/firebase';
-import { onAuthStateChanged } from 'firebase/auth';
+import { onAuthStateChanged, type User } from 'firebase/auth';
 import { AuthContext } from './AuthContextBase';
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-    const [currentUser, setCurrentUser] = useState<any>(null);
+    const [currentUser, setCurrentUser] = useState<User | null>(null);
     const [isPartner, setIsPartner] = useState(false);
     const [loading, setLoading] = useState(true);
 

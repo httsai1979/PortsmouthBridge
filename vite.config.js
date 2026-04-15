@@ -16,7 +16,7 @@ export default defineConfig({
                 runtimeCaching: [
                     {
                         urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
-                        handler: 'CacheFirst',
+                        handler: 'StaleWhileRevalidate',
                         options: {
                             cacheName: 'google-fonts-cache',
                             expiration: {
@@ -28,7 +28,7 @@ export default defineConfig({
                     },
                     {
                         urlPattern: /^https:\/\/.*\.tile\.openstreetmap\.org\/.*/i,
-                        handler: 'CacheFirst',
+                        handler: 'StaleWhileRevalidate',
                         options: {
                             cacheName: 'osm-tiles-cache',
                             expiration: {
@@ -39,10 +39,10 @@ export default defineConfig({
                         }
                     },
                     {
-                        urlPattern: /\.(?:png|jpg|jpeg|svg|gif|webp|ico)$/i,
-                        handler: 'CacheFirst',
+                        urlPattern: /\.(?:png|jpg|jpeg|svg|gif|webp|ico|woff2?|js|css)$/i,
+                        handler: 'StaleWhileRevalidate',
                         options: {
-                            cacheName: 'images-cache',
+                            cacheName: 'static-assets-cache',
                             expiration: {
                                 maxEntries: 200,
                                 maxAgeSeconds: 60 * 60 * 24 * 30
@@ -50,14 +50,22 @@ export default defineConfig({
                         }
                     },
                     {
-                        urlPattern: /^https:\/\/firestore\.googleapis\.com\/.*/i,
+                        urlPattern: function (_a) {
+                            var url = _a.url;
+                            return url.pathname.endsWith('.json') ||
+                                url.hostname.includes('firestore.googleapis.com') ||
+                                url.hostname.includes('docs.google.com') && url.pathname.includes('/export');
+                        },
                         handler: 'NetworkFirst',
                         options: {
-                            cacheName: 'firebase-cache',
+                            cacheName: 'api-data-cache',
                             networkTimeoutSeconds: 5,
                             expiration: {
                                 maxEntries: 100,
-                                maxAgeSeconds: 60 * 60 * 24
+                                maxAgeSeconds: 60 * 60 * 24 // 24 hours for fallback
+                            },
+                            cacheableResponse: {
+                                statuses: [0, 200]
                             }
                         }
                     },
